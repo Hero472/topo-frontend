@@ -1,4 +1,5 @@
 import type { PlayerBoard, OpponentBoard } from "../types";
+import CardView from "./CardView";
 
 interface Props {
   label: string;
@@ -13,38 +14,33 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
     <div
       style={{
         border: "1px solid #ccc",
-        padding: 10,
+        borderRadius: 8,
+        padding: 12,
         minWidth: 250,
-        background: isTurn ? "#e0ffe0" : "#f9f9f9",
+        background: isTurn ? "#e0ffe0" : "#fafafa",
       }}
     >
-      <h3>
-        {label}: {board.username} {isTurn ? "⚡" : ""}
-      </h3>
+      <h3>{label}: {board.username} {isTurn && "⚡"}</h3>
       <div>
         <strong>Hand:</strong>{" "}
         {isSelfBoard
-          ? (board as PlayerBoard).hand.map((c, i) => (
-              <span key={i} style={{ marginRight: 5 }}>
-                {c.rank}
-                {c.suit}
-              </span>
-            ))
+          ? (board as PlayerBoard).hand.map((c, i) => <CardView key={i} card={c} />)
           : (board as OpponentBoard).hand_count}
       </div>
       <div>
         <strong>Personal:</strong>{" "}
         {isSelfBoard
-          ? (board as PlayerBoard).personal.map((c, i) => (
-              <span key={i}>{c.rank}{c.suit}</span>
-            ))
-          : (board as OpponentBoard).personal_count}
+          ? (board as PlayerBoard).personal.map((c, i) => <CardView key={i} card={c} />)
+          : `${(board as OpponentBoard).personal_count} card(s)`}
+        {!isSelfBoard && (board as OpponentBoard).personal_top && (
+          <span style={{ marginLeft: 6 }}>(top: <CardView card={(board as OpponentBoard).personal_top!} />)</span>
+        )}
       </div>
       <div>
         <strong>Side:</strong>
         {board.side.map((stack, i) => (
-          <div key={i}>
-            Stack {i}: {stack.map(c => `${c.rank}${c.suit}`).join(" ")}
+          <div key={i} style={{ marginLeft: 10 }}>
+            Stack {i}: {stack.map((c, j) => <CardView key={j} card={c} />)}
           </div>
         ))}
       </div>

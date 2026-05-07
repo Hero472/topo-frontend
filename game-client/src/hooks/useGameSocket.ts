@@ -1,46 +1,48 @@
 import { useEffect, useRef } from "react";
-import { useGameContext } from "../context/GameContext";
-import type { FullState, GameMessage } from "../types";
+import { useGameContext } from "./useGameContext";
+import type { FullState, GameMessage, Action } from "../types";
 
 export function useGameSocket(room: string, playerId: number, username: string) {
   const { dispatch } = useGameContext();
   const wsRef = useRef<WebSocket | null>(null);
+  const sendActionRef = useRef<(action: Action) => void>(() => {});
 
   useEffect(() => {
     const url = `ws://localhost:8080/ws/${room}?player_id=${playerId}&username=${username}`;
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
+    ws.onopen = () => console.log("✅ WS open");
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+        console.log('Received raw:', data);
         if (data.self && data.opponent) {
-          // It's a FullState
           dispatch({ type: "FULL_STATE", payload: data as FullState });
         } else if (data.event) {
-          // It's a GameMessage
           dispatch({ type: "APPLY_EVENT", payload: (data as GameMessage).event });
         }
-      } catch (err) {
-        console.error("Invalid message", e.data);
+      } catch {
+        console.error("Invalid WS message", e.data);
+      }
+    };
+    ws.onerror = (err) => console.error("WS error", err);
+    ws.onclose = (event) => {
+      console.log("WS closed", event.code, event.reason);
+    };
+
+    sendActionRef.current = (action: Action) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(action));
       }
     };
 
-    ws.onerror = (err) => console.error("WS error", err);
-    ws.onclose = (event) => {
-    console.log('🔌 WS closed', {
-        code: event.code,
-        reason: event.reason,
-        wasClean: event.wasClean,
-    });
+    return () => {
+      ws.close();
     };
-
-    return () => ws.close();
   }, [room, playerId, username, dispatch]);
 
-  const sendAction = (action: any) => {
-    wsRef.current?.send(JSON.stringify(action));
-  };
+  const sendAction = (action: Action) => sendActionRef.current(action);
 
   return { sendAction };
 }

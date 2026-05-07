@@ -1,34 +1,61 @@
-import React, { createContext, useContext, useReducer, type Dispatch } from "react";
-import type { FullState, ServerEvent } from "../types";
+import { type Action, type GameState } from "./gameContextCore";
 
-interface GameState {
-  fullState: FullState | null;
-  turnSeconds: number;
-  winnerId: number | null;
-}
-
-type Action =
-  | { type: "FULL_STATE"; payload: FullState }
-  | { type: "APPLY_EVENT"; payload: ServerEvent };
-
-function gameReducer(state: GameState, action: Action): GameState {
+export function gameReducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "FULL_STATE":
-      return { ...state, fullState: action.payload, winnerId: null };
+      return { fullState: action.payload, winnerId: null };
     case "APPLY_EVENT": {
       if (!state.fullState) return state;
-      const s = { ...state.fullState }; // shallow clone, we'll mutate carefully
+      const s = structuredClone(state.fullState); // deep clone
       const event = action.payload;
       switch (event.type) {
-        case "CardDrawn":
-          if (s.self.player_idx === event.player_id) {
+        case "CardDrawn": {
+          if (s.self.player_idx === event.player_id && event.card) {
             s.self.hand.push(event.card);
           }
           break;
+        }
         case "CardPlayedOnScale": {
-          // remove from hand (we don't know index, but simplest: pop last if match?);
-          // better: later we will update hand via OpponentUpdate or explicit removal.
-          // For now just update scales placeholder.
+          // Remove card from hand (if the player is us, we know the card was in hand)
+          if (s.self.player_idx === event.player_id) {
+            // Remove the matching card from hand (simplified: find by suit/rank)
+            const idx = s.self.hand.findIndex(
+              c => c.suit === event.card.suit && c.rank === event.card.rank
+            );
+            if (idx !== -1) s.self.hand.splice(idx, 1);
+          } else {
+            // Opponent's card played: their hand count decreases
+            s.opponent.hand_count = Math.max(0, s.opponent.hand_count - 1);
+          }
+          // Update the scale (shared scales array)
+          const scale = s.scales.find(sc => sc.id === event.scale_id);
+          if (scale) {
+            scale.cards.push(event.card);
+            scale.completed = event.completed;
+          } else {
+            // New scale (OpenScale) – create it
+            s.scales.push({
+              id: event.scale_id,
+              cards: [event.card],
+              completed: event.completed,
+              owner: event.player_id,
+            });
+          }
+          break;
+        }
+        case "CardPlacedOnSide": {
+          // Place card on side stack (usually visible to both)
+          if (s.self.player_idx === event.player_id) {
+            // Remove from hand? (Depends on action: MoveToSide removes from hand, MovePersonalToSide removes from personal)
+            // We need to know the source; for simplicity, we'll trust the OpponentUpdate later to sync counts.
+            // For now, just update the side stack visually.
+          }
+          // Update the appropriate side stack
+          if (event.player_id === s.self.player_idx) {
+            s.self.side[event.stack].push(event.card);
+          } else {
+            // Opponent side will be updated by OpponentUpdate so skip here.
+          }
           break;
         }
         case "OpponentUpdate": {
@@ -40,46 +67,28 @@ function gameReducer(state: GameState, action: Action): GameState {
           };
           break;
         }
-        case "TurnEnded":
+        case "TurnEnded": {
           s.current_turn = event.next_player_id;
           break;
-        case "GameStarted":
+        }
+        case "GameStarted": {
           s.current_turn = event.current_player_id;
           break;
-        case "GameOver":
+        }
+        case "GameOver": {
           return { ...state, winnerId: event.winner_id };
+        }
+        case "PlayerJoined":
+        case "PlayerLeft":
+        case "TurnTimedOut":
+          // No state change needed
+          break;
         default:
           break;
       }
-      return { ...state, fullState: s };
+      return { fullState: s, winnerId: null };
     }
     default:
       return state;
   }
 }
-
-interface IGameContext {
-  state: GameState;
-  dispatch: Dispatch<Action>;
-}
-
-const GameContext = createContext<IGameContext | undefined>(undefined);
-
-export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(gameReducer, {
-    fullState: null,
-    turnSeconds: 60,
-    winnerId: null,
-  });
-  return (
-    <GameContext.Provider value={{ state, dispatch }}>
-      {children}
-    </GameContext.Provider>
-  );
-};
-
-export const useGameContext = () => {
-  const ctx = useContext(GameContext);
-  if (!ctx) throw new Error("useGameContext must be used inside GameProvider");
-  return ctx;
-};
