@@ -1,92 +1,103 @@
 import { type Action, type GameState } from "./gameContextCore";
+import type { FullState } from "../types";
 
 export function gameReducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "FULL_STATE":
       return { fullState: action.payload, winnerId: null };
+
     case "APPLY_EVENT": {
       if (!state.fullState) return state;
-      const s = structuredClone(state.fullState); // deep clone
-      const event = action.payload;
-      switch (event.type) {
-        case "CardDrawn": {
-          if (s.self.player_idx === event.player_id && event.card) {
-            s.self.hand.push(event.card);
+      const s: FullState = structuredClone(state.fullState);
+      const evt = action.payload;
+
+      switch (evt.type) {
+        // ── Drawing a card ──────────────────────────────────────────────
+        case "CardDrawn":
+          if (evt.card && s.your_board.player_idx === evt.player_id) {
+            s.your_board.hand.push(evt.card);
           }
           break;
-        }
+
+        // ── Playing a card onto a scale ─────────────────────────────────
         case "CardPlayedOnScale": {
-          // Remove card from hand (if the player is us, we know the card was in hand)
-          if (s.self.player_idx === event.player_id) {
-            // Remove the matching card from hand (simplified: find by suit/rank)
-            const idx = s.self.hand.findIndex(
-              c => c.suit === event.card.suit && c.rank === event.card.rank
+          const card = evt.card;
+          // Remove from own hand if we are the actor
+          if (s.your_board.player_idx === evt.player_id) {
+            const idx = s.your_board.hand.findIndex(
+              c => c.suit === card.suit && c.value === card.value
             );
-            if (idx !== -1) s.self.hand.splice(idx, 1);
-          } else {
-            // Opponent's card played: their hand count decreases
-            s.opponent.hand_count = Math.max(0, s.opponent.hand_count - 1);
+            if (idx !== -1) s.your_board.hand.splice(idx, 1);
           }
-          // Update the scale (shared scales array)
-          const scale = s.scales.find(sc => sc.id === event.scale_id);
+          // Find or create the scale
+          const scale = s.scales.find(sc => sc.id === evt.scale_id);
           if (scale) {
-            scale.cards.push(event.card);
-            scale.completed = event.completed;
+            scale.cards.push(card);
+            scale.completed = evt.completed;
           } else {
-            // New scale (OpenScale) – create it
             s.scales.push({
-              id: event.scale_id,
-              cards: [event.card],
-              completed: event.completed,
-              owner: event.player_id,
+              id: evt.scale_id,
+              cards: [card],
+              completed: evt.completed,
+              owner: evt.player_id,
             });
           }
           break;
         }
+
+        // ── Placing a card on a side stack ──────────────────────────────
         case "CardPlacedOnSide": {
-          // Place card on side stack (usually visible to both)
-          if (s.self.player_idx === event.player_id) {
-            // Remove from hand? (Depends on action: MoveToSide removes from hand, MovePersonalToSide removes from personal)
-            // We need to know the source; for simplicity, we'll trust the OpponentUpdate later to sync counts.
-            // For now, just update the side stack visually.
-          }
-          // Update the appropriate side stack
-          if (event.player_id === s.self.player_idx) {
-            s.self.side[event.stack].push(event.card);
+          const { player_id, card, stack } = evt;
+          // Add the card to the right player's side stack
+          if (s.your_board.player_idx === player_id) {
+            s.your_board.side[stack].push(card);
+            // Remove it from hand (most common for MoveToSide)
+            const handIdx = s.your_board.hand.findIndex(
+              c => c.suit === card.suit && c.value === card.value
+            );
+            if (handIdx !== -1) s.your_board.hand.splice(handIdx, 1);
+            // If it came from personal, the count will be corrected by an OpponentUpdate later,
+            // so we don't change personal.count here.
           } else {
-            // Opponent side will be updated by OpponentUpdate so skip here.
+            // Opponent side will be fully replaced by OpponentUpdate, so we skip.
           }
           break;
         }
+
+        // ── Opponent update (full side stacks, personal counts) ─────────
         case "OpponentUpdate": {
           s.opponent = {
             ...s.opponent,
-            personal_count: event.personal_count,
-            personal_top: event.personal_top,
-            side: event.side,
+            personal_count: evt.personal_count,
+            personal_top: evt.personal_top,
+            side: evt.side,
           };
           break;
         }
-        case "TurnEnded": {
-          s.current_turn = event.next_player_id;
+
+        // ── Turn handling ───────────────────────────────────────────────
+        case "TurnEnded":
+          s.your_turn = evt.next_player_id === s.your_board.player_idx;
           break;
-        }
-        case "GameStarted": {
-          s.current_turn = event.current_player_id;
+
+        case "GameStarted":
+          s.your_turn = evt.current_player_id === s.your_board.player_idx;
           break;
-        }
-        case "GameOver": {
-          return { ...state, winnerId: event.winner_id };
-        }
+
+        // ── Game over ───────────────────────────────────────────────────
+        case "GameOver":
+          return { ...state, winnerId: evt.winner_id };
+
+        // ── Events that don't change state ──────────────────────────────
         case "PlayerJoined":
         case "PlayerLeft":
         case "TurnTimedOut":
-          // No state change needed
           break;
+
         default:
           break;
       }
-      return { fullState: s, winnerId: null };
+      return { fullState: s, winnerId: state.winnerId };
     }
     default:
       return state;

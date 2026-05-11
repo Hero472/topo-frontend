@@ -25,6 +25,7 @@ export interface PlayerBoard {
 export interface OpponentBoard {
   player_idx: number;
   username: string;
+  hand_count: number;
   personal_count: number;
   personal_top: Card | null;
   side: Card[][];
@@ -37,6 +38,8 @@ export interface Scale {
   owner: number;
 }
 
+export type DeckColor = "red" | "blue" | "black" | "white"; 
+
 export interface FullState {
   type: "full_state";
   your_board: PlayerBoard;
@@ -44,6 +47,8 @@ export interface FullState {
   your_turn: boolean;
   scales: Scale[];
   turn_seconds_remaining: number;
+  dealer_top: DeckColor | null;
+  dealer_count: number;
 }
 
 // ── All server‑side events (matching your ServerEvent enum) ──
@@ -66,10 +71,10 @@ export interface GameMessage {
 }
 
 export type Action =
-  | "Draw"
-  | { OpenScale: { hand_idx: number } }
-  | { PlayHand:  { hand_idx: number; scale_idx: number } }
-  | { PlayPersonal: { scale_idx: number } }
-  | { PlaySide:  { stack: number; scale_idx: number } }
-  | { MoveToSide: { hand_idx: number; stack: number } }
-  | { MovePersonalToSide: { stack_idx: number } }
+  | { type: "draw" }
+  | { type: "openScale"; hand_idx: number }
+  | { type: "playHand"; hand_idx: number; scale_idx: number }
+  | { type: "playPersonal"; scale_idx: number }
+  | { type: "playSide"; stack: number; scale_idx: number }
+  | { type: "moveToSide"; hand_idx: number; stack: number }
+  | { type: "movePersonalToSide"; stack_idx: number };

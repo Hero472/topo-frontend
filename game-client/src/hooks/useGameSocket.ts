@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGameContext } from "./useGameContext";
-import type { FullState, GameMessage, Action } from "../types";
+import type { FullState, Action } from "../types";
 
 export function useGameSocket(room: string, playerId: number, username: string) {
   const { dispatch } = useGameContext();
@@ -16,17 +16,22 @@ export function useGameSocket(room: string, playerId: number, username: string) 
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        console.log('Received raw:', data);
-        if (data.self && data.opponent) {
+        console.log("Received raw:", data);
+
+        // Correct detection: use the "type" field
+        if (data.type === "full_state") {
           dispatch({ type: "FULL_STATE", payload: data as FullState });
-        } else if (data.event) {
-          dispatch({ type: "APPLY_EVENT", payload: (data as GameMessage).event });
+        } else {
+          // Every other message is a ServerEvent – dispatch it directly
+          dispatch({ type: "APPLY_EVENT", payload: data });
         }
       } catch {
         console.error("Invalid WS message", e.data);
       }
     };
+    
     ws.onerror = (err) => console.error("WS error", err);
+
     ws.onclose = (event) => {
       console.log("WS closed", event.code, event.reason);
     };

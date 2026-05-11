@@ -19,7 +19,16 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+    "strict": true
   },
   "include": ["src"]
 }

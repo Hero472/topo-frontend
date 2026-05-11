@@ -10,6 +10,7 @@ interface Props {
 
 export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
   const isSelfBoard = isSelf && "hand" in board;
+
   return (
     <div
       style={{
@@ -21,21 +22,42 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
       }}
     >
       <h3>{label}: {board.username} {isTurn && "⚡"}</h3>
+
+      {/* Hand – only visible for self */}
       <div>
         <strong>Hand:</strong>{" "}
         {isSelfBoard
-          ? (board as PlayerBoard).hand.map((c, i) => <CardView key={i} card={c} />)
-          : (board as OpponentBoard).hand_count}
+          ? board.hand.map((c, i) => <CardView key={i} card={c} />)
+          : `???`}
       </div>
+
+      {/* Personal – different for self vs opponent, JSX-safe */}
       <div>
         <strong>Personal:</strong>{" "}
-        {isSelfBoard
-          ? (board as PlayerBoard).personal.map((c, i) => <CardView key={i} card={c} />)
-          : `${(board as OpponentBoard).personal_count} card(s)`}
-        {!isSelfBoard && (board as OpponentBoard).personal_top && (
-          <span style={{ marginLeft: 6 }}>(top: <CardView card={(board as OpponentBoard).personal_top!} />)</span>
+        {isSelfBoard ? (
+          <>
+            {board.personal.count} cards
+            {board.personal.top && (
+              <>
+                {" "}
+                (top: <CardView card={board.personal.top} />)
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {(board as OpponentBoard).personal_count} card(s)
+            {(board as OpponentBoard).personal_top && (
+              <>
+                {" "}
+                (top: <CardView card={(board as OpponentBoard).personal_top!} />)
+              </>
+            )}
+          </>
         )}
       </div>
+
+      {/* Side stacks – same for both */}
       <div>
         <strong>Side:</strong>
         {board.side.map((stack, i) => (
