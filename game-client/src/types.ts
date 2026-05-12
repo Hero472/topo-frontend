@@ -53,16 +53,33 @@ export interface FullState {
 
 // ── All server‑side events (matching your ServerEvent enum) ──
 export type ServerEvent =
-  | { type: "CardDrawn"; player_id: number; card: Card | null }
-  | { type: "CardPlayedOnScale"; player_id: number; card: Card; scale_id: number; completed: boolean }
-  | { type: "CardPlacedOnSide"; player_id: number; card: Card; stack: number }
-  | { type: "OpponentUpdate"; player_id: number; personal_count: number; personal_top: Card | null; side: Card[][] }
-  | { type: "TurnEnded"; next_player_id: number; turn_seconds: number }
-  | { type: "TurnTimedOut"; player_id: number; next_player_id: number; turn_seconds: number }
-  | { type: "PlayerJoined"; player_id: number; username: string }
-  | { type: "PlayerLeft"; player_id: number }
-  | { type: "GameStarted"; current_player_id: number; turn_seconds: number }
-  | { type: "GameOver"; winner_id: number; reason: string };
+  // Lobby
+  | { type: "player_joined"; player_id: number; username: string }
+  | { type: "player_left"; player_id: number }
+
+  // Game lifecycle
+  | { type: "game_started"; current_player_id: number; turn_seconds: number }
+
+  // Private: drawn card
+  | { type: "card_drawn"; player_id: number; card: Card | null }
+
+  // Public: card placed on a scale
+  | { type: "card_played_on_scale"; player_id: number; card: Card; scale_id: number; completed: boolean }
+
+  // Public: card placed on a side stack
+  | { type: "card_placed_on_side"; player_id: number; card: Card; stack: number }
+
+  // Public: scale completed
+  | { type: "scale_completed"; scale_id: number; by_player: number }
+
+  // Private: opponent visible state change
+  | { type: "opponent_update"; player_idx: number; personal_count: number; personal_top: Card | null; side: [Card[], Card[], Card[], Card[]] }
+
+  // Turn ended (unified – cover normal end and timeout)
+  | { type: "turn_ended"; next_player_id: number; turn_seconds: number; timed_out_player_id: number | null }
+
+  // Game over
+  | { type: "game_over"; winner_id: number; reason: string };
 
 // ── GameMessage wrapper ──
 export interface GameMessage {

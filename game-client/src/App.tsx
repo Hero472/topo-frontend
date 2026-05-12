@@ -20,7 +20,7 @@ function TurnTimer({ initialSeconds }: { initialSeconds: number }) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []); // runs only on mount (which is controlled by the key in the parent)
+  }, []); // runs once per mount – the parent resets it with the key
 
   return <span>⏳ Your turn – {timeLeft}s left</span>;
 }
@@ -31,47 +31,53 @@ function Game() {
   const playerId = Number(params.get("player_id")) || 1;
   const username = params.get("username") || "Anonymous";
 
-  const { sendAction } = useGameSocket(room, playerId, username);
+  // Destructure the new status and error values from useGameSocket
+  const { sendAction, status, error } = useGameSocket(room, playerId, username);
   const { state } = useGameContext();
   const { fullState, winnerId } = state;
 
-  // ───── Turn timer ─────
-  const [timeLeft, setTimeLeft] = useState(0);
-
+  // Debug log – only once when fullState changes
   useEffect(() => {
-    console.log('🎮 FullState updated:', state.fullState);
-  }, [state.fullState]);
+    if (fullState) console.log('🎮 FullState updated:', fullState);
+  }, [fullState]);
 
-  // Countdown effect
-  useEffect(() => {
-    if (!fullState || !fullState.your_turn || timeLeft <= 0) return;
+  // ───── Connection & Error display ─────
+  const connectionInfo = (
+    <div style={{ textAlign: "center", padding: 8, fontSize: "0.9em" }}>
+      {status === "connecting" && <>🔄 Connecting to server…</>}
+      {status === "open" && <>🟢 Connected</>}
+      {status === "closed" && <>🔴 Disconnected (reconnecting…)</>}
+      {error && <span style={{ color: "red", marginLeft: 10 }}>⚠️ {error}</span>}
+    </div>
+  );
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
+  if (!fullState)
+    return (
+      <>
+        {connectionInfo}
+        <div style={{ textAlign: "center", marginTop: 50 }}>Loading game state…</div>
+      </>
+    );
 
-    return () => clearInterval(interval);
-  }, [fullState?.your_turn, timeLeft]);
-
-  // ───── Render ─────
-  useEffect(() => {
-    console.log('🎮 FullState updated:', state.fullState);
-  }, [state.fullState]);
-
-  if (!fullState) return <div>🔄 Connecting…</div>;
   if (winnerId !== null)
     return (
-      <div style={{ textAlign: "center", fontSize: "2em", marginTop: 50 }}>
-        🎉 Player {winnerId} wins!
-      </div>
+      <>
+        {connectionInfo}
+        <div style={{ textAlign: "center", fontSize: "2em", marginTop: 50 }}>
+          🎉 Player {winnerId} wins!
+        </div>
+      </>
     );
 
   const isMyTurn = fullState.your_turn;
 
+  // Key forces TurnTimer to remount (and reset) whenever a new turn starts
   const turnKey = `${fullState.your_turn}_${fullState.turn_seconds_remaining}`;
 
   return (
     <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+      {connectionInfo}
+
       <div style={{ textAlign: "center", fontSize: "1.5em", fontWeight: "bold" }}>
         {isMyTurn ? (
           <TurnTimer key={turnKey} initialSeconds={fullState.turn_seconds_remaining} />
