@@ -5,7 +5,7 @@ import ActionPanel from "./components/ActionPanel";
 import { useGameContext } from "./hooks/useGameContext";
 import { useEffect, useState } from "react";
 
-function TurnTimer({ initialSeconds }: { initialSeconds: number }) {
+function TurnTimer({ initialSeconds }: Readonly<{ initialSeconds: number }>) {
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
 
   useEffect(() => {

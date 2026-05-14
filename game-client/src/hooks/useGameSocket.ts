@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameContext } from "./useGameContext";
-import type { FullState, Action } from "../types";
+import type { Action } from "../types";
 
 type ConnectionStatus = "connecting" | "open" | "closed" | "error";
 
@@ -15,7 +15,7 @@ export function useGameSocket(room: string, playerId: number, username: string) 
 
   // Function to send an action – stable reference
   const sendAction = useCallback((action: Action) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(action));
     } else {
       console.warn("📤 Cannot send action – socket not open");
