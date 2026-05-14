@@ -1,92 +1,87 @@
-import { GameProvider } from "./context/GameProvider";
-import { useGameSocket } from "./hooks/useGameSocket";
-import Board from "./components/Board";
-import ActionPanel from "./components/ActionPanel";
-import { useGameContext } from "./hooks/useGameContext";
-import { useEffect, useState } from "react";
-
-function TurnTimer({ initialSeconds }: Readonly<{ initialSeconds: number }>) {
-  const [timeLeft, setTimeLeft] = useState(initialSeconds);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []); // runs once per mount – the parent resets it with the key
-
-  return <span>⏳ Your turn – {timeLeft}s left</span>;
-}
+import { useEffect } from 'react';
+import { useGameStore } from './store/useGameStore';
+import { useGameSocket } from './hooks/useGameSocket';
+import Board from './components/Board';
+import ActionPanel from './components/ActionPanel';
+import TurnTimer from './components/TurnTimer';
 
 function Game() {
   const params = new URLSearchParams(globalThis.location.search);
-  const room = params.get("room") || "test";
-  const playerId = Number(params.get("player_id")) || 1;
-  const username = params.get("username") || "Anonymous";
+  const room = params.get('room') || 'test';
+  const playerId = Number(params.get('player_id')) || 1;
+  const username = params.get('username') || 'Anonymous';
 
-  // Destructure the new status and error values from useGameSocket
   const { sendAction, status, error } = useGameSocket(room, playerId, username);
-  const { state } = useGameContext();
-  const { fullState, winnerId } = state;
 
-  // Debug log – only once when fullState changes
+  // Read only the parts we need from the store
+  const fullState = useGameStore((s) => s.fullState);
+  const winnerId = useGameStore((s) => s.winnerId);
+  const timeoutMessage = useGameStore((s) => s.timeoutMessage);
+  const clearTimeoutMessage = useGameStore((s) => s.clearTimeoutMessage);
+
+  // Clear timeout message after 5 seconds
   useEffect(() => {
-    if (fullState) console.log('🎮 FullState updated:', fullState);
-  }, [fullState]);
+    if (timeoutMessage) {
+      const timer = setTimeout(() => clearTimeoutMessage(), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [timeoutMessage, clearTimeoutMessage]);
 
-  // ───── Connection & Error display ─────
+  // Connection info banner
   const connectionInfo = (
-    <div style={{ textAlign: "center", padding: 8, fontSize: "0.9em" }}>
-      {status === "connecting" && <>🔄 Connecting to server…</>}
-      {status === "open" && <>🟢 Connected</>}
-      {status === "closed" && <>🔴 Disconnected (reconnecting…)</>}
-      {error && <span style={{ color: "red", marginLeft: 10 }}>⚠️ {error}</span>}
+    <div style={{ textAlign: 'center', padding: 8, fontSize: '0.9em' }}>
+      {status === 'connecting' && '🔄 Connecting to server…'}
+      {status === 'open' && '🟢 Connected'}
+      {status === 'closed' && '🔴 Disconnected (reconnecting…)'}
+      {error && <span style={{ color: 'red', marginLeft: 10 }}>⚠️ {error}</span>}
     </div>
   );
 
-  if (!fullState)
+  if (!fullState) {
     return (
       <>
         {connectionInfo}
-        <div style={{ textAlign: "center", marginTop: 50 }}>Loading game state…</div>
+        <div style={{ textAlign: 'center', marginTop: 50 }}>Loading game state…</div>
       </>
     );
+  }
 
-  if (winnerId !== null)
+  if (winnerId !== null) {
     return (
       <>
         {connectionInfo}
-        <div style={{ textAlign: "center", fontSize: "2em", marginTop: 50 }}>
+        <div style={{ textAlign: 'center', fontSize: '2em', marginTop: 50 }}>
           🎉 Player {winnerId} wins!
         </div>
       </>
     );
+  }
 
   const isMyTurn = fullState.your_turn;
-
-  // Key forces TurnTimer to remount (and reset) whenever a new turn starts
   const turnKey = `${fullState.your_turn}_${fullState.turn_seconds_remaining}`;
 
   return (
-    <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
       {connectionInfo}
 
-      <div style={{ textAlign: "center", fontSize: "1.5em", fontWeight: "bold" }}>
+      {timeoutMessage && (
+        <div style={{
+          background: '#ffc107', color: '#000', padding: '8px 16px',
+          borderRadius: 4, textAlign: 'center', fontWeight: 'bold',
+        }}>
+          {timeoutMessage}
+        </div>
+      )}
+
+      <div style={{ textAlign: 'center', fontSize: '1.5em', fontWeight: 'bold' }}>
         {isMyTurn ? (
           <TurnTimer key={turnKey} initialSeconds={fullState.turn_seconds_remaining} />
         ) : (
-          <>🕒 Waiting for opponent…</>
+          '🕒 Waiting for opponent…'
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 40 }}>
+      <div style={{ display: 'flex', gap: 40 }}>
         <Board board={fullState} playerId={playerId} />
         <ActionPanel
           sendAction={sendAction}
@@ -102,27 +97,19 @@ function Game() {
 }
 
 function JoinScreen() {
-  const room = "myroom";
+  const room = 'myroom';
   return (
-    <div style={{ textAlign: "center", marginTop: 100 }}>
+    <div style={{ textAlign: 'center', marginTop: 100 }}>
       <h2>Join Game</h2>
-      <a href={`?room=${room}&player_id=1&username=Alice`}>
-        Join as Alice
-      </a>
+      <a href={`?room=${room}&player_id=1&username=Alice`}>Join as Alice</a>
       <br />
-      <a href={`?room=${room}&player_id=2&username=Bob`}>
-        Join as Bob
-      </a>
+      <a href={`?room=${room}&player_id=2&username=Bob`}>Join as Bob</a>
     </div>
   );
 }
 
 export default function App() {
   const params = new URLSearchParams(globalThis.location.search);
-  const hasParams = params.has("player_id");
-
-  if (!hasParams) {
-    return <JoinScreen />;
-  }
-  return <GameProvider><Game/></GameProvider>;
+  if (!params.has('player_id')) return <JoinScreen />;
+  return <Game />;
 }

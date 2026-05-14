@@ -94,4 +94,5 @@ export type Action =
   | { type: "playPersonal"; scale_idx: number }
   | { type: "playSide"; stack: number; scale_idx: number }
   | { type: "moveToSide"; hand_idx: number; stack: number }
-  | { type: "movePersonalToSide"; stack_idx: number };
+  | { type: "movePersonalToSide"; stack_idx: number }
+  | { type: "CLEAR_TIMEOUT_MESSAGE" };
