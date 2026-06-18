@@ -1,4 +1,4 @@
-import type { PlayerBoard, OpponentBoard } from "../types";
+import type { PlayerBoard, OpponentBoard } from "../types/types";
 import CardView from "./CardView";
 
 interface Props {
@@ -21,7 +21,9 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
         background: isTurn ? "#e0ffe0" : "#fafafa",
       }}
     >
-      <h3>{label}: {board.username} {isTurn && "⚡"}</h3>
+      <h3>
+        {label}: {board.username} {isTurn && "⚡"}
+      </h3>
 
       {/* Hand – only visible for self */}
       <div>
@@ -50,7 +52,8 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
             {(board as OpponentBoard).personal_top && (
               <>
                 {" "}
-                (top: <CardView card={(board as OpponentBoard).personal_top!} />)
+                (top: <CardView card={(board as OpponentBoard).personal_top!} />
+                )
               </>
             )}
           </>
@@ -62,7 +65,10 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
         <strong>Side:</strong>
         {board.side.map((stack, i) => (
           <div key={i} style={{ marginLeft: 10 }}>
-            Stack {i}: {stack.map((c, j) => <CardView key={j} card={c} />)}
+            Stack {i}:{" "}
+            {stack.map((c, j) => (
+              <CardView key={j} card={c} />
+            ))}
           </div>
         ))}
       </div>

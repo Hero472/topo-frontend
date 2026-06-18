@@ -1,5 +1,5 @@
 import { useGameStore } from "../store/useGameStore";
-import type { Action, Card, PersonalPile, Scale } from "../types";
+import type { Action, Card, PersonalPile, Scale } from "../types/types";
 import React from "react";
 
 interface Props {
@@ -11,8 +11,13 @@ interface Props {
   personal: PersonalPile;
 }
 
-export default function ActionPanel({ sendAction, isMyTurn, hand, scales, personal }: Readonly<Props>) {
-
+export default function ActionPanel({
+  sendAction,
+  isMyTurn,
+  hand,
+  scales,
+  personal,
+}: Readonly<Props>) {
   const canDraw = useGameStore((s) => s.canDraw);
 
   const [handIdx, setHandIdx] = React.useState(0);
@@ -20,9 +25,11 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
   const [stackIdx, setStackIdx] = React.useState(0);
 
   // Helper: get safe index for hand (clamped to valid range)
-  const safeHandIdx = hand.length === 0 ? 0 : Math.min(handIdx, hand.length - 1);
+  const safeHandIdx =
+    hand.length === 0 ? 0 : Math.min(handIdx, hand.length - 1);
   // Helper: get safe index for scale
-  const safeScaleIdx = scales.length === 0 ? 0 : Math.min(scaleIdx, scales.length - 1);
+  const safeScaleIdx =
+    scales.length === 0 ? 0 : Math.min(scaleIdx, scales.length - 1);
   // Stack index is already safe (0 or 1)
   const safeStackIdx = Math.min(1, Math.max(0, stackIdx));
 
@@ -45,7 +52,12 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
     setStackIdx(Math.min(1, Math.max(0, value)));
   };
 
-  if (!isMyTurn) return <div style={{ padding: 20, textAlign: "center" }}>🕒 Waiting for opponent…</div>;
+  if (!isMyTurn)
+    return (
+      <div style={{ padding: 20, textAlign: "center" }}>
+        🕒 Waiting for opponent…
+      </div>
+    );
 
   const buttonStyle = {
     padding: "6px 12px",
@@ -86,7 +98,14 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
   };
 
   return (
-    <div style={{ flex: 1, borderLeft: "1px solid #ccc", padding: 20, overflowY: "auto" }}>
+    <div
+      style={{
+        flex: 1,
+        borderLeft: "1px solid #ccc",
+        padding: 20,
+        overflowY: "auto",
+      }}
+    >
       <h2>🎮 Your turn</h2>
 
       {/* Draw action */}
@@ -114,11 +133,15 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
             disabled={!hasHand}
           />
           <span style={{ marginLeft: 8 }}>
-            {hasHand ? `${hand[safeHandIdx].value}${hand[safeHandIdx].suit}` : "—"}
+            {hasHand
+              ? `${hand[safeHandIdx].value}${hand[safeHandIdx].suit}`
+              : "—"}
           </span>
           <button
             style={hasHand ? buttonStyle : disabledButtonStyle}
-            onClick={() => sendAction({ type: "openScale", hand_idx: safeHandIdx })}
+            onClick={() =>
+              sendAction({ type: "openScale", hand_idx: safeHandIdx })
+            }
             disabled={!hasHand}
           >
             Open Scale
@@ -141,7 +164,9 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
             disabled={!hasHand}
           />
           <span style={{ marginLeft: 8 }}>
-            {hasHand ? `${hand[safeHandIdx].value}${hand[safeHandIdx].suit}` : "—"}
+            {hasHand
+              ? `${hand[safeHandIdx].value}${hand[safeHandIdx].suit}`
+              : "—"}
           </span>
         </div>
         <div>
@@ -158,7 +183,11 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
           <button
             style={hasHand && hasScales ? buttonStyle : disabledButtonStyle}
             onClick={() =>
-              sendAction({ type: "playHand", hand_idx: safeHandIdx, scale_idx: safeScaleIdx })
+              sendAction({
+                type: "playHand",
+                hand_idx: safeHandIdx,
+                scale_idx: safeScaleIdx,
+              })
             }
             disabled={!hasHand || !hasScales}
           >
@@ -183,12 +212,16 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
           />
           <button
             style={hasPersonal && hasScales ? buttonStyle : disabledButtonStyle}
-            onClick={() => sendAction({ type: "playPersonal", scale_idx: safeScaleIdx })}
+            onClick={() =>
+              sendAction({ type: "playPersonal", scale_idx: safeScaleIdx })
+            }
             disabled={!hasPersonal || !hasScales}
           >
             Play Personal
           </button>
-          <div style={{ fontSize: 12, marginTop: 4 }}>Personal pile size: {personal.count}</div>
+          <div style={{ fontSize: 12, marginTop: 4 }}>
+            Personal pile size: {personal.count}
+          </div>
         </div>
       </div>
 
@@ -220,7 +253,11 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
           <button
             style={hasScales ? buttonStyle : disabledButtonStyle}
             onClick={() =>
-              sendAction({ type: "playSide", stack: safeStackIdx, scale_idx: safeScaleIdx })
+              sendAction({
+                type: "playSide",
+                stack_idx: safeStackIdx,
+                scale_idx: safeScaleIdx,
+              })
             }
             disabled={!hasScales}
           >
@@ -244,7 +281,9 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
             disabled={!hasHand}
           />
           <span style={{ marginLeft: 8 }}>
-            {hasHand ? `${hand[safeHandIdx].value}${hand[safeHandIdx].suit}` : "—"}
+            {hasHand
+              ? `${hand[safeHandIdx].value}${hand[safeHandIdx].suit}`
+              : "—"}
           </span>
         </div>
         <div>
@@ -260,7 +299,11 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
           <button
             style={hasHand ? buttonStyle : disabledButtonStyle}
             onClick={() =>
-              sendAction({ type: "moveToSide", hand_idx: safeHandIdx, stack: safeStackIdx })
+              sendAction({
+                type: "moveToSide",
+                hand_idx: safeHandIdx,
+                stack_idx: safeStackIdx,
+              })
             }
             disabled={!hasHand}
           >
@@ -285,13 +328,18 @@ export default function ActionPanel({ sendAction, isMyTurn, hand, scales, person
           <button
             style={hasPersonal ? buttonStyle : disabledButtonStyle}
             onClick={() =>
-              sendAction({ type: "movePersonalToSide", stack_idx: safeStackIdx })
+              sendAction({
+                type: "movePersonalToSide",
+                stack_idx: safeStackIdx,
+              })
             }
             disabled={!hasPersonal}
           >
             Move Personal → Side
           </button>
-          <div style={{ fontSize: 12, marginTop: 4 }}>Personal pile size: {personal.count}</div>
+          <div style={{ fontSize: 12, marginTop: 4 }}>
+            Personal pile size: {personal.count}
+          </div>
         </div>
       </div>
     </div>

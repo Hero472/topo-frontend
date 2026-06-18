@@ -8,12 +8,9 @@ import TurnTimer from './components/TurnTimer';
 function Game() {
   const params = new URLSearchParams(globalThis.location.search);
   const room = params.get('room') || 'test';
-  const playerId = Number(params.get('player_id')) || 1;
   const username = params.get('username') || 'Anonymous';
+  const { sendAction, status, error } = useGameSocket(room, username);
 
-  const { sendAction, status, error } = useGameSocket(room, playerId, username);
-
-  // Read only the parts we need from the store
   const fullState = useGameStore((s) => s.fullState);
   const winnerId = useGameStore((s) => s.winnerId);
   const timeoutMessage = useGameStore((s) => s.timeoutMessage);
@@ -82,7 +79,7 @@ function Game() {
       </div>
 
       <div style={{ display: 'flex', gap: 40 }}>
-        <Board board={fullState} playerId={playerId} />
+        <Board board={fullState} />
         <ActionPanel
           sendAction={sendAction}
           isMyTurn={isMyTurn}
@@ -101,9 +98,9 @@ function JoinScreen() {
   return (
     <div style={{ textAlign: 'center', marginTop: 100 }}>
       <h2>Join Game</h2>
-      <a href={`?room=${room}&player_id=1&username=Alice`}>Join as Alice</a>
+      <a href={`?room=${room}&username=Alice`}>Join as Alice</a>
       <br />
-      <a href={`?room=${room}&player_id=2&username=Bob`}>Join as Bob</a>
+      <a href={`?room=${room}&username=Bob`}>Join as Bob</a>
     </div>
   );
 }

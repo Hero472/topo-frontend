@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import type { FullState, ServerEvent } from '../types';
+import { create } from "zustand";
+import type { FullState, ServerEvent } from "../types/types";
 
 interface GameStore {
   fullState: FullState | null;
-  winnerId: number | null;
+  winnerId: string | null;
   timeoutMessage: string | null;
   canDraw: boolean;
 
@@ -11,7 +11,6 @@ interface GameStore {
   applyEvent: (payload: ServerEvent) => void;
   clearTimeoutMessage: () => void;
 }
-
 export const useGameStore = create<GameStore>((set, get) => ({
   fullState: null,
   winnerId: null,
@@ -30,52 +29,65 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     if (!state.fullState) return;
 
-    // Deep clone the full state (only this player's view)
     const s: FullState = structuredClone(state.fullState);
-
     let newCanDraw = state.canDraw;
 
     switch (evt.type) {
-      case 'card_drawn': {
-        if (evt.card && s.your_board.player_idx === evt.player_id) {
-          s.your_board.hand.push(evt.card);
+      case "card_drawn": {
+        const { player_idx, card } = evt;
+
+        if (evt.card && s.your_board.player_idx === player_idx) {
+          if (card) {
+            s.your_board.hand.push(card);
+            newCanDraw = false;
+          }
+        }
+        break;
+      }
+
+      case "card_played_on_scale": {
+        const { player_idx, card, scale_idx } = evt;
+
+        if (s.your_board.player_idx === player_idx) {
+          s.your_board.hand = s.your_board.hand.filter(
+            (c) =>
+              (
+                c.suit === card.suit &&
+                c.value === card.value &&
+                c.deck === card.deck
+              ),
+          );
+          newCanDraw = false;
+        }
+
+        const scale = s.scales.find((sc) => sc.scale_idx === scale_idx);
+        if (scale) {
+          scale.cards.push(card);
+        } else {
+          s.scales.push({ scale_idx: scale_idx, cards: [card] });
+        }
+        break;
+      }
+
+      case "card_placed_on_side": {
+        const { player_idx, card, stack_idx } = evt;
+
+        if (s.your_board.player_idx === player_idx) {
+          s.your_board.side[stack_idx].push(card);
+          s.your_board.hand = s.your_board.hand.filter(
+            (c) =>
+              !(
+                c.suit === card.suit &&
+                c.value === card.value &&
+                c.deck === card.deck
+              ),
+          );
           newCanDraw = false;
         }
         break;
       }
 
-      case 'card_played_on_scale': {
-        const { player_id, card, scale_id, completed } = evt;
-        if (s.your_board.player_idx === player_id) {
-          const idx = s.your_board.hand.findIndex(
-            (c) => c.suit === card.suit && c.value === card.value
-          );
-          if (idx !== -1) s.your_board.hand.splice(idx, 1);
-        }
-        const scale = s.scales.find((sc) => sc.id === scale_id);
-        if (scale) {
-          scale.cards.push(card);
-          scale.completed = completed;
-        } else {
-          s.scales.push({ id: scale_id, cards: [card], completed, owner: player_id });
-        }
-        break;
-      }
-
-      case 'card_placed_on_side': {
-        const { player_id, card, stack } = evt;
-        if (s.your_board.player_idx === player_id) {
-          s.your_board.side[stack].push(card);
-          const idx = s.your_board.hand.findIndex(
-            (c) => c.suit === card.suit && c.value === card.value
-          );
-          if (idx !== -1) s.your_board.hand.splice(idx, 1);
-        }
-        // Opponent side stacks are replaced entirely by OpponentUpdate
-        break;
-      }
-
-      case 'opponent_update': {
+      case "opponent_update": {
         s.opponent = {
           ...s.opponent,
           personal_count: evt.personal_count,
@@ -85,55 +97,62 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
       }
 
-      case 'scale_completed': {
-        const scale = s.scales.find((sc) => sc.id === evt.scale_id);
+      case "scale_completed": {
+        const scale = s.scales.find((sc) => sc.scale_idx === evt.scale_idx);
         if (scale) scale.completed = true;
         break;
       }
 
-      case 'turn_ended': {
-        s.your_turn = evt.next_player_id === s.your_board.player_idx;
+      case "turn_ended": {
+        s.your_turn = evt.next_player_idx === s.your_board.player_idx;
         s.turn_seconds_remaining = evt.turn_seconds;
+        newCanDraw = s.your_turn;
 
         let timeoutMessage: string | null = null;
         if (evt.timed_out_player_id != null) {
           timeoutMessage =
-            evt.timed_out_player_id === s.your_board.player_idx
-              ? 'You ran out of time!'
-              : 'Your opponent ran out of time!';
+            evt.timed_out_player_idx === s.your_board.player_idx
+              ? "You ran out of time!"
+              : "Your opponent ran out of time!";
         }
+
         set({
           fullState: s,
-          winnerId: state.winnerId,
+          winnerIdx: state.winnerIdx,
           timeoutMessage,
           canDraw: newCanDraw,
         });
         return;
       }
 
-      case 'game_started': {
-        s.your_turn = evt.current_player_id === s.your_board.player_idx;
+      case "game_started": {
+        s.your_turn = evt.current_player_idx === s.your_board.player_idx;
         s.turn_seconds_remaining = evt.turn_seconds;
-        newCanDraw = s.your_turn; 
+        newCanDraw = s.your_turn;
         break;
       }
 
-      case 'game_over': {
-        set({ fullState: s, winnerId: evt.winner_id, timeoutMessage: null, canDraw: false });
+      case "game_over": {
+        set({
+          fullState: s,
+          winnerIdx: evt.winner_idx,
+          timeoutMessage: null,
+          canDraw: false,
+        });
         return;
       }
 
-      case 'player_joined':
-      case 'player_left':
+      case "player_joined":
+      case "player_left":
         break;
 
       default:
-        console.warn('Unhandled event:', evt);
+        console.warn("Unhandled event:", evt);
     }
 
     set({
       fullState: s,
-      winnerId: state.winnerId,
+      winnerIdx: state.winnerIdx,
       timeoutMessage: state.timeoutMessage,
       canDraw: newCanDraw,
     });
