@@ -160,9 +160,9 @@ export type ServerEvent =
 
 export type Action =
   | { type: "draw" }
-  | { type: "openScale"; hand_idx: number }
-  | { type: "playHand"; hand_idx: number; scale_idx: number }
-  | { type: "playPersonal"; scale_idx: number }
-  | { type: "playSide"; stack_idx: number; scale_idx: number }
-  | { type: "moveToSide"; hand_idx: number; stack_idx: number }
-  | { type: "movePersonalToSide"; stack_idx: number }
+  | { type: "open_scale"; hand_idx: number }
+  | { type: "play_hand"; hand_idx: number; scale_idx: number }
+  | { type: "play_personal"; scale_idx: number }
+  | { type: "play_side"; stack_idx: number; scale_idx: number }
+  | { type: "move_to_side"; hand_idx: number; stack_idx: number }
+  | { type: "move_personal_to_side"; stack_idx: number }

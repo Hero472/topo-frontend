@@ -1,54 +1,56 @@
-import type { Card } from "../types/types";
+import type { Card, DeckColor } from "../types/types";
 
-const suitMap: Record<string, { symbol: string; color: string }> = {
-  hearts: { symbol: "♥", color: "#c00" },
+const suitInfo: Record<Card["suit"], { symbol: string; color: string }> = {
+  hearts:   { symbol: "♥", color: "#c00" },
   diamonds: { symbol: "♦", color: "#c00" },
-  clubs: { symbol: "♣", color: "#000" },
-  spades: { symbol: "♠", color: "#000" },
+  clubs:    { symbol: "♣", color: "#111" },
+  spades:   { symbol: "♠", color: "#111" },
 };
 
-export default function CardView({ card }: Readonly<{ card: Card }>) {
-  const info = suitMap[card.suit.toLowerCase()] ?? {
-    symbol: "?",
-    color: "#000",
-  };
+const deckBackgrounds: Record<DeckColor, string> = {
+  red:   "#ffe0e0",
+  blue:  "#e0f0ff",
+  black: "#e0e0e0",
+  white: "#ffffff",
+};
 
-  let displayValue: string | number;
-  switch (card.value) {
-    case 1:
-      displayValue = "A";
-      break;
-    case 11:
-      displayValue = "J";
-      break;
-    case 12:
-      displayValue = "Q";
-      break;
-    case 13:
-      displayValue = "K";
-      break;
-    default:
-      displayValue = card.value;
-  }
+function getDisplayValue(value: number): string {
+  if (value === 1)  return "A";
+  if (value === 11) return "J";
+  if (value === 12) return "Q";
+  if (value === 13) return "K";
+  return value.toString();
+}
+
+export default function CardView({ card }: Readonly<{ card: Card }>) {
+  const suit = suitInfo[card.suit];
+  const bg = deckBackgrounds[card.deck] || "#f8f8f8";
 
   return (
     <span
       style={{
-        color: info.color,
-        fontWeight: "bold",
-        marginRight: 4,
-        background:
-          card.deck === "blue"
-            ? "#e0f0ff"
-            : card.deck === "red"
-              ? "#ffe0e0"
-              : "transparent",
-        padding: "0 2px",
-        borderRadius: 3,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: "2.2em",
+        height: "3em",
+        padding: "0 6px",
+        margin: "2px",
+        backgroundColor: bg,
+        border: "1px solid rgba(0,0,0,0.2)",
+        borderRadius: 6,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        fontSize: "1.1rem",
+        fontWeight: 600,
+        color: suit.color,
+        cursor: "default",
+        userSelect: "none",
+        transition: "transform 0.1s ease, box-shadow 0.1s ease",
       }}
     >
-      {displayValue}
-      {info.symbol}
+      <span>{getDisplayValue(card.value)}</span>
+      <span style={{ marginLeft: 2 }}>{suit.symbol}</span>
     </span>
   );
 }

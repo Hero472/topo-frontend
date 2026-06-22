@@ -2,14 +2,19 @@ import type { PlayerBoard, OpponentBoard } from "../types/types";
 import CardView from "./CardView";
 
 interface Props {
-  label: string;
+  label: string;   // "You" or "Opponent"
   board: PlayerBoard | OpponentBoard;
-  isSelf: boolean;
+  isSelf: boolean; // derived from the board type, but kept for semantic clarity
   isTurn: boolean;
 }
 
-export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
-  const isSelfBoard = isSelf && "hand" in board;
+// Type guard to narrow the union
+function isPlayerBoard(board: PlayerBoard | OpponentBoard): board is PlayerBoard {
+  return "hand" in board;
+}
+
+export default function PlayerArea({ label, board, isTurn }: Readonly<Props>) {
+  const playerBoard = isPlayerBoard(board);
 
   return (
     <div
@@ -22,21 +27,22 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
       }}
     >
       <h3>
-        {label}: {board.username} {isTurn && "⚡"}
+        {label}
+        {playerBoard ? null : <>: {board.username}</>} {isTurn && "⚡"}
       </h3>
 
-      {/* Hand – only visible for self */}
+      {/* Hand – only visible for the local player */}
       <div>
         <strong>Hand:</strong>{" "}
-        {isSelfBoard
+        {playerBoard
           ? board.hand.map((c, i) => <CardView key={i} card={c} />)
-          : `???`}
+          : "???"}
       </div>
 
-      {/* Personal – different for self vs opponent, JSX-safe */}
+      {/* Personal pile */}
       <div>
         <strong>Personal:</strong>{" "}
-        {isSelfBoard ? (
+        {playerBoard ? (
           <>
             {board.personal.count} cards
             {board.personal.top && (
@@ -48,19 +54,18 @@ export default function PlayerArea({ label, board, isSelf, isTurn }: Props) {
           </>
         ) : (
           <>
-            {(board as OpponentBoard).personal_count} card(s)
-            {(board as OpponentBoard).personal_top && (
+            {board.personal_count} card(s)
+            {board.personal_top && (
               <>
                 {" "}
-                (top: <CardView card={(board as OpponentBoard).personal_top!} />
-                )
+                (top: <CardView card={board.personal_top} />)
               </>
             )}
           </>
         )}
       </div>
 
-      {/* Side stacks – same for both */}
+      {/* Side stacks – identical for both players */}
       <div>
         <strong>Side:</strong>
         {board.side.map((stack, i) => (
