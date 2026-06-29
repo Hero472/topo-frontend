@@ -22,276 +22,326 @@ export default function ActionPanel({
 }: Readonly<Props>) {
   const canDraw = useGameStore((s) => s.canDraw);
 
-  // ── selection state ──
-  const [selHandIdx, setSelHandIdx] = useState<number | null>(null);
-  const [selScaleIdx, setSelScaleIdx] = useState<number | null>(null);
-  const [selStackIdx, setSelStackIdx] = useState<number | null>(null);
+  // Core selection state
+  const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
+  const [targetScaleIdx, setTargetScaleIdx] = useState<number | null>(null);
+  const [targetSideIdx, setTargetSideIdx] = useState<number | null>(null);
 
-  // clear selections when turn or state changes (optional, but tidy)
-  // we can keep them between actions; the user might want to reuse
-  // however, we'll just let them click again
+  // Helper to reset selections after sending an action
+  const resetSelections = () => {
+    setSelectedHandIdx(null);
+    setTargetScaleIdx(null);
+    setTargetSideIdx(null);
+  };
+
+  // Action dispatchers that reset afterwards
+  const act = (action: Action) => {
+    sendAction(action);
+    resetSelections();
+  };
 
   if (!isMyTurn) {
     return (
-      <div style={{ padding: 20, textAlign: "center", fontSize: "1.2em" }}>
-        🕒 Waiting for opponent…
+      <div style={styles.waitingPanel}>
+        <div style={{ fontSize: "2rem", opacity: 0.6 }}>🕒</div>
+        <p style={{ marginTop: 8, opacity: 0.7 }}>Opponent's turn</p>
       </div>
     );
   }
 
-  // const hasHand = hand.length > 0;
-  // const hasScales = scales.length > 0;
-  const hasPersonal = personal.count > 0;
+  const personalTopIsAce = personal.top?.value === 1;
 
-  // ── shared style helpers ──
-  const sectionStyle: React.CSSProperties = {
-    marginBottom: 16,
-    padding: 12,
-    border: "1px solid #e0e0e0",
-    borderRadius: 8,
-    background: "#fafafa",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: "6px 14px",
-    borderRadius: 6,
-    border: "1px solid #ccc",
-    background: "#fff",
-    fontWeight: 600,
-    cursor: "pointer",
-    marginRight: 6,
-  };
-
-  const disabledBtn = { ...buttonStyle, opacity: 0.5, cursor: "not-allowed" };
-
-  // ── selection cards ──
-  const handCards = hand.map((card, idx) => (
-    <span
-      key={idx}
-      onClick={() => setSelHandIdx(idx)}
-      style={{
-        display: "inline-block",
-        margin: 4,
-        padding: 2,
-        border: selHandIdx === idx ? "2px solid #1976d2" : "2px solid transparent",
-        borderRadius: 6,
-        cursor: "pointer",
-        background: selHandIdx === idx ? "#e3f2fd" : undefined,
-      }}
-    >
-      <CardView card={card} />
-    </span>
-  ));
-
-  const scaleTargets = scales.map((scale, idx) => (
-    <span
-      key={idx}
-      onClick={() => setSelScaleIdx(idx)}
-      style={{
-        display: "inline-block",
-        margin: 4,
-        padding: 6,
-        border: selScaleIdx === idx ? "2px solid #1976d2" : "2px solid #ccc",
-        borderRadius: 6,
-        background: selScaleIdx === idx ? "#e3f2fd" : scale.completed ? "#d4edda" : "#fff",
-        cursor: "pointer",
-        fontSize: "0.9em",
-      }}
-    >
-      Scale {scale.scale_idx}
-      {scale.completed && " ✅"}
-      <br />
-      {scale.cards.length > 0 ? (
-        scale.cards.map((c, i) => <CardView key={i} card={c} />)
-      ) : (
-        <span style={{ color: "#999" }}>empty</span>
-      )}
-    </span>
-  ));
-
-  const sideTargets = side.map((stack, idx) => (
-    <span
-      key={idx}
-      onClick={() => setSelStackIdx(idx)}
-      style={{
-        display: "inline-block",
-        margin: 4,
-        padding: 6,
-        border: selStackIdx === idx ? "2px solid #1976d2" : "2px solid #ccc",
-        borderRadius: 6,
-        background: selStackIdx === idx ? "#e3f2fd" : "#fff",
-        cursor: "pointer",
-        minWidth: 80,
-      }}
-    >
-      <div style={{ fontWeight: 600, fontSize: "0.8em", marginBottom: 2 }}>Stack {idx}</div>
-      {stack.map((c, j) => (
-        <CardView key={j} card={c} />
-      ))}
-      {stack.length === 0 && <div style={{ color: "#999", fontSize: "0.8em" }}>empty</div>}
-    </span>
-  ));
-
-  const personalPreview = (
-    <div style={{ display: "inline-block", padding: 6, background: "#f5f5f5", borderRadius: 6, margin: 4 }}>
-      <strong>Personal pile:</strong> {personal.count} cards
-      {personal.top && (
-        <>
-          {" "}
-          (top: <CardView card={personal.top} />)
-        </>
-      )}
-    </div>
-  );
+  const canOpenScale = selectedHandIdx !== null;
+  const canPlayHand = selectedHandIdx !== null && targetScaleIdx !== null;
+  const canPlayPersonal = personal.count > 0 && targetScaleIdx !== null && !personalTopIsAce;
+  const canPlayPersonalAce = personal.count > 0 && personalTopIsAce;
+  const canPlaySide = targetSideIdx !== null && targetScaleIdx !== null && side[targetSideIdx].length > 0;
+  const canMoveHandToSide = selectedHandIdx !== null && targetSideIdx !== null;
+  const canMovePersonalToSide = personal.count > 0 && targetSideIdx !== null && personal.top?.value === 13; // only King
 
   return (
-    <div style={{ flex: 1, borderLeft: "1px solid #ccc", padding: 20, overflowY: "auto" }}>
-      <h2>🎮 Your turn</h2>
-
-      {/* Draw */}
-      <div style={sectionStyle}>
+    <div style={styles.panel}>
+      {/* ── Draw section ── */}
+      <div style={styles.section}>
         <button
-          onClick={() => sendAction({ type: "draw" })}
+          onClick={() => act({ type: "draw" })}
           disabled={!canDraw}
-          style={canDraw ? buttonStyle : disabledBtn}
+          style={canDraw ? styles.drawButton : { ...styles.drawButton, opacity: 0.5, cursor: "not-allowed" }}
         >
           🃏 Draw a card
         </button>
       </div>
 
-      {/* Hand display */}
-      <div style={sectionStyle}>
-        <strong>🃏 Your hand (click to select)</strong>
-        <div style={{ marginTop: 8 }}>
-          {hand.length === 0 ? <span style={{ color: "#999" }}>No cards in hand</span> : handCards}
+      {/* ── Your hand ── */}
+      <div style={styles.section}>
+        <div style={styles.sectionTitle}>Your hand</div>
+        <div style={styles.handRow}>
+          {hand.length === 0 && <span style={{ opacity: 0.5 }}>No cards</span>}
+          {hand.map((card, idx) => (
+            <div
+              key={idx}
+              onClick={() => {
+                if (selectedHandIdx === idx) {
+                  setSelectedHandIdx(null);
+                } else {
+                  setSelectedHandIdx(idx);
+                  // Hand card selection resets other targets to avoid mixed intents
+                  setTargetScaleIdx(null);
+                  setTargetSideIdx(null);
+                }
+              }}
+              style={{
+                ...styles.cardWrapper,
+                borderColor: selectedHandIdx === idx ? "#ffd700" : "transparent",
+                transform: selectedHandIdx === idx ? "translateY(-4px)" : "none",
+              }}
+            >
+              <CardView card={card} />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Open scale (needs selected hand card) */}
-      <div style={sectionStyle}>
-        <button
-          onClick={() => {
-            if (selHandIdx !== null) {
-              sendAction({ type: "open_scale", hand_idx: selHandIdx });
-            }
-          }}
-          disabled={selHandIdx === null}
-          style={selHandIdx !== null ? buttonStyle : disabledBtn}
-        >
-          📂 Open new scale with selected card
-        </button>
-        {selHandIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a hand card first</span>}
-      </div>
-
-      {/* Play hand on existing scale (needs selected hand + selected scale) */}
-      <div style={sectionStyle}>
-        <strong>🎯 Play hand card on a scale</strong>
-        <div style={{ marginTop: 8 }}>
+      {/* ── Action buttons ── */}
+      <div style={styles.actionBar}>
+        {canOpenScale && (
           <button
-            onClick={() => {
-              if (selHandIdx !== null && selScaleIdx !== null) {
-                sendAction({ type: "play_hand", hand_idx: selHandIdx, scale_idx: selScaleIdx });
-              }
-            }}
-            disabled={selHandIdx === null || selScaleIdx === null}
-            style={selHandIdx !== null && selScaleIdx !== null ? buttonStyle : disabledBtn}
+            onClick={() => act({ type: "open_scale", hand_idx: selectedHandIdx! })}
+            style={styles.actionButton}
           >
-            ▶️ Play selected card on selected scale
+            📂 Open Scale
           </button>
-          {selHandIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a hand card</span>}
-          {selHandIdx !== null && selScaleIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Now select a target scale below</span>}
-        </div>
-      </div>
-
-      {/* Play from personal (needs selected scale) */}
-      <div style={sectionStyle}>
-        <strong>📦 Play from personal pile</strong>
-        <div style={{ marginTop: 8 }}>
+        )}
+        {canPlayHand && (
           <button
-            onClick={() => {
-              if (selScaleIdx !== null) {
-                sendAction({ type: "play_personal", scale_idx: selScaleIdx });
-              }
-            }}
-            disabled={!hasPersonal || selScaleIdx === null}
-            style={hasPersonal && selScaleIdx !== null ? buttonStyle : disabledBtn}
+            onClick={() => act({ type: "play_hand", hand_idx: selectedHandIdx!, scale_idx: targetScaleIdx! })}
+            style={styles.actionButton}
           >
-            ▶️ Play personal card on selected scale
+            ▶️ Play on Scale {targetScaleIdx}
           </button>
-          {!hasPersonal && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Personal pile is empty</span>}
-          {hasPersonal && selScaleIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a target scale</span>}
-        </div>
-        {personalPreview}
-      </div>
-
-      {/* Play from side (needs selected side stack + selected scale) */}
-      <div style={sectionStyle}>
-        <strong>🃟 Play from side stack</strong>
-        <div style={{ marginTop: 8 }}>
+        )}
+        {canMoveHandToSide && (
           <button
-            onClick={() => {
-              if (selStackIdx !== null && selScaleIdx !== null) {
-                sendAction({ type: "play_side", stack_idx: selStackIdx, scale_idx: selScaleIdx });
-              }
-            }}
-            disabled={selStackIdx === null || selScaleIdx === null}
-            style={selStackIdx !== null && selScaleIdx !== null ? buttonStyle : disabledBtn}
+            onClick={() => act({ type: "move_to_side", hand_idx: selectedHandIdx!, stack_idx: targetSideIdx! })}
+            style={styles.actionButton}
           >
-            ▶️ Play side card on selected scale
+            ➡️ Move to Side {targetSideIdx}
           </button>
-          {selStackIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a side stack</span>}
-          {selStackIdx !== null && selScaleIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a target scale</span>}
-        </div>
-        <div style={{ marginTop: 8 }}>{sideTargets}</div>
-      </div>
-
-      {/* Move hand to side (needs selected hand + selected side stack) */}
-      <div style={sectionStyle}>
-        <strong>➡️ Move hand card to side stack</strong>
-        <div style={{ marginTop: 8 }}>
+        )}
+        {canPlayPersonalAce && (
           <button
-            onClick={() => {
-              if (selHandIdx !== null && selStackIdx !== null) {
-                sendAction({ type: "move_to_side", hand_idx: selHandIdx, stack_idx: selStackIdx });
-              }
-            }}
-            disabled={selHandIdx === null || selStackIdx === null}
-            style={selHandIdx !== null && selStackIdx !== null ? buttonStyle : disabledBtn}
+            onClick={() => act({ type: "play_personal", scale_idx: 0 })} // server ignores scale_idx for Ace
+            style={styles.actionButton}
           >
-            ▶️ Move selected hand card to selected side
+            📂 Open Scale from Personal
           </button>
-          {selHandIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a hand card</span>}
-          {selHandIdx !== null && selStackIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a side stack</span>}
-        </div>
-      </div>
-
-      {/* Move personal to side (needs selected side stack) */}
-      <div style={sectionStyle}>
-        <strong>📦 Move personal → side</strong>
-        <div style={{ marginTop: 8 }}>
+        )}
+        {canPlayPersonal && (
           <button
-            onClick={() => {
-              if (selStackIdx !== null) {
-                sendAction({ type: "move_personal_to_side", stack_idx: selStackIdx });
-              }
-            }}
-            disabled={!hasPersonal || selStackIdx === null}
-            style={hasPersonal && selStackIdx !== null ? buttonStyle : disabledBtn}
+            onClick={() => act({ type: "play_personal", scale_idx: targetScaleIdx! })}
+            style={styles.actionButton}
           >
-            ▶️ Move personal pile to selected side stack
+            📦 Play Personal on Scale {targetScaleIdx}
           </button>
-          {!hasPersonal && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Personal pile is empty</span>}
-          {hasPersonal && selStackIdx === null && <span style={{ fontSize: 12, marginLeft: 8, color: "#999" }}>Select a side stack</span>}
+        )}
+        {canMovePersonalToSide && (
+          <button
+            onClick={() => act({ type: "move_personal_to_side", stack_idx: targetSideIdx! })}
+            style={styles.actionButton}
+          >
+            📦 Move Personal to Side
+          </button>
+        )}
+        {canPlaySide && (
+          <button
+            onClick={() => act({ type: "play_side", stack_idx: targetSideIdx!, scale_idx: targetScaleIdx! })}
+            style={styles.actionButton}
+          >
+            🃟 Play Side Card on Scale {targetScaleIdx}
+          </button>
+        )}
+      </div>
+
+      {/* ── Targets: Scales & Side Stacks ── */}
+      <div style={styles.section}>
+        <div style={styles.sectionTitle}>Select a target</div>
+        <div style={styles.targetRow}>
+          {/* Scales – only show active (non‑null) scales */}
+          {scales.filter((s): s is Scale => s !== null)
+            .map((scale) => (
+              <div
+                key={scale.scale_idx}
+                onClick={() =>
+                  setTargetScaleIdx((prev) =>
+                    prev === scale.scale_idx ? null : scale.scale_idx
+                  )
+                }
+                style={{
+                  ...styles.targetCard,
+                  borderColor:
+                    targetScaleIdx === scale.scale_idx ? "#ffd700" : "#444",
+                  background: "#1e1e2f",
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: "0.8rem", marginBottom: 4 }}>
+                  Scale {scale.scale_idx}
+                </div>
+                <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                  {scale.cards.length === 0 && (
+                    <span style={{ opacity: 0.5, fontSize: "0.7rem" }}>empty</span>
+                  )}
+                  {scale.cards.map((c, i) => (
+                    <CardView key={i} card={c} small />
+                  ))}
+                </div>
+              </div>
+            ))}
+          {scales.every((s) => s === null) && (
+            <div style={{ color: "#666", fontSize: "0.8rem" }}>No active scales</div>
+          )}
+        </div>
+        <div style={{ ...styles.targetRow, marginTop: 12 }}>
+          {/* Side stacks – no longer clears scale selection */}
+          {side.map((stack, idx) => (
+            <div
+              key={idx}
+              onClick={() =>
+                setTargetSideIdx((prev) => (prev === idx ? null : idx))
+              }
+              style={{
+                ...styles.targetCard,
+                borderColor: targetSideIdx === idx ? "#ffd700" : "#444",
+                background: "#1e1e2f",
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: "0.8rem", marginBottom: 4 }}>
+                Side {idx}
+              </div>
+              <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                {stack.length === 0 && <span style={{ opacity: 0.5, fontSize: "0.7rem" }}>empty</span>}
+                {stack.map((c, j) => (
+                  <CardView key={j} card={c} small />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Scales display (clickable for target selection) */}
-      <div style={sectionStyle}>
-        <strong>📊 Scales (click to select as target)</strong>
-        <div style={{ marginTop: 8 }}>
-          {scales.length === 0 ? <span style={{ color: "#999" }}>No scales yet</span> : scaleTargets}
-        </div>
+      {/* ── Personal pile info ── */}
+      <div style={styles.personalInfo}>
+        <strong>Personal pile:</strong> {personal.count} cards
+        {personal.top && (
+          <>
+            {" "}
+            (top: <CardView card={personal.top} small />)
+          </>
+        )}
+        <span style={{ marginLeft: 12, fontSize: "0.8rem", opacity: 0.7 }}>
+          {personal.top?.value === 13
+            ? "King can be moved to side"
+            : personal.top?.value === 1
+            ? "Ace opens a new scale"
+            : ""}
+        </span>
       </div>
     </div>
   );
 }
+
+// ── Styles (unchanged) ──
+const styles: Record<string, React.CSSProperties> = {
+  panel: {
+    flex: 1,
+    background: "rgba(0,0,0,0.4)",
+    backdropFilter: "blur(8px)",
+    borderRadius: 12,
+    padding: 20,
+    color: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    overflowY: "auto",
+  },
+  waitingPanel: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    color: "#fff",
+    opacity: 0.8,
+  },
+  section: {
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: "0.9rem",
+    fontWeight: 700,
+    marginBottom: 8,
+    color: "#ccc",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  handRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  cardWrapper: {
+    display: "inline-block",
+    borderRadius: 6,
+    border: "2px solid transparent",
+    transition: "all 0.15s",
+    cursor: "pointer",
+    background: "rgba(255,255,255,0.05)",
+  },
+  actionBar: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    margin: "4px 0",
+  },
+  actionButton: {
+    padding: "8px 16px",
+    borderRadius: 8,
+    border: "none",
+    background: "#e63946",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: "0.9rem",
+    cursor: "pointer",
+    transition: "background 0.2s",
+  },
+  drawButton: {
+    padding: "10px 24px",
+    borderRadius: 8,
+    border: "none",
+    background: "#e63946",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: "1rem",
+    cursor: "pointer",
+    width: "100%",
+  },
+  targetRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  targetCard: {
+    padding: 10,
+    borderRadius: 8,
+    border: "2px solid #444",
+    cursor: "pointer",
+    minWidth: 80,
+    transition: "all 0.15s",
+    background: "#1e1e2f",
+  },
+  personalInfo: {
+    fontSize: "0.85rem",
+    padding: "8px 0",
+    borderTop: "1px solid rgba(255,255,255,0.1)",
+    marginTop: 8,
+  },
+};

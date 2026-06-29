@@ -4,7 +4,6 @@ import { useGameStore } from "../store/useGameStore";
 
 type ConnectionStatus = "connecting" | "open" | "closed" | "error";
 
-// Generate (or retrieve) a stable UUID for this browser tab
 function getPlayerId(): string {
   const key = "game-player-id";
   let id = sessionStorage.getItem(key);
@@ -24,6 +23,7 @@ export function useGameSocket(room: string, username: string) {
   const reconnectTimer = useRef<ReturnType<typeof setTimeout>>(0);
   const attemptRef = useRef(0);
   const isUnmounted = useRef(false);
+  const closedIntentionally = useRef(false);
 
   // Stable UUID – does not change across reconnects
   const playerId = useMemo(() => getPlayerId(), []);
@@ -42,8 +42,10 @@ export function useGameSocket(room: string, username: string) {
 
     function connect() {
       if (cancelled || isUnmounted.current) return;
+      closedIntentionally.current = false; 
 
-      const url = `ws://localhost:8080/ws/${room}?player_id=${playerId}&username=${encodeURIComponent(username)}`;
+      const protocol = globalThis.location.protocol === 'https:' ? 'wss' : 'ws';
+      const url = `${protocol}://${globalThis.location.host}/ws/${room}?player_id=${playerId}&username=${encodeURIComponent(username)}`;
       console.log(
         `🔌 Connecting to ${url} (attempt ${attemptRef.current + 1})`,
       );
@@ -84,15 +86,17 @@ export function useGameSocket(room: string, username: string) {
       ws.onclose = (event) => {
         if (cancelled || isUnmounted.current) return;
         console.log(`🔻 WebSocket closed (code ${event.code})`);
-        setStatus("closed");
-        if (event.code !== 1000) {
-          const delay = Math.min(1000 * 2 ** attemptRef.current, 30000);
-          attemptRef.current++;
-          console.log(`🔄 Reconnecting in ${delay / 1000}s...`);
-          reconnectTimer.current = setTimeout(connect, delay);
-        } else {
-          console.log("👋 Clean close – not reconnecting");
+
+        if (closedIntentionally.current) {
+          console.log("👋 Closed intentionally – not reconnecting");
+          setStatus("closed");
+          return;
         }
+
+        const delay = Math.min(1000 * 2 ** attemptRef.current, 30000);
+        attemptRef.current++;
+        console.log(`🔄 Reconnecting in ${delay / 1000}s...`);
+        reconnectTimer.current = setTimeout(connect, delay);
       };
     }
 
@@ -101,6 +105,7 @@ export function useGameSocket(room: string, username: string) {
     return () => {
       cancelled = true;
       isUnmounted.current = true;
+      closedIntentionally.current = true;
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (wsRef.current) wsRef.current.close(1000, "Component unmounted");
     };

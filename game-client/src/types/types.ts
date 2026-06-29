@@ -31,7 +31,6 @@ export interface OpponentBoard {
 export interface Scale {
   scale_idx: number;
   cards: Card[];
-  completed?: boolean;   // client‑side flag
 }
 
 export interface FullState {
@@ -39,7 +38,7 @@ export interface FullState {
   your_board: PlayerBoard;
   your_turn: boolean;
   opponent: OpponentBoard;
-  scales: Scale[];
+  scales: (Scale | null)[];
   dealer_top: DeckColor | null;
   dealer_count: number;
   turn_seconds_remaining: number;
@@ -70,11 +69,20 @@ export type ServerEvent =
 
   // ── Private: drawn card ──
   | {
-      type: "card_drawn";
+      type: "hand_refill";
       player_id: string;
       player_idx: number;
-      card: Card | null;
+      cards: Card[];
     }
+  
+  // ── Public: Personal used and needs to show the next ──
+  | {
+    type: "personal_pile_updated";
+    player_id: string;
+    player_idx: number;
+    count: number;
+    top: Card | null;
+  }
 
   // ── Public: card played on scale ──
   | {

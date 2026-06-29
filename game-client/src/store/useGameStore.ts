@@ -49,11 +49,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       // ── Private: drawn card ──
-      case "card_drawn": {
-        // evt.card is null if deck & personal pile are empty (shouldn’t happen here)
-        if (evt.card && s.your_board.player_idx === evt.player_idx) {
-          s.your_board.hand.push(evt.card);
+      case "hand_refill": {
+        if (s.your_board.player_idx === evt.player_idx) {
+          s.your_board.hand.push(...evt.cards);
           newCanDraw = false;
+        }
+        break;
+      }
+
+      case "personal_pile_updated": {
+        if (s.your_board.player_idx === evt.player_idx) {
+          s.your_board.personal.count = evt.count;
+          s.your_board.personal.top = evt.top;
         }
         break;
       }
@@ -70,15 +77,37 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 c.deck === evt.card.deck
               )
           );
+
+          for (const stack of s.your_board.side) {
+            if (stack.length > 0) {
+              const top = stack[stack.length - 1];
+              if (
+                top.suit === evt.card.suit &&
+                top.value === evt.card.value &&
+                top.deck === evt.card.deck
+              ) {
+                stack.pop();
+                break; // card found and removed – stop looking
+              }
+            }
+          }
+
           newCanDraw = false;
         }
 
-        // Add card to the scale (create if it doesn’t exist yet)
-        const scale = s.scales.find((sc) => sc.scale_idx === evt.scale_idx);
-        if (scale) {
-          scale.cards.push(evt.card);
-        } else {
-          s.scales.push({ scale_idx: evt.scale_idx, cards: [evt.card] });
+        const { scale_idx, card } = evt;
+
+        if (scale_idx >= 0 && scale_idx < s.scales.length) {
+          const scale = s.scales[scale_idx];
+          if (scale) {
+            // Slot already has a scale – just push the card
+            scale.cards.push(card);
+          } else {
+            s.scales[scale_idx] = {
+              scale_idx,
+              cards: [card],
+            };
+          }
         }
         break;
       }
@@ -86,7 +115,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // ── Public: card placed on a side stack ──
       case "card_placed_on_side": {
         if (s.your_board.player_idx === evt.player_idx) {
-          // The side array is always fully initialised (4 empty arrays)
+          // The side array is always fully initialized (4 empty arrays)
           s.your_board.side[evt.stack_idx].push(evt.card);
           s.your_board.hand = s.your_board.hand.filter(
             (c) =>
@@ -103,9 +132,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       // ── Public: scale completed ──
       case "scale_completed": {
-        const scale = s.scales.find((sc) => sc.scale_idx === evt.scale_idx);
-        // Safety: mark completed only if the scale exists
-        if (scale) scale.completed = true;
+        const { scale_idx } = evt;
+        if (scale_idx >= 0 && scale_idx < s.scales.length) {
+          s.scales[scale_idx] = null;
+        }
         break;
       }
 

@@ -54,34 +54,57 @@ export default function Board({ board }: Readonly<Props>) {
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ margin: "0 0 8px" }}>Scales</h3>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {scales.map((scale) => (
-            <div
-              key={scale.scale_idx}
-              style={{
-                border: "1px solid #999",
-                borderRadius: 8,
-                padding: 8,
-                minWidth: 120,
-                background: scale.completed ? "#d4edda" : "#fff",
-              }}
-            >
-              <div style={{ fontSize: "0.8em", fontWeight: "bold" }}>
-                Scale {scale.scale_idx} {scale.completed && "✅"}
+          {scales.map((scale, idx) => {
+            if (scale === null) {
+              // Empty slot – show a dimmed placeholder
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    border: "1px dashed #ccc",
+                    borderRadius: 8,
+                    padding: 8,
+                    minWidth: 120,
+                    background: "#f9f9f9",
+                    opacity: 0.5,
+                  }}
+                >
+                  <div style={{ fontSize: "0.8em", fontWeight: "bold" }}>
+                    Scale {idx}
+                  </div>
+                  <div style={{ fontSize: "0.85em", color: "#888" }}>
+                    Empty
+                  </div>
+                </div>
+              );
+            }
+            // Active scale
+            return (
+              <div
+                key={scale.scale_idx}
+                style={{
+                  border: "1px solid #999",
+                  borderRadius: 8,
+                  padding: 8,
+                  minWidth: 120,
+                  background: "#fff",
+                }}
+              >
+                <div style={{ fontSize: "0.8em", fontWeight: "bold" }}>
+                  Scale {scale.scale_idx}
+                </div>
+                <div style={{ fontSize: "0.85em" }}>
+                  {scale.cards.length === 0 ? (
+                    "Empty"
+                  ) : (
+                    scale.cards.map((c, i) => (
+                      <CardView key={i} card={c} />
+                    ))
+                  )}
+                </div>
               </div>
-              <div style={{ fontSize: "0.85em" }}>
-                {scale.cards.length === 0 ? (
-                  "Empty"
-                ) : (
-                  scale.cards.map((c, i) => (
-                    <CardView key={i} card={c} />
-                  ))
-                )}
-              </div>
-            </div>
-          ))}
-          {scales.length === 0 && (
-            <div style={{ color: "#666" }}>No scales yet</div>
-          )}
+            );
+          })}
         </div>
       </div>
 
@@ -89,13 +112,11 @@ export default function Board({ board }: Readonly<Props>) {
       <div style={{ display: "flex", gap: 30 }}>
         <PlayerArea
           label="You"
-          isSelf={true}
           board={your_board}
           isTurn={your_turn}
         />
         <PlayerArea
           label="Opponent"
-          isSelf={false}
           board={opponent}
           isTurn={!your_turn}
         />
