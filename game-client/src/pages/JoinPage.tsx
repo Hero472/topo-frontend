@@ -1,5 +1,15 @@
 // JoinPage.tsx
 import { useState } from "react";
+import type { Card } from "../types/types";
+import CardScale from "../components/CardScale";
+
+const decorativeCards: Card[] = [
+  { suit: "hearts", value: 12, deck: "blue" },
+  { suit: "clubs", value: 13, deck: "blue" },
+  { suit: "diamonds", value: 7, deck: "blue" },
+  { suit: "diamonds", value: 7, deck: "blue" },
+
+];
 
 export function JoinPage() {
   const [room, setRoom] = useState("");
@@ -24,12 +34,15 @@ export function JoinPage() {
       return;
     }
 
-    // Navigate to the game (preserving existing query handling)
-    globalThis.location.href = `?room=${encodeURIComponent(trimmedRoom)}&username=${encodeURIComponent(trimmedUser)}`;
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set("room", trimmedRoom);
+    url.searchParams.set("username", trimmedUser);
+    globalThis.location.href = url.toString();
   };
 
   return (
     <div style={styles.outer}>
+      <CardScale cards={decorativeCards} emptyLabel="" />
       <div style={styles.card}>
         <h1 style={styles.title}>♠️ Topo Online</h1>
         <p style={styles.subtitle}>Enter a room and your name to start playing</p>
