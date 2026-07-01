@@ -1,6 +1,7 @@
 // ── App.tsx ──
-import { JoinPage } from "./pages/JoinPage";
+// import { JoinPage } from "./pages/JoinPage";
 import { GamePage } from "./pages/GamePage";
+import { DebugPage } from "./pages/DebugPage";
 
 export default function App() {
   // Grab the current URL query params
@@ -9,5 +10,5 @@ export default function App() {
   const username = params.get("username");
 
   // If both params exist, go to the game; otherwise show the join screen
-  return room && username ? <GamePage /> : <JoinPage />;
+  return room && username ? <GamePage /> : <DebugPage />;
 }

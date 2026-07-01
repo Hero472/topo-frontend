@@ -1,15 +1,5 @@
 // JoinPage.tsx
 import { useState } from "react";
-import type { Card } from "../types/types";
-import CardScale from "../components/CardScale";
-
-const decorativeCards: Card[] = [
-  { suit: "hearts", value: 12, deck: "blue" },
-  { suit: "clubs", value: 13, deck: "blue" },
-  { suit: "diamonds", value: 7, deck: "blue" },
-  { suit: "diamonds", value: 7, deck: "blue" },
-
-];
 
 export function JoinPage() {
   const [room, setRoom] = useState("");
@@ -42,10 +32,11 @@ export function JoinPage() {
 
   return (
     <div style={styles.outer}>
-      <CardScale cards={decorativeCards} emptyLabel="" />
       <div style={styles.card}>
         <h1 style={styles.title}>♠️ Topo Online</h1>
-        <p style={styles.subtitle}>Enter a room and your name to start playing</p>
+        <p style={styles.subtitle}>
+          Enter a room and your name to start playing
+        </p>
 
         <form onSubmit={handleJoin} style={styles.form}>
           <div style={styles.field}>
@@ -57,7 +48,10 @@ export function JoinPage() {
               style={styles.input}
               placeholder="e.g. myroom"
               value={room}
-              onChange={(e) => { setRoom(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setRoom(e.target.value);
+                setError("");
+              }}
               autoFocus
             />
           </div>
@@ -71,7 +65,10 @@ export function JoinPage() {
               style={styles.input}
               placeholder="e.g. Alice"
               value={username}
-              onChange={(e) => { setUsername(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setError("");
+              }}
             />
           </div>
 

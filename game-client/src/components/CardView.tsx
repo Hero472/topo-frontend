@@ -40,8 +40,8 @@ export default function CardView({
     alignItems: "center",
     justifyContent: "center",
     // Standard playing‑card ratio (2.5 : 3.5)
-    width: small ? "3.5em" : "5em",
-    height: small ? "4.9em" : "7em",
+    width: small ? "4em" : "6em",
+    height: small ? "5.6em" : "8.4em",
     borderRadius: small ? 4 : 6,
     backgroundColor: "#fff",
     border: "1px solid #aaa",
