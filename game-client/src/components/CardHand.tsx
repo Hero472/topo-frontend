@@ -28,7 +28,7 @@ export default function CardHand({
   small = false,
   resolution = "x1",
   emptyLabel = "No cards",
-  overlap = 1.2,
+  overlap = 2,
   faceDown = false,
   draggable = true,
   stackId = "",

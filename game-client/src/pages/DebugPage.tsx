@@ -1,3 +1,4 @@
+// src/pages/DebugPage.tsx
 import { useState } from "react";
 import type { Card } from "../types/types";
 import CardStack from "../components/CardStack";
@@ -33,14 +34,7 @@ export function DebugPage() {
   const [drawPile, setDrawPile] = useState<Card[]>(decorativeCards);
   const [foundation, setFoundation] = useState<Card[]>([]);
 
-  /**
-   * Moves a card from one stack to another.
-   * @param card - the card being moved
-   * @param sourceId - stack where the card came from
-   * @param targetId - stack where the card is dropped
-   */
   const moveCard = (card: Card, sourceId: string, targetId: string) => {
-    // Safety: do nothing if source and target are the same
     if (sourceId === targetId) return;
 
     // 1. Remove from source
@@ -65,7 +59,6 @@ export function DebugPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <div style={{ display: "flex", gap: "2rem" }}>
-        {/* Hand: drops from draw pile are allowed */}
         <CardHand
           cards={hand}
           stackId="hand"
