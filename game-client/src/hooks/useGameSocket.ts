@@ -25,7 +25,6 @@ export function useGameSocket(room: string, username: string) {
   const isUnmounted = useRef(false);
   const closedIntentionally = useRef(false);
 
-  // Stable UUID – does not change across reconnects
   const playerId = useMemo(() => getPlayerId(), []);
 
   const sendAction = useCallback((action: Action) => {
@@ -35,6 +34,13 @@ export function useGameSocket(room: string, username: string) {
       console.warn("📤 Cannot send action – socket not open");
     }
   }, []);
+
+  useEffect(() => {
+    useGameStore.getState().setSendAction(sendAction);
+    return () => {
+      useGameStore.getState().setSendAction(null);
+    };
+  }, [sendAction]);
 
   useEffect(() => {
     isUnmounted.current = false;

@@ -1,29 +1,81 @@
+import { useMemo, useRef } from "react";
 import CardHand from "./CardHand";
 import CardStack from "./CardStack";
+import { useGameStore } from "../store/useGameStore";
 import type { Card } from "../types/types";
 
 interface Props {
-  playerId: string;
+  playerId: "current" | "opponent";
   rotated?: boolean;
-  hand: Card[];
-  personalStacks: Card[][];
-  rightStack: Card[];
-  onCardDrop: (card: Card, sourceStackId: string, targetStackId: string) => void;
 }
 
-export default function PlayerBoard({
-  playerId,
-  rotated = false,
-  hand,
-  personalStacks,
-  rightStack,
-  onCardDrop,
-}: Readonly<Props>) {
-    
-  const makeDropHandler =
-    (targetId: string) => (card: Card, sourceId: string) => {
-      onCardDrop(card, sourceId, targetId);
+export default function PlayerBoard({ playerId, rotated = false }: Props) {
+  const fullState = useGameStore((s) => s.fullState);
+  const sendAction = useGameStore((s) => s.sendAction);
+  const isCurrent = playerId === "current";
+
+  // Stores the hand index of the currently dragged card
+  const draggedHandIndex = useRef<number | null>(null);
+
+  const hand = useMemo(() => {
+    if (!fullState) return [];
+    if (isCurrent) return fullState.your_board.hand;
+    return Array.from({ length: fullState.opponent.hand_count }, (_, i) => ({
+      id: `opp-hand-${i}`,
+      suit: "hearts",
+      value: 0,
+      deck: "blue",
+    } as Card));
+  }, [fullState, isCurrent]);
+
+  const personalStacks = useMemo(() => {
+    if (!fullState) return [[], [], [], []] as Card[][];
+    return isCurrent ? fullState.your_board.side : fullState.opponent.side;
+  }, [fullState, isCurrent]);
+
+  const rightStack: Card[] = [];
+
+  // Called when a card from the hand starts dragging
+  const handleHandDragStart = (card: Card, sourceStackId: string) => {
+    const idx = hand.indexOf(card);   // reference equality works because we use the same card objects
+    if (idx !== -1) {
+        draggedHandIndex.current = idx;
+    }
+  };
+
+  // Clear the index when drag ends (optional, but safe)
+  const handleDragEnd = () => {
+    draggedHandIndex.current = null;
+  };
+
+  // Drop on a side stack ("personal-*")
+  const makeSideDropHandler = (stackIdx: number) =>
+    (card: Card, sourceId: string) => {
+      if (!isCurrent || !sendAction) return;
+
+      if (sourceId === "hand-current" && draggedHandIndex.current !== null) {
+        sendAction({
+          type: "move_to_side",
+          hand_idx: draggedHandIndex.current,
+          stack_idx: stackIdx,
+        });
+      } else if (sourceId.startsWith("personal-current")) {
+        sendAction({
+          type: "move_personal_to_side",
+          stack_idx: stackIdx,
+        });
+      }
     };
+
+  // Drop on right stack (placeholder)
+  const rightStackHandler = (card: Card, sourceId: string) => {
+    // Implement if needed
+  };
+
+  // Drop on hand (usually not a valid game action)
+  const handDropHandler = (card: Card, sourceId: string) => {
+    // No-op
+  };
 
   return (
     <div
@@ -35,6 +87,7 @@ export default function PlayerBoard({
         height: "100%",
       }}
     >
+      {/* Top row: personal stacks + right stack */}
       <div
         style={{
           display: "grid",
@@ -44,8 +97,6 @@ export default function PlayerBoard({
         }}
       >
         <div />
-
-        {/* Center: personal stacks */}
         <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
           {personalStacks.map((stack, i) => (
             <CardStack
@@ -53,31 +104,25 @@ export default function PlayerBoard({
               cards={stack}
               stackId={`personal-${playerId}-${i}`}
               emptyLabel="P"
-              draggable={!rotated}
-              faceDown={rotated}
-              onCardDrop={makeDropHandler(`personal-${playerId}-${i}`)}
+              draggable={isCurrent}
+              faceDown={!isCurrent}
+              onCardDrop={makeSideDropHandler(i)}
             />
           ))}
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            paddingRight: "24px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "24px" }}>
           <CardStack
             cards={rightStack}
             stackId={`right-${playerId}`}
             emptyLabel="R"
-            draggable={!rotated}
-            faceDown={rotated}
-            onCardDrop={makeDropHandler(`right-${playerId}`)}
+            draggable={isCurrent}
+            faceDown={!isCurrent}
+            onCardDrop={rightStackHandler}
           />
         </div>
       </div>
 
+      {/* Bottom row: hand centered */}
       <div
         style={{
           flex: 1,
@@ -90,10 +135,12 @@ export default function PlayerBoard({
         <CardHand
           cards={hand}
           stackId={`hand-${playerId}`}
-          draggable={!rotated}
-          faceDown={rotated}
+          draggable={isCurrent}
+          faceDown={!isCurrent}
           small={false}
-          onCardDrop={makeDropHandler(`hand-${playerId}`)}
+          onCardDrop={handDropHandler}
+          onDragStartCard={handleHandDragStart}
+          onDragEndCard={handleDragEnd}
         />
       </div>
     </div>

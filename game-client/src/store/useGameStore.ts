@@ -1,22 +1,27 @@
 import { create } from "zustand";
-import type { FullState, ServerEvent } from "../types/types";
+import type { FullState, ServerEvent, Action } from "../types/types";
 
 interface GameStore {
   fullState: FullState | null;
   winnerId: string | null;
-  // winnerIdx: number | null;
   timeoutMessage: string | null;
   canDraw: boolean;
+  completedScaleIdx: number | null;
 
   applyFullState: (payload: FullState) => void;
   applyEvent: (payload: ServerEvent) => void;
   clearTimeoutMessage: () => void;
+
+  sendAction: ((action: Action) => void) | null;
+  setSendAction: (fn: ((action: Action) => void) | null) => void;
 }
+
 export const useGameStore = create<GameStore>((set, get) => ({
   fullState: null,
   winnerId: null,
   timeoutMessage: null,
   canDraw: false,
+  completedScaleIdx: null,
 
   applyFullState: (payload) =>
     set({
@@ -24,18 +29,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
       winnerId: null,
       timeoutMessage: null,
       canDraw: payload.your_turn,
+      completedScaleIdx: null,
     }),
+
+  sendAction: null,
+  setSendAction: (fn) => set({ sendAction: fn }),
 
   applyEvent: (evt) => {
     const state = get();
     if (!state.fullState) return;
 
-    // Deep clone to avoid direct mutation
     const s: FullState = structuredClone(state.fullState);
     let newCanDraw = state.canDraw;
 
     switch (evt.type) {
-      // ── Lobby events (no state change needed) ──
+      // ... (all existing cases unchanged, except scale_completed – see below)
+
       case "player_joined":
       case "player_left":
         break;
@@ -130,13 +139,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
       }
 
-      // ── Public: scale completed ──
       case "scale_completed": {
-        const { scale_idx } = evt;
-        if (scale_idx >= 0 && scale_idx < s.scales.length) {
-          s.scales[scale_idx] = null;
-        }
-        break;
+        // Keep the scale visible for 2 seconds
+        set({ completedScaleIdx: evt.scale_idx });
+
+        // After 2s, clear the scale and the celebration
+        setTimeout(() => {
+          set((prev) => {
+            if (!prev.fullState) return prev;
+            const updated = structuredClone(prev.fullState);
+            if (evt.scale_idx >= 0 && evt.scale_idx < updated.scales.length) {
+              updated.scales[evt.scale_idx] = null;
+            }
+            return {
+              fullState: updated,
+              completedScaleIdx: null,
+            };
+          });
+        }, 2000);
+        break; // do NOT fall through – we handle the scale clearing in the timeout
       }
 
       // ── Private: opponent update ──
@@ -197,10 +218,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
 
       default:
-        console.warn("Unhandled event:");
+        break;
     }
 
-    // For all non‑returning cases, update the state preserving winnerId
+    // For non‑returning cases, update the state
     set({
       fullState: s,
       winnerId: state.winnerId,

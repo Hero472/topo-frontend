@@ -6,27 +6,25 @@ export class ScaleManager {
    * Walk the stack and determine the next expected value and suit.
    * Returns null if the stack is internally invalid.
    */
-  private static getNextExpected(
-    stack: Card[]
-  ): { value: number; suit: string } | null {
+  private static getNextExpected(stack: Card[]): number | null {
     if (stack.length === 0) return null;
 
-    const suit = stack[0].suit;
     let expectedValue = 1;
 
     for (const card of stack) {
       if (card.value === 13) {
-        // King → wildcard, advances the expected value by one
+        // King acts as a wildcard – advances the expected number
         expectedValue++;
         continue;
       }
-      if (card.suit !== suit || card.value !== expectedValue) {
-        return null; // invalid stack
+      // Any suit is fine; we just check the value
+      if (card.value !== expectedValue) {
+        return null; // invalid stack order
       }
       expectedValue++;
     }
 
-    return { value: expectedValue, suit };
+    return expectedValue;
   }
 
   /** Check if a card can be placed on an existing non‑empty scale. */
@@ -38,19 +36,19 @@ export class ScaleManager {
     const stack = stacks[scaleId];
     if (!stack || stack.length === 0) return false;
 
-    const next = this.getNextExpected(stack);
-    if (!next) return false;
+    const nextValue = this.getNextExpected(stack);
+    if (nextValue === null) return false;
+
+    const top = stack[stack.length - 1];
 
     // No two consecutive Kings
-    const top = stack[stack.length - 1];
     if (top.value === 13 && card.value === 13) return false;
 
-    if (card.value === 13) {
-      return true;
-    }
+    // King can be played at any time (except consecutive, already checked)
+    if (card.value === 13) return true;
 
-    // Normal card must match expected value and suit
-    return card.value === next.value && card.suit === next.suit;
+    // Normal card – must match the next expected value
+    return card.value === nextValue;
   }
 
   /**
