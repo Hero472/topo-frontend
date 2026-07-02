@@ -7,29 +7,32 @@ import type { Card } from "../types/types";
 export default function CenterArea() {
   const fullState = useGameStore((s) => s.fullState);
   const completedScaleIdx = useGameStore((s) => s.completedScaleIdx);
-  const playCard = useGameStore((s) => s.playCard);
+
+  // Individual action methods
+  const openScale = useGameStore((s) => s.openScale);
+  const playHand = useGameStore((s) => s.playHand);
+  const playSide = useGameStore((s) => s.playSide);
+  const playPersonal = useGameStore((s) => s.playPersonal);
 
   // 8 scale arrays (Card[][])
   const commonStacks = useMemo(() => {
-    if (!fullState) return Array(8).fill([]);
+    if (!fullState) return new Array(8).fill([]);
     return fullState.scales.map((s) => (s ? s.cards : []));
   }, [fullState]);
 
-  // Dealer draw pile (top card face‑up, rest dummies)
+  // Dealer draw pile
   const dealerDrawPile = useMemo(() => {
     if (!fullState) return [];
     const { dealer_top, dealer_count } = fullState;
     if (dealer_count === 0 || !dealer_top) return [];
 
-    // All cards are face‑down, so we only need the deck colour
-    const pile: Card[] = Array.from({ length: dealer_count }, (_, i) => ({
-        id: `dealer-${i}`,
-        suit: "hearts",
-        value: 0,
-        deck: dealer_top,
+    return Array.from({ length: dealer_count }, (_, i) => ({
+      id: `dealer-${i}`,
+      suit: "hearts" as const,
+      value: 0,
+      deck: dealer_top,
     }));
-    return pile;
-    }, [fullState]);
+  }, [fullState]);
 
   // Visible scale slots
   const firstEmptyIdx = commonStacks.findIndex((s) => s.length === 0);
@@ -43,7 +46,10 @@ export default function CenterArea() {
   visibleIndices.sort((a, b) => a - b);
 
   const handleDrop = (card: Card, sourceId: string, scaleIdx: number) => {
+    if (!fullState) return;
+
     const targetStack = commonStacks[scaleIdx];
+    // Validation
     if (targetStack.length > 0 && ScaleManager.isScaleComplete(targetStack)) return;
     if (targetStack.length === 0) {
       const allowedIndex = ScaleManager.openScale(commonStacks, card);
@@ -51,7 +57,34 @@ export default function CenterArea() {
     } else {
       if (!ScaleManager.canPlaceOnScale(commonStacks, scaleIdx, card)) return;
     }
-    playCard(card, sourceId, `center-${scaleIdx}`);
+
+    // Determine the correct action based on the source
+    const handMatch = sourceId.match(/^hand-(current|opponent)$/);
+    if (handMatch && handMatch[1] === "current") {
+      const handIdx = fullState.your_board.hand.findIndex((c) => c.id === card.id);
+      if (handIdx === -1) return;
+
+      if (targetStack.length > 0) {
+        playHand(handIdx, scaleIdx);
+      } else {
+        openScale(handIdx);
+      }
+      return;
+    }
+
+    const sideMatch = sourceId.match(/^personal-current-(\d+)$/);
+    if (sideMatch) {
+      const stackIdx = parseInt(sideMatch[1], 10);
+      playSide(stackIdx, scaleIdx);
+      return;
+    }
+
+    if (sourceId === "personal-current-top") {
+      playPersonal(scaleIdx);
+      return;
+    }
+
+    console.warn("Unknown drop source:", sourceId);
   };
 
   return (

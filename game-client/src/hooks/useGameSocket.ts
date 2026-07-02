@@ -36,9 +36,9 @@ export function useGameSocket(room: string, username: string) {
   }, []);
 
   useEffect(() => {
-    useGameStore.getState().setSendAction(sendAction);
+    useGameStore.getState()._setSend(sendAction);
     return () => {
-      useGameStore.getState().setSendAction(null);
+      useGameStore.getState()._setSend(null);
     };
   }, [sendAction]);
 

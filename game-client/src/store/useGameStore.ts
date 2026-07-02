@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import type { FullState, ServerEvent, Action } from "../types/types";
 
-interface GameStore {
+let _send: ((action: Action) => void) | null = null;
+
+export interface GameStore {
+  // State
   fullState: FullState | null;
   winnerId: string | null;
   timeoutMessage: string | null;
@@ -12,8 +15,16 @@ interface GameStore {
   applyEvent: (payload: ServerEvent) => void;
   clearTimeoutMessage: () => void;
 
-  sendAction: ((action: Action) => void) | null;
-  setSendAction: (fn: ((action: Action) => void) | null) => void;
+  drawCard: () => void;
+  openScale: (handIdx: number) => void;
+  playHand: (handIdx: number, scaleIdx: number) => void;
+  playPersonal: (scaleIdx: number) => void;
+  playSide: (stackIdx: number, scaleIdx: number) => void;
+  moveToSide: (handIdx: number, stackIdx: number) => void;
+  movePersonalToSide: (stackIdx: number) => void;
+
+  // Internal setter – NEVER used by components
+  _setSend: (fn: ((action: Action) => void) | null) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -32,9 +43,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       completedScaleIdx: null,
     }),
 
-  sendAction: null,
-  setSendAction: (fn) => set({ sendAction: fn }),
-
   applyEvent: (evt) => {
     const state = get();
     if (!state.fullState) return;
@@ -43,8 +51,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     let newCanDraw = state.canDraw;
 
     switch (evt.type) {
-      // ... (all existing cases unchanged, except scale_completed – see below)
-
       case "player_joined":
       case "player_left":
         break;
@@ -230,5 +236,40 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  // ── Private setter ──
+  _setSend: (fn) => {
+    _send = fn;
+  },
+
+  // ── Public action methods ──
+  drawCard: () => {
+    _send?.({ type: "draw" });
+  },
+
+  openScale: (handIdx) => {
+    _send?.({ type: "open_scale", hand_idx: handIdx });
+  },
+
+  playHand: (handIdx, scaleIdx) => {
+    _send?.({ type: "play_hand", hand_idx: handIdx, scale_idx: scaleIdx });
+  },
+
+  playPersonal: (scaleIdx) => {
+    _send?.({ type: "play_personal", scale_idx: scaleIdx });
+  },
+
+  playSide: (stackIdx, scaleIdx) => {
+    _send?.({ type: "play_side", stack_idx: stackIdx, scale_idx: scaleIdx });
+  },
+
+  moveToSide: (handIdx, stackIdx) => {
+    _send?.({ type: "move_to_side", hand_idx: handIdx, stack_idx: stackIdx });
+  },
+
+  movePersonalToSide: (stackIdx) => {
+    _send?.({ type: "move_personal_to_side", stack_idx: stackIdx });
+  },
+
   clearTimeoutMessage: () => set({ timeoutMessage: null }),
+
 }));

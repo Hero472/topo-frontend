@@ -11,10 +11,12 @@ interface Props {
 
 export default function PlayerBoard({ playerId, rotated = false }: Props) {
   const fullState = useGameStore((s) => s.fullState);
-  const sendAction = useGameStore((s) => s.sendAction);
   const isCurrent = playerId === "current";
 
-  // Stores the hand index of the currently dragged card
+  // Store action methods
+  const moveToSide = useGameStore((s) => s.moveToSide);
+  const movePersonalToSide = useGameStore((s) => s.movePersonalToSide);
+
   const draggedHandIndex = useRef<number | null>(null);
 
   const hand = useMemo(() => {
@@ -35,45 +37,33 @@ export default function PlayerBoard({ playerId, rotated = false }: Props) {
 
   const rightStack: Card[] = [];
 
-  // Called when a card from the hand starts dragging
-  const handleHandDragStart = (card: Card, sourceStackId: string) => {
-    const idx = hand.indexOf(card);   // reference equality works because we use the same card objects
+  const handleHandDragStart = (card: Card, _sourceStackId: string) => {
+    const idx = hand.indexOf(card);
     if (idx !== -1) {
-        draggedHandIndex.current = idx;
+      draggedHandIndex.current = idx;
     }
   };
 
-  // Clear the index when drag ends (optional, but safe)
   const handleDragEnd = () => {
     draggedHandIndex.current = null;
   };
 
-  // Drop on a side stack ("personal-*")
   const makeSideDropHandler = (stackIdx: number) =>
-    (card: Card, sourceId: string) => {
-      if (!isCurrent || !sendAction) return;
+    (_card: Card, sourceId: string) => {
+      if (!isCurrent) return;
 
       if (sourceId === "hand-current" && draggedHandIndex.current !== null) {
-        sendAction({
-          type: "move_to_side",
-          hand_idx: draggedHandIndex.current,
-          stack_idx: stackIdx,
-        });
+        moveToSide(draggedHandIndex.current, stackIdx);
       } else if (sourceId.startsWith("personal-current")) {
-        sendAction({
-          type: "move_personal_to_side",
-          stack_idx: stackIdx,
-        });
+        movePersonalToSide(stackIdx);
       }
     };
 
-  // Drop on right stack (placeholder)
-  const rightStackHandler = (card: Card, sourceId: string) => {
-    // Implement if needed
+  const rightStackHandler = (_card: Card, _sourceId: string) => {
+    // Placeholder – implement if needed
   };
 
-  // Drop on hand (usually not a valid game action)
-  const handDropHandler = (card: Card, sourceId: string) => {
+  const handDropHandler = (_card: Card, _sourceId: string) => {
     // No-op
   };
 
@@ -122,7 +112,7 @@ export default function PlayerBoard({ playerId, rotated = false }: Props) {
         </div>
       </div>
 
-      {/* Bottom row: hand centered */}
+      {/* Bottom row: hand */}
       <div
         style={{
           flex: 1,

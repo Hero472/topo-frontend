@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useGameSocket } from "../hooks/useGameSocket";
 import { useGameStore } from "../store/useGameStore";
 import GameBoard from "../components/GameBoard";
@@ -7,13 +6,9 @@ export default function GamePage() {
   const room = new URLSearchParams(globalThis.location.search).get("room") ?? "";
   const username = new URLSearchParams(globalThis.location.search).get("username") ?? "";
 
-  const { sendAction, status } = useGameSocket(room, username);
-  const setSendAction = useGameStore((s) => s.setSendAction);
-  const fullState = useGameStore((s) => s.fullState);
+  const { status } = useGameSocket(room, username);
 
-  useEffect(() => {
-    setSendAction(sendAction);
-  }, [sendAction, setSendAction]);
+  const fullState = useGameStore((s) => s.fullState);
 
   if (!fullState || status !== "open") {
     return (
