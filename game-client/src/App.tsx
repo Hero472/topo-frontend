@@ -1,5 +1,4 @@
 import { JoinPage } from "./pages/JoinPage";
-// import { DebugPage } from "./pages/DebugPage";
 import GamePage from "./pages/GamePage";
 
 export default function App() {

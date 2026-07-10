@@ -1,4 +1,3 @@
-// src/game/ScaleManager.ts
 import type { Card } from "../types/types";
 
 export class ScaleManager {

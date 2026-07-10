@@ -1,62 +1,169 @@
+import type { CardDropEvent } from "../hooks/useDropTarget";
+import { useGameStore } from "../store/useGameStore";
+import { canDropOnTarget } from "../utils/canDrop";
+import CenterBoard from "./CenterBoard";
+import OpponentBoard from "./OpponentBoard";
 import PlayerBoard from "./PlayerBoard";
-import CenterArea from "./CenterArea";
 
 export default function GameBoard() {
 
+  const {
+    fullState,
+    drawCard,
+    openScale,
+    playHand,
+    playPersonal,
+    playSide,
+    moveToSide,
+    movePersonalToSide,
+  } = useGameStore();
+
+
+  function handleDrop(event: CardDropEvent) {
+
+    if (!fullState) return;
+
+
+    if (!canDropOnTarget(
+      fullState,
+      event.card,
+      event.targetStackId
+    )) {
+      return;
+    }
+
+
+    switch (event.sourceStackId) {
+
+      case "draw": {
+
+        if (event.targetStackId === "hand") {
+          drawCard();
+        }
+
+        return;
+      }
+
+
+      case "hand": {
+
+        const handIdx =
+          fullState.your_board.hand.findIndex(
+            c => c.id === event.card.id
+          );
+
+
+        if (handIdx === -1) return;
+
+
+        if (event.targetStackId.startsWith("center-")) {
+
+          const scaleIdx =
+            Number(event.targetStackId.split("-")[1]) - 1;
+
+
+          const scale =
+            fullState.scales[scaleIdx];
+
+
+          if (scale === null) {
+            openScale(handIdx);
+          }
+          else {
+            playHand(handIdx, scaleIdx);
+          }
+
+          return;
+        }
+
+
+        if (event.targetStackId.startsWith("side-")) {
+
+          const stackIdx =
+            Number(event.targetStackId.split("-")[1]) - 1;
+
+          moveToSide(handIdx, stackIdx);
+
+          return;
+        }
+
+
+        return;
+      }
+
+
+      case "personal": {
+
+        if (event.targetStackId.startsWith("center-")) {
+
+          const scaleIdx =
+            Number(event.targetStackId.split("-")[1]) - 1;
+
+          playPersonal(scaleIdx);
+
+          return;
+        }
+
+
+        if (event.targetStackId.startsWith("side-")) {
+
+          const stackIdx =
+            Number(event.targetStackId.split("-")[1]) - 1;
+
+          movePersonalToSide(stackIdx);
+
+          return;
+        }
+
+        return;
+      }
+
+    }
+
+
+    if (event.sourceStackId.startsWith("side-")) {
+
+      if (!event.targetStackId.startsWith("center-"))
+        return;
+
+
+      const stackIdx =
+        Number(event.sourceStackId.split("-")[1]) - 1;
+
+
+      const scaleIdx =
+        Number(event.targetStackId.split("-")[1]) - 1;
+
+
+      playSide(stackIdx, scaleIdx);
+    }
+  }
+
+
+  if (!fullState) {
+    return <div>Loading...</div>;
+  }
+
+
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateRows: "1fr auto 1fr",
-        height: "100vh",
-        padding: "14px",
-        gap: "14px",
-        boxSizing: "border-box",
-        background:
-          "radial-gradient(ellipse at center, #1b4d1b 0%, #0a2e0a 100%)",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      {/* Opponent */}
-      <div
-        style={{
-          overflow: "auto",
-          padding: "8px 10px",
-          background: "rgba(255,255,255,0.04)",
-          borderRadius: "10px",
-          backdropFilter: "blur(6px)",
-          minHeight: 0,
-        }}
-      >
-        <PlayerBoard playerId="opponent" rotated />
-      </div>
+    <>
+      <OpponentBoard
+        board={fullState.opponent}
+      />
 
-      {/* Center */}
-      <div
-        style={{
-          background: "rgba(0,0,0,0.25)",
-          borderRadius: "14px",
-          padding: "12px",
-          border: "1px solid rgba(255,255,255,0.06)",
-          backdropFilter: "blur(4px)",
-        }}
-      >
-        <CenterArea />
-      </div>
 
-      {/* Current player */}
-      <div
-        style={{
-          overflow: "auto",
-          padding: "8px 10px",
-          background: "rgba(255,255,255,0.04)",
-          borderRadius: "10px",
-          backdropFilter: "blur(6px)",
-          minHeight: 0,
-        }}
-      >
-        <PlayerBoard playerId="current" />
-      </div>
-    </div>
+      <CenterBoard
+        scales={fullState.scales}
+        dealerCount={fullState.dealer_count}
+        dealerTop={fullState.dealer_top}
+        onDrop={handleDrop}
+      />
+
+
+      <PlayerBoard
+        board={fullState.your_board}
+        onDrop={handleDrop}
+      />
+    </>
   );
 }
