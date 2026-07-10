@@ -29,52 +29,57 @@ export default function CenterBoard({
       <h3>Center</h3>
 
 
-      {/* Scales */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, auto)",
-          gap: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "3rem",
         }}
       >
-        {scales.map((scale, index) => (
-          <CardPile
-            key={index}
-            cards={
-              scale?.cards ?? []
-            }
-            stackId={`center-${index + 1}`}
-            layout="stack"
-            scatter
-            onCardDrop={onDrop}
-            allowedSourceIds={[
-              "hand",
-              "personal",
-              "side-1",
-              "side-2",
-              "side-3",
-              "side-4",
-            ]}
-          />
-        ))}
+        {/* Scales */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, auto)",
+            gap: "1rem",
+          }}
+        >
+          {scales.map((scale, index) => (
+            <CardPile
+              key={index}
+              cards={scale?.cards ?? []}
+              stackId={`center-${index + 1}`}
+              layout="stack"
+              scatter
+              onCardDrop={onDrop}
+              allowedSourceIds={[
+                "hand",
+                "personal",
+                "side-1",
+                "side-2",
+                "side-3",
+                "side-4",
+              ]}
+            />
+          ))}
+        </div>
+
+        {/* Dealer pile */}
+        <CardPile
+          cards={
+            dealerTop
+              ? [{ suit: "spades", value: 0, deck: dealerTop }]
+              : []
+          }
+          stackId="draw"
+          layout="stack"
+          faceDown
+          count={dealerCount}
+          draggable
+          onCardDrop={onDrop}
+          allowedSourceIds={[]}
+        />
       </div>
-
-
-      {/* Draw pile */}
-      <CardPile
-        cards={
-          dealerTop
-            ? [{ suit: "spades", value: 0, deck: dealerTop }]
-            : []
-        }
-        stackId="draw"
-        layout="stack"
-        faceDown
-        count={dealerCount}
-        draggable
-        onCardDrop={onDrop}
-        allowedSourceIds={[]}
-      />
     </section>
   );
 }

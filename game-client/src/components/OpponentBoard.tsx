@@ -23,23 +23,29 @@ export default function OpponentBoard({
   return (
     <section
       style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "2rem",
         border: isMyTurn ? "3px solid #4CAF50" : "3px solid transparent",
         borderRadius: 12,
-        padding: "1rem",
+        padding: "1.5rem",
         opacity: isMyTurn ? 1 : 0.7,
         transition: "all 150ms ease",
       }}
     >
       <h3>{board.username}</h3>
 
-      <CardPile
-        cards={opponentCards}
-        stackId="opponent-hand"
-        layout="hand"
-        faceDown
-        count={board.hand_count}
-        draggable={false}
-      />
+      <div style={{ margin: "1rem" }}>
+        <CardPile
+          cards={opponentCards}
+          stackId="opponent-hand"
+          layout="hand"
+          faceDown
+          count={board.hand_count}
+          draggable={false}
+        />
+      </div>
 
       <div
         style={{

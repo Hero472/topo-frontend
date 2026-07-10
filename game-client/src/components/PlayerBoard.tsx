@@ -16,9 +16,13 @@ export default function PlayerBoard({
   return (
     <section
       style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "2rem", // was 1rem
         border: isMyTurn ? "3px solid #4CAF50" : "3px solid transparent",
         borderRadius: 12,
-        padding: "1rem",
+        padding: "1.5rem",
         opacity: isMyTurn ? 1 : 0.7,
         transition: "all 150ms ease",
       }}
@@ -57,16 +61,18 @@ export default function PlayerBoard({
           ))}
         </div>
 
-        <CardPile
-          cards={board.personal.top ? [board.personal.top] : []}
-          stackId="personal"
-          layout="stack"
-          scatter
-          showOnlyTopFace
-          count={board.personal.count}
-          draggable={isMyTurn}
-          onCardDrop={onDrop}
-        />
+        <div style={{ margin: "1rem" }}>
+          <CardPile
+            cards={board.personal.top ? [board.personal.top] : []}
+            stackId="personal"
+            layout="stack"
+            scatter
+            showOnlyTopFace
+            count={board.personal.count}
+            draggable={isMyTurn}
+            onCardDrop={onDrop}
+          />
+        </div>
       </div>
 
       <CardPile

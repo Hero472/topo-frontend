@@ -79,7 +79,7 @@ export default function CardPile({
   small = false,
   resolution = "x1",
   overlap = 2,
-  offset = 16,
+  offset = 0,
   scatter = false,
   scatterMaxRotation = 2,
   scatterMaxTranslate = 2,
