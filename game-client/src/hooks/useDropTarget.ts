@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDragStore } from "../store/useDragStore";
 import type { Card } from "../types/types";
+import { cardKey } from "../utils/cardKey";
 
 export interface CardDropEvent {
   card: Card;
@@ -62,14 +63,8 @@ export function useDropTarget({
     if (!draggable) return;
 
     const drag = useDragStore.getState();
-
     drag.startDrag(stackId, card);
-
-    e.dataTransfer.setData(
-      "text/plain",
-      card.id
-    );
-
+    e.dataTransfer.setData("text/plain", cardKey(card));
     e.dataTransfer.effectAllowed = "move";
 
     onDragStartCard?.(card, stackId);

@@ -36,13 +36,6 @@ export function useGameSocket(room: string, username: string) {
   }, []);
 
   useEffect(() => {
-    useGameStore.getState()._setSend(sendAction);
-    return () => {
-      useGameStore.getState()._setSend(null);
-    };
-  }, [sendAction]);
-
-  useEffect(() => {
     isUnmounted.current = false;
     let cancelled = false;
 

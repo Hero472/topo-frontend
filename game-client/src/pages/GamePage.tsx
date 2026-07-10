@@ -6,7 +6,7 @@ export default function GamePage() {
   const room = new URLSearchParams(globalThis.location.search).get("room") ?? "";
   const username = new URLSearchParams(globalThis.location.search).get("username") ?? "";
 
-  const { status } = useGameSocket(room, username);
+  const { sendAction, status } = useGameSocket(room, username);
 
   const fullState = useGameStore((s) => s.fullState);
 
@@ -21,5 +21,5 @@ export default function GamePage() {
     );
   }
 
-  return <GameBoard />;
+  return <GameBoard sendAction={sendAction} />;
 }

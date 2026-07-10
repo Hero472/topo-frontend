@@ -5,79 +5,81 @@ import type { CardDropEvent } from "../hooks/useDropTarget";
 interface Props {
   board: PlayerBoardType;
   onDrop: (event: CardDropEvent) => void;
+  isMyTurn: boolean;
 }
 
 export default function PlayerBoard({
   board,
   onDrop,
+  isMyTurn,
 }: Readonly<Props>) {
   return (
     <section
       style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "1rem",
-        alignItems: "center",
+        border: isMyTurn ? "3px solid #4CAF50" : "3px solid transparent",
+        borderRadius: 12,
+        padding: "1rem",
+        opacity: isMyTurn ? 1 : 0.7,
+        transition: "all 150ms ease",
       }}
     >
-      <h3>You</h3>
-
-      {/* Hand */}
-      <div>
-        <CardPile
-          cards={board.hand}
-          stackId="hand"
-          layout="hand"
-          faceDown={false}
-          overlap={1.5}
-          onCardDrop={onDrop}
-          allowedSourceIds={["draw"]}
-        />
-      </div>
-
-
-      {/* Side piles */}
       <div
         style={{
           display: "flex",
-          gap: "0.5rem",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "2rem",
+          width: "100%",
         }}
       >
-        {board.side.map((stack, index) => (
-          <CardPile
-            key={index}
-            cards={stack}
-            stackId={`side-${index + 1}`}
-            layout="stack"
-            offset={16}
-            scatter
-            onCardDrop={onDrop}
-            allowedSourceIds={[
-              "hand",
-              "personal",
-              `side-${index + 1}`,
-            ]}
-          />
-        ))}
-      </div>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+          }}
+        >
+          {board.side.map((stack, index) => (
+            <CardPile
+              key={index}
+              cards={stack}
+              stackId={`side-${index + 1}`}
+              layout="stack"
+              offset={16}
+              scatter
+              draggable={isMyTurn}
+              onCardDrop={onDrop}
+              allowedSourceIds={[
+                "hand",
+                "personal",
+                `side-${index + 1}`,
+              ]}
+            />
+          ))}
+        </div>
 
-
-      {/* Personal pile */}
-      <div>
         <CardPile
-          cards={
-            board.personal.top
-              ? [board.personal.top]
-              : []
-          }
+          cards={board.personal.top ? [board.personal.top] : []}
           stackId="personal"
           layout="stack"
           scatter
           showOnlyTopFace
           count={board.personal.count}
+          draggable={isMyTurn}
           onCardDrop={onDrop}
         />
       </div>
+
+      <CardPile
+        cards={board.hand}
+        stackId="hand"
+        layout="hand"
+        overlap={1.5}
+        draggable={isMyTurn}
+        onCardDrop={onDrop}
+        allowedSourceIds={["draw"]}
+      />
+
+      <h3>You</h3>
     </section>
   );
 }

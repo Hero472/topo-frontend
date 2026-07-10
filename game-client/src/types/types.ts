@@ -1,7 +1,6 @@
 export type DeckColor = "red" | "blue" | "black" | "white"; 
 
 export interface Card {
-  id: string;
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
   value: number;
   deck: DeckColor;

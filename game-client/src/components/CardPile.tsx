@@ -2,6 +2,7 @@ import React from "react";
 import CardView from "./CardView";
 import { useDropTarget, type CardDropEvent } from "../hooks/useDropTarget";
 import type { Card } from "../types/types";
+import { cardKey } from "../utils/cardKey";
 
 interface CardPileProps {
   cards: Card[];
@@ -218,7 +219,7 @@ export default function CardPile({
 
           return (
             <div
-              key={card.id}
+              key={cardKey(card)}
               style={style}
               draggable={
                 draggable &&

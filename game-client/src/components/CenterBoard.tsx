@@ -45,9 +45,7 @@ export default function CenterBoard({
             }
             stackId={`center-${index + 1}`}
             layout="stack"
-            offset={16}
             scatter
-            showOnlyTopFace
             onCardDrop={onDrop}
             allowedSourceIds={[
               "hand",
@@ -66,14 +64,7 @@ export default function CenterBoard({
       <CardPile
         cards={
           dealerTop
-            ? [
-                {
-                  id: "dealer-top",
-                  suit: "spades",
-                  value: 0,
-                  deck: dealerTop,
-                },
-              ]
+            ? [{ suit: "spades", value: 0, deck: dealerTop }]
             : []
         }
         stackId="draw"
