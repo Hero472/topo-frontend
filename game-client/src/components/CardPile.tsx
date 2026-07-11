@@ -10,30 +10,19 @@ interface CardPileProps {
   layout: "stack" | "hand";
   draggable?: boolean;
   allowedSourceIds?: string[];
-
-  onCardDrop?: (
-    event: CardDropEvent
-  ) => void;
-  onDragStartCard?: (
-    card: Card,
-    sourceStackId: string
-  ) => void;
-  onDragEndCard?: (
-    card: Card,
-    sourceStackId: string,
-    targetStackId?: string
-  ) => void;
-
+  onCardDrop?: (event: CardDropEvent) => void;
+  onDragStartCard?: (card: Card, sourceStackId: string) => void;
+  onDragEndCard?: (card: Card, sourceStackId: string, targetStackId?: string) => void;
   allowSelfDrop?: boolean;
   faceDown?: boolean;
   showOnlyTopFace?: boolean;
   small?: boolean;
   resolution?: "x1" | "x2";
-  overlap?: number;
-  offset?: number;
+  overlap?: number;    // in em
+  offset?: number;     // in px (keep as px for fine stacked offsets)
   scatter?: boolean;
   scatterMaxRotation?: number;
-  scatterMaxTranslate?: number;
+  scatterMaxTranslate?: number; // in px
   rotation?: number;
   count?: number;
   emptyLabel?: string;
@@ -50,11 +39,7 @@ function getScatter(
   maxRotation: number,
   maxTranslate: number
 ) {
-  const seed =
-    index * 137 +
-    card.value * 53 +
-    card.suit.length * 17;
-
+  const seed = index * 137 + card.value * 53 + card.suit.length * 17;
   return {
     rotation: (random(seed) * 2 - 1) * maxRotation,
     x: (random(seed + 1) * 2 - 1) * maxTranslate,
@@ -68,11 +53,9 @@ export default function CardPile({
   layout,
   draggable = true,
   allowedSourceIds,
-
   onCardDrop,
   onDragStartCard,
   onDragEndCard,
-
   allowSelfDrop = false,
   faceDown = false,
   showOnlyTopFace = false,
@@ -181,63 +164,31 @@ export default function CardPile({
           const isTop = index === cards.length - 1;
 
           const s = scatter
-            ? getScatter(
-                index,
-                card,
-                scatterMaxRotation,
-                scatterMaxTranslate
-              )
-            : {
-                rotation: 0,
-                x: 0,
-                y: 0,
-              };
+            ? getScatter(index, card, scatterMaxRotation, scatterMaxTranslate)
+            : { rotation: 0, x: 0, y: 0 };
 
           const style: React.CSSProperties = {
             position: "absolute",
-
-            left:
-              layout === "hand"
-                ? `calc(${index} * ${overlap}em)`
-                : 0,
-
-            top:
-              layout === "stack"
-                ? index * offset
-                : 0,
-
+            left: layout === "hand" ? `calc(${index} * ${overlap}em)` : 0,
+            top: layout === "stack" ? index * offset : 0,
             zIndex: index,
-
             transform: `translate(${s.x}px, ${s.y}px) rotate(${s.rotation}deg)`,
-
-            cursor:
-              draggable &&
-              (layout === "hand" || isTop)
-                ? "grab"
-                : "default",
+            cursor: draggable && (layout === "hand" || isTop) ? "grab" : "default",
           };
 
           return (
             <div
               key={cardKey(card)}
               style={style}
-              draggable={
-                draggable &&
-                (layout === "hand" || isTop)
-              }
-              onDragStart={(e) =>
-                handlers.onDragStart(e, card)
-              }
+              draggable={draggable && (layout === "hand" || isTop)}
+              onDragStart={(e) => handlers.onDragStart(e, card)}
               onDragEnd={handlers.onDragEnd}
             >
               <CardView
                 card={card}
                 small={small}
                 resolution={resolution}
-                showBack={
-                  faceDown ||
-                  (showOnlyTopFace && !isTop)
-                }
+                showBack={faceDown || (showOnlyTopFace && !isTop)}
               />
             </div>
           );

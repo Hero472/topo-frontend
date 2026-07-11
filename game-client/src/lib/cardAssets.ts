@@ -59,3 +59,9 @@ export function getCardImageUrl(
     ? imageMapX2[fileName]
     : imageMapX1[fileName];
 }
+
+export function getCardFontSize(small: boolean): string {
+  return small
+    ? "clamp(10px, 1.5vw, 14px)"
+    : "clamp(14px, 2.5vw, 20px)";
+}

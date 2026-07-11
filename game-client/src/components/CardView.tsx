@@ -21,28 +21,33 @@ interface Props {
   small?: boolean;
   showBack?: boolean;
   resolution?: "x1" | "x2";
+  className?: string;
+  style?: React.CSSProperties;
 }
-
 
 export default function CardView({
   card,
   small = false,
   showBack = false,
-  resolution = "x1"
+  resolution = "x1",
+  className,
+  style,
 }: Readonly<Props>) {
-  
   const imageUrl = showBack
     ? getCardBackUrl(card.deck, resolution)
     : getCardImageUrl(card, resolution);
+
+  // Card dimensions in em, driven by the root font size
+  const cardWidth = small ? "4em" : "6em";
+  const cardHeight = small ? "5.6em" : "8.4em";
 
   const containerStyle: React.CSSProperties = {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    // Standard playing‑card ratio (2.5 : 3.5)
-    width: small ? "4em" : "6em",
-    height: small ? "5.6em" : "8.4em",
-    borderRadius: small ? 4 : 6,
+    width: cardWidth,
+    height: cardHeight,
+    borderRadius: small ? "0.25em" : "0.4em",
     backgroundColor: "#fff",
     border: "1px solid #aaa",
     boxShadow: small
@@ -51,12 +56,14 @@ export default function CardView({
     overflow: "hidden",
     lineHeight: 1,
     userSelect: "none",
-    position: "relative",
+    position: "relative" as const,
+    fontSize: small ? "0.7em" : "1em",   // smaller cards get a smaller font
+    ...style,
   };
 
   if (imageUrl) {
     return (
-      <span style={containerStyle}>
+      <span className={className} style={containerStyle}>
         <img
           src={imageUrl}
           alt={
@@ -85,18 +92,16 @@ export default function CardView({
     ...containerStyle,
     backgroundColor: showBack ? "#3a7bd5" : bg,
     border: "1px solid rgba(0,0,0,0.2)",
-    boxShadow: small
-      ? "none"
-      : "0 1px 3px rgba(0,0,0,0.15)",
+    boxShadow: small ? "none" : "0 1px 3px rgba(0,0,0,0.15)",
   };
 
   return (
-    <span style={fallbackContainerStyle}>
+    <span className={className} style={fallbackContainerStyle}>
       {showBack ? (
         <span
           style={{
             color: "#fff",
-            fontSize: small ? "0.8rem" : "1.2rem",
+            fontSize: "1.2em",
             fontWeight: "bold",
           }}
         >
@@ -104,13 +109,12 @@ export default function CardView({
         </span>
       ) : (
         <>
-          {/* Top‑left index */}
           <span
             style={{
               position: "absolute",
-              top: 2,
-              left: 4,
-              fontSize: small ? "0.5rem" : "0.7rem",
+              top: "0.15em",
+              left: "0.3em",
+              fontSize: "0.7em",
               fontWeight: "bold",
               color: suit.color,
               lineHeight: 1,
@@ -120,14 +124,12 @@ export default function CardView({
             <br />
             {suit.symbol}
           </span>
-
-          {/* Bottom‑right index (rotated 180°) */}
           <span
             style={{
               position: "absolute",
-              bottom: 2,
-              right: 4,
-              fontSize: small ? "0.5rem" : "0.7rem",
+              bottom: "0.15em",
+              right: "0.3em",
+              fontSize: "0.7em",
               fontWeight: "bold",
               color: suit.color,
               transform: "rotate(180deg)",
@@ -138,11 +140,9 @@ export default function CardView({
             <br />
             {suit.symbol}
           </span>
-
-          {/* Large centre symbol */}
           <span
             style={{
-              fontSize: small ? "1.5rem" : "2.5rem",
+              fontSize: "2.5em",
               color: suit.color,
             }}
           >
@@ -152,5 +152,4 @@ export default function CardView({
       )}
     </span>
   );
-
 }

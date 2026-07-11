@@ -4,10 +4,8 @@ import type { CardDropEvent } from "../hooks/useDropTarget";
 
 interface Props {
   scales: (Scale | null)[];
-
   dealerCount: number;
   dealerTop: DeckColor | null;
-
   onDrop: (event: CardDropEvent) => void;
 }
 
@@ -17,33 +15,49 @@ export default function CenterBoard({
   dealerTop,
   onDrop,
 }: Readonly<Props>) {
+  const gap = "clamp(0.25rem, 1vw, 1rem)";
+  const padding = "clamp(0.125rem, 0.5vw, 0.5rem)";
+
   return (
     <section
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "1rem",
+        justifyContent: "center",
         alignItems: "center",
+        width: "100%",
+        height: "100%",
+        minWidth: 0,
+        minHeight: 0,
+        overflow: "hidden",
+        gap,
+        padding,
+        boxSizing: "border-box",
       }}
     >
-      <h3>Center</h3>
+      <h3 style={{ margin: 0, fontSize: "clamp(0.8rem, 2.5vw, 1.5rem)", whiteSpace: "nowrap" }}>
+        Center
+      </h3>
 
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "3rem",
-        }}
-      >
-        {/* Scales */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, auto)",
-            gap: "1rem",
-          }}
-        >
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        minWidth: 0,
+        gap,
+        overflow: "hidden",
+        flex: 1,
+        minHeight: 0,
+      }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gap: "clamp(0.125rem, 0.5vw, 0.5rem)",
+          flex: 1,
+          minWidth: 0,
+          overflow: "hidden",
+        }}>
           {scales.map((scale, index) => (
             <CardPile
               key={index}
@@ -52,33 +66,23 @@ export default function CenterBoard({
               layout="stack"
               scatter
               onCardDrop={onDrop}
-              allowedSourceIds={[
-                "hand",
-                "personal",
-                "side-1",
-                "side-2",
-                "side-3",
-                "side-4",
-              ]}
+              allowedSourceIds={["hand","personal","side-1","side-2","side-3","side-4"]}
             />
           ))}
         </div>
 
-        {/* Dealer pile */}
-        <CardPile
-          cards={
-            dealerTop
-              ? [{ suit: "spades", value: 0, deck: dealerTop }]
-              : []
-          }
-          stackId="draw"
-          layout="stack"
-          faceDown
-          count={dealerCount}
-          draggable
-          onCardDrop={onDrop}
-          allowedSourceIds={[]}
-        />
+        <div style={{ flexShrink: 1, minWidth: 0 }}>
+          <CardPile
+            cards={dealerTop ? [{ suit: "spades", value: 0, deck: dealerTop }] : []}
+            stackId="draw"
+            layout="stack"
+            faceDown
+            count={dealerCount}
+            draggable
+            onCardDrop={onDrop}
+            allowedSourceIds={[]}
+          />
+        </div>
       </div>
     </section>
   );
