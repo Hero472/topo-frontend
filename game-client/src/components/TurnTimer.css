@@ -1,0 +1,53 @@
+.turn-timer-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: clamp(280px, 90vw, 500px);
+  padding: clamp(0.4rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.25rem);
+  border-radius: clamp(6px, 1.5vw, 12px);
+  background: #20242a;
+  color: white;
+  font-weight: 600;
+  box-sizing: border-box;
+  gap: clamp(0.25rem, 1vw, 0.5rem);
+  transition: all 150ms ease;
+  
+  /* Centering placeholder helper if integrated inside the game board structure */
+  margin: 0 auto; 
+}
+
+/* Dynamic State Borders */
+.turn-timer-container[data-state="danger"] {
+  border: 2px solid #d32f2f;
+}
+
+.turn-timer-container[data-state="my-turn"] {
+  border: 2px solid #4caf50;
+}
+
+.turn-timer-container[data-state="opponent-turn"] {
+  border: 2px solid #555;
+}
+
+/* Text Element Layouts */
+.turn-timer-label {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+}
+
+.turn-timer-countdown {
+  flex-shrink: 0;
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+  font-variant-numeric: tabular-nums; /* Keeps numbers from shifting horizontally */
+  color: white;
+}
+
+.turn-timer-countdown.is-danger {
+  color: #ff5252;
+}

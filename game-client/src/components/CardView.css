@@ -1,0 +1,74 @@
+.card-view {
+    --card-width: clamp(60px, 10vw, 100px);
+    --card-height: calc(var(--card-width) * 1.4);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: var(--card-width);
+    height: var(--card-height);
+
+    border-radius: clamp(4px, .5vw, 8px);
+
+    overflow: hidden;
+    user-select: none;
+
+    background: white;
+    border: 1px solid #aaa;
+    
+    box-shadow: 0 2px 6px rgba(0,0,0,.2), 0 0 0 1px rgba(0,0,0,.05);
+    position: relative;
+    font-size: calc(var(--card-width) * .12);
+}
+
+
+.card-view.small {
+    --card-width: clamp(35px, 7vw, 60px);
+    box-shadow: none;
+}
+
+
+.card-view img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.card-view.fallback {
+    border: 1px solid rgba(0,0,0,.2);
+}
+
+
+.card-back-symbol {
+    color:white;
+    font-size:2em;
+    font-weight:bold;
+}
+
+
+.corner {
+    position:absolute;
+    font-weight:bold;
+    font-size:1.3em;
+    line-height:1;
+}
+
+
+.corner.top {
+    top:5%;
+    left:8%;
+}
+
+
+.corner.bottom {
+    bottom:5%;
+    right:8%;
+    transform:rotate(180deg);
+}
+
+
+.center-suit {
+    font-size:2.5em;
+}

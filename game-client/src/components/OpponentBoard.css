@@ -1,0 +1,70 @@
+/* Container Fluid Layout */
+.opponent-board-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: all 150ms ease;
+
+  /* Shared Fluid Layout tokens */
+  gap: clamp(0.25rem, 1vw, 0.75rem);
+  padding: clamp(0.25rem, 1vw, 0.75rem);
+  border-radius: clamp(6px, 1.5vw, 12px);
+  
+  /* Active Turn Borders */
+  border: 3px solid transparent;
+  opacity: 0.7;
+}
+
+/* Active Turn Highlight */
+.opponent-board-container[data-active="true"] {
+  border: 3px solid #4caf50;
+  opacity: 1;
+}
+
+/* Text Header Components */
+.opponent-board-title {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-size: clamp(0.8rem, 2.5vw, 1.5rem);
+}
+
+/* Opponent Hand Row */
+.opponent-board-hand-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Piles Section Row */
+.opponent-board-piles-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Personal Pile Frame */
+.opponent-board-personal-pile {
+  display: flex;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  margin-right: clamp(2rem, 6vw, 6rem); /* more space between personal and sides */
+}
+
+/* Side Piles Column Group */
+.opponent-board-side-piles {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: clamp(0.75rem, 3vw, 2rem); /* more space between side piles */
+}

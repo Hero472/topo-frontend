@@ -7,6 +7,7 @@ import CenterBoard from "./CenterBoard";
 import OpponentBoard from "./OpponentBoard";
 import PlayerBoard from "./PlayerBoard";
 import TurnTimer from "./TurnTimer";
+import "./GameBoard.css"; // Import the layout stylesheet
 
 interface Props {
   sendAction: (action: Action) => void;
@@ -98,26 +99,11 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
   }
 
   if (!fullState) {
-    return <div>Loading...</div>;
+    return <div className="game-board-loading">Loading...</div>;
   }
 
   return (
-    <main
-      style={{
-        display: "grid",
-        gridTemplateRows: "1fr auto 1.2fr 1fr",
-        height: "100dvh",
-        width: "100%",
-
-        // Fluid padding & gap for the outermost frame.
-        // Slightly increased max values give more breathing room on large screens.
-        padding: "clamp(0.5rem, 2vw, 1rem)",
-        gap: "clamp(0.5rem, 1.5vw, 1rem)",
-
-        boxSizing: "border-box",
-        overflow: "hidden",
-      }}
-    >
+    <main className="game-board-layout">
       <OpponentBoard
         board={fullState.opponent}
         isMyTurn={!fullState.your_turn}

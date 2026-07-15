@@ -1,6 +1,7 @@
 import CardPile from "./CardPile";
 import type { PlayerBoard as PlayerBoardType } from "../types/types";
 import type { CardDropEvent } from "../hooks/useDropTarget";
+import "./PlayerBoard.css"; // Import the layout stylesheet
 
 interface Props {
   board: PlayerBoardType;
@@ -13,64 +14,22 @@ export default function PlayerBoard({
   onDrop,
   isMyTurn,
 }: Readonly<Props>) {
-  // Fluid measurements – scale with viewport, not container
-  const gap = "clamp(0.25rem, 1vw, 0.75rem)";
-  const padding = "clamp(0.25rem, 1vw, 0.5rem)";
-  const sideGap = "clamp(0.1rem, 0.5vw, 0.25rem)";
-  const borderRadius = "clamp(6px, 1.5vw, 12px)";
-  const titleFontSize = "clamp(0.8rem, 2.5vw, 1.5rem)";
-
   return (
-    <section
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-evenly",
-        alignItems: "center",
-        width: "100%",
-        height: "100%",
-        minWidth: 0,
-        minHeight: 0,
-        gap,
-        padding,
-        border: isMyTurn ? "3px solid #4CAF50" : "3px solid transparent",
-        borderRadius,
-        opacity: isMyTurn ? 1 : 0.7,
-        transition: "all 150ms ease",
-        overflow: "hidden",
-        boxSizing: "border-box",
-      }}
+    <section 
+      className="player-board-container" 
+      data-active={isMyTurn}
     >
       {/* Row: Side piles + Personal pile */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-          minWidth: 0,
-          gap,
-          overflow: "hidden",
-          flexShrink: 1,
-        }}
-      >
-        {/* Side piles */}
-        <div
-          style={{
-            display: "flex",
-            gap: sideGap,
-            minWidth: 0,
-            flexShrink: 1,
-            overflow: "hidden",
-          }}
-        >
+      <div className="player-board-piles-row">
+        {/* Side piles wrapper */}
+        <div className="player-board-side-piles">
           {board.side.map((stack, index) => (
             <CardPile
               key={index}
               cards={stack}
               stackId={`side-${index + 1}`}
               layout="stack"
-              offset={8}
+              offset={26}
               scatter
               draggable={isMyTurn}
               onCardDrop={onDrop}
@@ -83,21 +42,10 @@ export default function PlayerBoard({
           ))}
         </div>
 
-        {/* Personal pile */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            minWidth: 0,
-            flexShrink: 1,
-          }}
-        >
+        {/* Personal pile wrapper */}
+        <div className="player-board-personal-pile">
           <CardPile
-            cards={
-              board.personal.top
-                ? [board.personal.top]
-                : []
-            }
+            cards={board.personal.top ? [board.personal.top] : []}
             stackId="personal"
             layout="stack"
             scatter
@@ -105,21 +53,13 @@ export default function PlayerBoard({
             count={board.personal.count}
             draggable={isMyTurn}
             onCardDrop={onDrop}
+            allowedSourceIds={[]}
           />
         </div>
       </div>
 
       {/* Hand row */}
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          minWidth: 0,
-          overflow: "hidden",
-          flexShrink: 1,
-        }}
-      >
+      <div className="player-board-hand-row">
         <CardPile
           cards={board.hand}
           stackId="hand"
@@ -132,18 +72,7 @@ export default function PlayerBoard({
       </div>
 
       {/* Player name */}
-      <h3
-        style={{
-          margin: 0,
-          fontSize: titleFontSize,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          maxWidth: "100%",
-        }}
-      >
-        You
-      </h3>
+      <h3 className="player-board-title">You</h3>
     </section>
   );
 }

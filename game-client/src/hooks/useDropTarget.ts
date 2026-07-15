@@ -70,22 +70,29 @@ export function useDropTarget({
     onDragStartCard?.(card, stackId);
   }
 
-  function onDragOver(
-    e: React.DragEvent<HTMLElement>
-  ) {
+  function onDragOver(e: React.DragEvent<HTMLElement>) {
     if (!draggable) return;
-
-    const { sourceStackId } =
-      useDragStore.getState();
+    const { sourceStackId } = useDragStore.getState();
 
     if (!sourceStackId) return;
+    if (!canDrop(sourceStackId)) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
 
+    if (!dragOver) {
+      setDragOver(true);
+    }
+  }
+
+  function onDragEnter(e: React.DragEvent<HTMLElement>) {
+    if (!draggable) return;
+
+    const { sourceStackId } = useDragStore.getState();
+    if (!sourceStackId) return;
     if (!canDrop(sourceStackId)) return;
 
     e.preventDefault();
-
-    e.dataTransfer.dropEffect = "move";
-
     if (!dragOver) {
       setDragOver(true);
     }
@@ -97,19 +104,11 @@ export function useDropTarget({
     }
   }
 
-  function onDrop(
-    e: React.DragEvent<HTMLElement>
-  ) {
+  function onDrop(e: React.DragEvent<HTMLElement>) {
     e.preventDefault();
-
     setDragOver(false);
-
     const drag = useDragStore.getState();
-
-    const {
-      draggedCard,
-      sourceStackId,
-    } = drag;
+    const { draggedCard, sourceStackId } = drag;
 
     if (!draggedCard || !sourceStackId) {
       return;
@@ -130,12 +129,7 @@ export function useDropTarget({
 
   function onDragEnd() {
     const drag = useDragStore.getState();
-
-    const {
-      draggedCard,
-      sourceStackId,
-      dropTargetStackId,
-    } = drag;
+    const { draggedCard, sourceStackId, dropTargetStackId } = drag;
 
     if (draggedCard && sourceStackId) {
       onDragEndCard?.(
@@ -146,7 +140,6 @@ export function useDropTarget({
     }
 
     drag.endDrag();
-
     setDragOver(false);
   }
 
@@ -155,6 +148,7 @@ export function useDropTarget({
     handlers: {
       onDragStart,
       onDragOver,
+      onDragEnter,
       onDragLeave,
       onDrop,
       onDragEnd,

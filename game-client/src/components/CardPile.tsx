@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import CardView from "./CardView";
 import { useDropTarget, type CardDropEvent } from "../hooks/useDropTarget";
 import type { Card } from "../types/types";
 import { cardKey } from "../utils/cardKey";
+import "./CardPile.css"; // Import the new CSS file
 
 interface CardPileProps {
   cards: Card[];
@@ -18,8 +19,8 @@ interface CardPileProps {
   showOnlyTopFace?: boolean;
   small?: boolean;
   resolution?: "x1" | "x2";
-  overlap?: number;    // in em
-  offset?: number;     // in px (keep as px for fine stacked offsets)
+  overlap?: number;             // in em
+  offset?: number;              // in px
   scatter?: boolean;
   scatterMaxRotation?: number;
   scatterMaxTranslate?: number; // in px
@@ -33,12 +34,7 @@ function random(seed: number) {
   return x - Math.floor(x);
 }
 
-function getScatter(
-  index: number,
-  card: Card,
-  maxRotation: number,
-  maxTranslate: number
-) {
+function getScatter(index: number, card: Card, maxRotation: number, maxTranslate: number) {
   const seed = index * 137 + card.value * 53 + card.suit.length * 17;
   return {
     rotation: (random(seed) * 2 - 1) * maxRotation,
@@ -80,119 +76,71 @@ export default function CardPile({
     allowSelfDrop,
   });
 
-  const cardWidth = small ? "4em" : "6em";
-  const cardHeight = small ? "5.6em" : "8.4em";
-
-  const width =
-    layout === "hand"
-      ? cards.length === 0
-        ? cardWidth
-        : `calc(${cardWidth} + ${(cards.length - 1) * overlap}em)`
-      : cardWidth;
-
-  const height =
-    layout === "stack"
-      ? cards.length === 0
-        ? cardHeight
-        : `calc(${cardHeight} + ${(cards.length - 1) * offset}px)`
-      : cardHeight;
-
   const badge = count ?? cards.length;
 
+  // Combine parent-level configurations into a clean CSS custom properties object
+  const pileStyles = {
+    "--pile-rotation": `${rotation}deg`,
+    "--overlap-em": `${overlap}em`,
+    "--offset-px": `${offset}px`,
+    "--total-cards": cards.length
+  } as React.CSSProperties;
+
+  const renderedCards = useMemo(() => {
+    return cards.map((card, index) => {
+      const isTop = index === cards.length - 1;
+      const isDraggable = draggable && (layout === "hand" || isTop);
+
+      const s = scatter
+        ? getScatter(index, card, scatterMaxRotation, scatterMaxTranslate)
+        : { rotation: 0, x: 0, y: 0 };
+
+      const itemStyles = {
+        "--card-index": index,
+        "--scatter-x": `${s.x}px`,
+        "--scatter-y": `${s.y}px`,
+        "--scatter-rot": `${s.rotation}deg`,
+      } as React.CSSProperties;
+
+      return (
+        <div
+          key={cardKey(card)}
+          className={`card-pile-item ${isDraggable ? "is-draggable" : ""}`}
+          style={itemStyles}
+          draggable={isDraggable}
+          onDragStart={(e) => handlers.onDragStart(e, card)}
+          onDragEnd={handlers.onDragEnd}
+        >
+          <CardView
+            card={card}
+            small={small}
+            resolution={resolution}
+            showBack={faceDown || (showOnlyTopFace && !isTop)}
+          />
+        </div>
+      );
+    });
+  }, [cards, draggable, layout, scatter, scatterMaxRotation, scatterMaxTranslate, small, resolution, faceDown, showOnlyTopFace, handlers]);
+
   return (
-    <div
-      style={{
-        display: "inline-block",
-        transform: `rotate(${rotation}deg)`,
-      }}
-    >
+    <div className="card-pile-wrapper" style={pileStyles}>
       <div
+        className={`card-pile-container layout-${layout} ${small ? "size-small" : "size-normal"} ${dragOver ? "is-drag-over" : ""}`}
         onDragOver={handlers.onDragOver}
+        onDragEnter={handlers.onDragEnter} // 2. EL ON_DRAG_ENTER VA AQUÍ
         onDragLeave={handlers.onDragLeave}
         onDrop={handlers.onDrop}
-        style={{
-          position: "relative",
-          width,
-          height,
-          outline: dragOver ? "2px dashed #4a90e2" : undefined,
-          outlineOffset: 2,
-          borderRadius: 6,
-          transition: "outline .15s ease",
-        }}
       >
         {cards.length === 0 && emptyLabel && (
-          <span
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#999",
-              userSelect: "none",
-            }}
-          >
-            {emptyLabel}
-          </span>
+          <span className="card-pile-empty-label">{emptyLabel}</span>
         )}
 
         {badge > 1 && (
-          <div
-            style={{
-              position: "absolute",
-              right: 4,
-              bottom: 4,
-              zIndex: 9999,
-              width: small ? "1.2em" : "1.5em",
-              height: small ? "1.2em" : "1.5em",
-              borderRadius: "50%",
-              background: "rgba(0,0,0,.75)",
-              color: "#fff",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              fontWeight: "bold",
-              fontSize: small ? ".65rem" : ".75rem",
-              pointerEvents: "none",
-            }}
-          >
-            {badge}
-          </div>
+          <div className="card-pile-badge">{badge}</div>
         )}
 
-        {cards.map((card, index) => {
-          const isTop = index === cards.length - 1;
-
-          const s = scatter
-            ? getScatter(index, card, scatterMaxRotation, scatterMaxTranslate)
-            : { rotation: 0, x: 0, y: 0 };
-
-          const style: React.CSSProperties = {
-            position: "absolute",
-            left: layout === "hand" ? `calc(${index} * ${overlap}em)` : 0,
-            top: layout === "stack" ? index * offset : 0,
-            zIndex: index,
-            transform: `translate(${s.x}px, ${s.y}px) rotate(${s.rotation}deg)`,
-            cursor: draggable && (layout === "hand" || isTop) ? "grab" : "default",
-          };
-
-          return (
-            <div
-              key={cardKey(card)}
-              style={style}
-              draggable={draggable && (layout === "hand" || isTop)}
-              onDragStart={(e) => handlers.onDragStart(e, card)}
-              onDragEnd={handlers.onDragEnd}
-            >
-              <CardView
-                card={card}
-                small={small}
-                resolution={resolution}
-                showBack={faceDown || (showOnlyTopFace && !isTop)}
-              />
-            </div>
-          );
-        })}
+        {/* 4. Renderizado directo optimizado */}
+        {renderedCards}
       </div>
     </div>
   );
