@@ -72,17 +72,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
               )
           );
 
-          for (const stack of s.your_board.side) {
-            if (stack.length > 0) {
-              const top = stack[stack.length - 1];
-              if (
-                top.suit === evt.card.suit &&
-                top.value === evt.card.value &&
-                top.deck === evt.card.deck
-              ) {
-                stack.pop();
-                break;
-              }
+          for (let index = 0; index < s.your_board.side.length; index++) {
+            const stack = s.your_board.side[index];
+
+            if (stack.length === 0) continue;
+
+            const top = stack[stack.length - 1];
+
+            if (
+              top.suit === evt.card.suit &&
+              top.value === evt.card.value &&
+              top.deck === evt.card.deck
+            ) {
+              const side = [...s.your_board.side] as typeof s.your_board.side;
+              side[index] = side[index].slice(0, -1);
+              s.your_board.side = side;
+              break;
             }
           }
 
@@ -94,12 +99,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
         if (scale_idx >= 0 && scale_idx < s.scales.length) {
           const scale = s.scales[scale_idx];
           if (scale) {
-            scale.cards.push(card);
+            s.scales[scale_idx] = {
+              ...scale,
+              cards: [...scale.cards, card],
+            };
           } else {
             s.scales[scale_idx] = {
               scale_idx,
               cards: [card],
             };
+            console.log(s.scales);
           }
         }
         break;

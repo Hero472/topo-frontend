@@ -106,19 +106,23 @@ export function useDropTarget({
 
   function onDrop(e: React.DragEvent<HTMLElement>) {
     e.preventDefault();
-    setDragOver(false);
+
     const drag = useDragStore.getState();
     const { draggedCard, sourceStackId } = drag;
 
     if (!draggedCard || !sourceStackId) {
+      cleanupDrag();
       return;
     }
 
     if (!canDrop(sourceStackId)) {
+      cleanupDrag();
       return;
     }
 
     drag.setDropTarget(stackId);
+
+    cleanupDrag();
 
     onCardDrop?.({
       card: draggedCard,
@@ -139,7 +143,14 @@ export function useDropTarget({
       );
     }
 
-    drag.endDrag();
+    cleanupDrag();
+  }
+
+  function cleanupDrag() {
+    const drag = useDragStore.getState();
+
+    if (drag.isDragging) drag.endDrag();
+
     setDragOver(false);
   }
 

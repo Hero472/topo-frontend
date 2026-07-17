@@ -31,9 +31,7 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
       }
 
       case "hand": {
-        const handIdx = fullState.your_board.hand.findIndex(
-          (c) => cardKey(c) === cardKey(event.card)
-        );
+        const handIdx = fullState.your_board.hand.findIndex((c) => cardKey(c) === cardKey(event.card));
         if (handIdx === -1) return;
 
         if (event.targetStackId.startsWith("center-")) {

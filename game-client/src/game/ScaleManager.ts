@@ -64,4 +64,34 @@ export class ScaleManager {
   static isScaleComplete(stack: Card[]): boolean {
     return stack.length === 12;
   }
+
+  // Non backend queries
+
+  static firstFreeScale(stacks: Card[][]): number | null {
+    const idx = stacks.findIndex(stack => stack.length === 0);
+    return idx === -1 ? null : idx;
+  }
+
+  static lastOccupiedScale(stacks: Card[][]): number {
+    return stacks.reduce((last, stack, index) => stack.length > 0 ? index : last, -1);
+  }
+
+  static visibleScaleIndices(stacks: Card[][]): number[] {
+    const indices: number[] = [];
+    const lastOccupied = this.lastOccupiedScale(stacks);
+
+    if (lastOccupied === -1)
+      return [0];
+
+    for (let i = 0; i <= lastOccupied; i++)
+      indices.push(i);
+
+    const firstFree = this.firstFreeScale(stacks);
+
+    if (firstFree !== null && !indices.includes(firstFree)) {
+      indices.push(firstFree);
+    }
+
+    return indices.sort((a, b) => a - b);
+  }
 }

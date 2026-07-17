@@ -1,7 +1,8 @@
 import CardPile from "./CardPile";
 import type { Scale, DeckColor } from "../types/types";
 import type { CardDropEvent } from "../hooks/useDropTarget";
-import "./CenterBoard.css"; // Import the layout stylesheet
+import "./CenterBoard.css";
+import { ScaleManager } from "../game/ScaleManager";
 
 interface Props {
   scales: (Scale | null)[];
@@ -16,17 +17,20 @@ export default function CenterBoard({
   dealerTop,
   onDrop,
 }: Readonly<Props>) {
+  const stacks = scales.map(s => s?.cards ?? []);
+
+  const visible = ScaleManager.visibleScaleIndices(stacks);
+
   return (
     <section className="center-board-container">
       <h3 className="center-board-title">Center</h3>
 
       <div className="center-board-content">
-        {/* Scales Grid System */}
         <div className="center-board-scales-grid">
-          {scales.map((scale, index) => (
+          {visible.map((_, index) => (
             <CardPile
               key={index}
-              cards={scale?.cards ?? []}
+              cards={stacks[index]}
               stackId={`center-${index + 1}`}
               layout="stack"
               scatter
@@ -43,10 +47,13 @@ export default function CenterBoard({
           ))}
         </div>
 
-        {/* Dealer Deck Frame */}
         <div className="center-board-dealer-wrapper">
           <CardPile
-            cards={dealerTop ? [{ suit: "spades", value: 0, deck: dealerTop }] : []}
+            cards={
+              dealerTop
+                ? [{ suit: "spades", value: 0, deck: dealerTop }]
+                : []
+            }
             stackId="draw"
             layout="stack"
             faceDown
