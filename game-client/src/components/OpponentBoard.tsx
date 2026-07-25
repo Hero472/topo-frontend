@@ -66,7 +66,7 @@ export default function OpponentBoard({
               cards={stack}
               stackId={`opponent-side-${index + 1}`}
               layout="stack"
-              offset={16}
+              offset={26}
               scatter
               draggable={false}
             />

@@ -32,18 +32,14 @@
   outline: 2px dashed #4a90e2;
 }
 
-/* FIX: Dynamically calculate container sizes using the total card count 
-  passed down from the CSS variables.
-*/
+/* Dynamically calculate container sizes using the total card count */
 .card-pile-container.layout-hand {
-  /* Width = Base card width + (Total cards - 1) * overlap */
   width: calc(var(--card-w) + (var(--total-cards) - 1) * var(--overlap-em));
   height: var(--card-h);
 }
 
 .card-pile-container.layout-stack {
   width: var(--card-w);
-  /* Height = Base card height + (Total cards - 1) * offset */
   height: calc(var(--card-h) + (var(--total-cards) - 1) * var(--offset-px));
 }
 
@@ -60,6 +56,8 @@
   align-items: center;
   color: #999;
   user-select: none;
+  font-size: 0.85em;
+  opacity: 0.7;
 }
 
 .card-pile-badge {

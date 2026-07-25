@@ -3,7 +3,7 @@ import CardView from "./CardView";
 import { useDropTarget, type CardDropEvent } from "../hooks/useDropTarget";
 import type { Card } from "../types/types";
 import { cardKey } from "../utils/cardKey";
-import "./CardPile.css"; // Import the new CSS file
+import "./CardPile.css";
 
 interface CardPileProps {
   cards: Card[];
@@ -77,6 +77,7 @@ export default function CardPile({
   });
 
   const badge = count ?? cards.length;
+  const displayEmptyLabel = emptyLabel || stackId;   // show the stackId when empty
 
   // Combine parent-level configurations into a clean CSS custom properties object
   const pileStyles = {
@@ -126,20 +127,20 @@ export default function CardPile({
     <div className="card-pile-wrapper" style={pileStyles}>
       <div
         className={`card-pile-container layout-${layout} ${small ? "size-small" : "size-normal"} ${dragOver ? "is-drag-over" : ""}`}
+        data-empty={cards.length === 0 || undefined}
         onDragOver={handlers.onDragOver}
-        onDragEnter={handlers.onDragEnter} // 2. EL ON_DRAG_ENTER VA AQUÍ
+        onDragEnter={handlers.onDragEnter}
         onDragLeave={handlers.onDragLeave}
         onDrop={handlers.onDrop}
       >
-        {cards.length === 0 && emptyLabel && (
-          <span className="card-pile-empty-label">{emptyLabel}</span>
+        {cards.length === 0 && displayEmptyLabel && (
+          <span className="card-pile-empty-label">{displayEmptyLabel}</span>
         )}
 
         {badge > 1 && (
           <div className="card-pile-badge">{badge}</div>
         )}
 
-        {/* 4. Renderizado directo optimizado */}
         {renderedCards}
       </div>
     </div>
