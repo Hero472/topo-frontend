@@ -1,8 +1,8 @@
 import CardPile from "./CardPile";
-import type { Scale, DeckColor } from "../types/types";
-import type { CardDropEvent } from "../hooks/useDropTarget";
+import type { Scale, DeckColor } from "../../types/types";
+import type { CardDropEvent } from "../../hooks/useDropTarget";
 import "./CenterBoard.css";
-import { ScaleManager } from "../game/ScaleManager";
+import { ScaleManager } from "../../game/ScaleManager";
 
 interface Props {
   scales: (Scale | null)[];

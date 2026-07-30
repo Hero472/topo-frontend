@@ -1,5 +1,5 @@
-import { getCardImageUrl, getCardBackUrl } from "../lib/cardAssets";
-import type { Card } from "../types/types";
+import { getCardImageUrl, getCardBackUrl } from "../../lib/cardAssets";
+import type { Card } from "../../types/types";
 import "./CardView.css";
 
 interface Props {

@@ -1,8 +1,8 @@
-import type { CardDropEvent } from "../hooks/useDropTarget";
-import { useGameStore } from "../store/useGameStore";
-import type { Action } from "../types/types";
-import { canDropOnTarget } from "../utils/canDrop";
-import { cardKey } from "../utils/cardKey";
+import type { CardDropEvent } from "../../hooks/useDropTarget";
+import { useGameStore } from "../../store/useGameStore";
+import type { Action } from "../../types/types";
+import { canDropOnTarget } from "../../utils/canDrop";
+import { cardKey } from "../../utils/cardKey";
 import CenterBoard from "./CenterBoard";
 import OpponentBoard from "./OpponentBoard";
 import PlayerBoard from "./PlayerBoard";

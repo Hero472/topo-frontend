@@ -1,6 +1,6 @@
 import CardPile from "./CardPile";
-import type { PlayerBoard as PlayerBoardType } from "../types/types";
-import type { CardDropEvent } from "../hooks/useDropTarget";
+import type { PlayerBoard as PlayerBoardType } from "../../types/types";
+import type { CardDropEvent } from "../../hooks/useDropTarget";
 import "./PlayerBoard.css"; // Import the layout stylesheet
 
 interface Props {

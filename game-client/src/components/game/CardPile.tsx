@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import CardView from "./CardView";
-import { useDropTarget, type CardDropEvent } from "../hooks/useDropTarget";
-import type { Card } from "../types/types";
-import { cardKey } from "../utils/cardKey";
+import { useDropTarget, type CardDropEvent } from "../../hooks/useDropTarget";
+import type { Card } from "../../types/types";
+import { cardKey } from "../../utils/cardKey";
 import "./CardPile.css";
 
 interface CardPileProps {
