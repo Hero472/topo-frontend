@@ -2,53 +2,67 @@ import { create } from "zustand";
 import type { Card } from "../types/types";
 
 interface DragState {
-  isDragging: boolean;
-  draggedCard: Card | null;
-  sourceStackId: string | null;
-  sourceIndex: number | null;
-  dropTargetStackId: string | null;
+  dragging: boolean;
 
-  startDrag: (
-    sourceStackId: string,
-    card: Card
-  ) => void;
-  setDropTarget: (
-    stackId: string | null
-  ) => void;
-  endDrag: () => void;
-  reset: () => void;
+  card: Card | null;
+
+  sourceStackId: string | null;
+
+  x: number;
+  y: number;
+
+  hoverStackId: string | null;
+
+  startDrag(
+    card: Card,
+    stackId: string,
+    x: number,
+    y: number
+  ): void;
+
+  move(x: number, y: number): void;
+
+  setHover(stackId: string | null): void;
+
+  endDrag(): void;
 }
 
 export const useDragStore = create<DragState>((set) => ({
-  isDragging: false,
-  draggedCard: null,
+  dragging: false,
+  card: null,
   sourceStackId: null,
-  dropTargetStackId: null,
-  sourceIndex: null,
+  x: 0,
+  y: 0,
+  hoverStackId: null,
 
-  startDrag: (sourceStackId, card) =>
+  startDrag: (card, stackId, x, y) =>
     set({
-      isDragging: true,
-      draggedCard: card,
-      sourceStackId,
-      dropTargetStackId: null,
+      dragging: true,
+      card,
+      sourceStackId: stackId,
+      x,
+      y,
+      hoverStackId: null,
     }),
-  setDropTarget: (stackId) =>
+
+  move: (x, y) =>
     set({
-      dropTargetStackId: stackId,
+      x,
+      y,
     }),
+
+  setHover: (stackId) =>
+    set({
+      hoverStackId: stackId,
+    }),
+
   endDrag: () =>
     set({
-      isDragging: false,
-      draggedCard: null,
+      dragging: false,
+      card: null,
       sourceStackId: null,
-      dropTargetStackId: null,
-    }),
-  reset: () =>
-    set({
-      isDragging: false,
-      draggedCard: null,
-      sourceStackId: null,
-      dropTargetStackId: null,
+      x: 0,
+      y: 0,
+      hoverStackId: null,
     }),
 }));

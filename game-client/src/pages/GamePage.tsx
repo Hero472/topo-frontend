@@ -2,6 +2,7 @@ import { useGameSocket } from "../hooks/useGameSocket";
 import { useGameStore } from "../store/useGameStore";
 import GameBoard from "../components/game/GameBoard";
 import "./GamePage.css";
+import DragOverlay from "../components/DragOverlay";
 
 export default function GamePage() {
   const room = new URLSearchParams(globalThis.location.search).get("room") ?? "";
@@ -33,6 +34,7 @@ export default function GamePage() {
   return (
     <div className="game-page game-board-container">
       <GameBoard sendAction={sendAction} />
+      <DragOverlay/>
     </div>
   );
 }
