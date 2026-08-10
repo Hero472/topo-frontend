@@ -86,6 +86,8 @@
   z-index: var(--card-index);
   cursor: default;
   transform: translate(var(--scatter-x, 0px), var(--scatter-y, 0px)) rotate(var(--scatter-rot, 0deg));
+  touch-action: none;
+  user-select: none;
 }
 
 .card-pile-container.layout-hand .card-pile-item {

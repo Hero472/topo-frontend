@@ -52,6 +52,7 @@ export default function CardView({
       <span
         className={`card-view ${small ? "small" : ""} ${className ?? ""}`}
         style={style}
+        draggable={false}
       >
         <img
           src={imageUrl}
@@ -61,6 +62,7 @@ export default function CardView({
               : `${getDisplayValue(card.value)} of ${card.suit}`
           }
           loading="lazy"
+          draggable={false}
         />
       </span>
     );
@@ -78,6 +80,7 @@ export default function CardView({
         backgroundColor: showBack ? "#3a7bd5" : bg,
         ...style,
       }}
+      draggable={false}
     >
 
       {showBack ? (

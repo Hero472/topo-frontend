@@ -52,7 +52,7 @@ export default function OpponentBoard({
         <div className="opponent-board-side-piles">
           {board.side.map((stack, index) => (
             <CardPile
-              key={index}
+              key={`side-${index}`}
               cards={stack}
               stackId={`opponent-side-${index + 1}`}
               layout="stack"

@@ -1,29 +1,36 @@
-import React, { useMemo } from "react";
+import React from "react";
 import CardView from "./CardView";
 import { useDropTarget, type CardDropEvent } from "../../hooks/useDropTarget";
+import { useDrag } from "../../hooks/useDrag";
 import type { Card } from "../../types/types";
 import { cardKey } from "../../utils/cardKey";
 import "./CardPile.css";
+import { useDragStore } from "../../store/useDragStore";
 
 interface CardPileProps {
   cards: Card[];
   stackId: string;
   layout: "stack" | "hand";
+
   draggable?: boolean;
   allowedSourceIds?: string[];
-  onCardDrop?: (event: CardDropEvent) => void;
-  onDragStartCard?: (card: Card, sourceStackId: string) => void;
-  onDragEndCard?: (card: Card, sourceStackId: string, targetStackId?: string) => void;
   allowSelfDrop?: boolean;
+
+  onCardDrop?: (event: CardDropEvent) => void;
+
   faceDown?: boolean;
   showOnlyTopFace?: boolean;
+
   small?: boolean;
   resolution?: "x1" | "x2";
+
   overlap?: number;             // in em
   offset?: number;              // in px
+
   scatter?: boolean;
   scatterMaxRotation?: number;
   scatterMaxTranslate?: number; // in px
+
   rotation?: number;
   count?: number;
   emptyLabel?: string;
@@ -43,6 +50,59 @@ function getScatter(index: number, card: Card, maxRotation: number, maxTranslate
   };
 }
 
+function DraggableCard({
+  card,
+  stackId,
+  draggable,
+  itemStyles,
+  small,
+  resolution,
+  showBack,
+  onCardDrop,
+}: Readonly<{
+  card: Card;
+  stackId: string;
+  draggable: boolean;
+  itemStyles: React.CSSProperties;
+  small: boolean;
+  resolution: "x1" | "x2";
+  showBack: boolean;
+  onCardDrop?: (event: CardDropEvent) => void;
+}>) {
+  const drag = useDrag({
+    card,
+    stackId,
+    enabled: draggable,
+    onDrop: onCardDrop,
+  });
+
+  const dragging = useDragStore(
+    (s) =>
+      s.dragging &&
+      s.sourceStackId === stackId &&
+      s.card != null &&
+      cardKey(s.card) === cardKey(card)
+  );
+
+  return (
+    <div
+      className={`card-pile-item ${draggable ? "is-draggable" : ""}`}
+      style={{
+        ...itemStyles,
+        opacity: dragging ? 0 : 1,
+      }}
+      onPointerDown={drag.onPointerDown}
+    >
+      <CardView
+        card={card}
+        small={small}
+        resolution={resolution}
+        showBack={showBack}
+      />
+    </div>
+  );
+}
+
 export default function CardPile({
   cards,
   stackId,
@@ -50,8 +110,6 @@ export default function CardPile({
   draggable = true,
   allowedSourceIds,
   onCardDrop,
-  onDragStartCard,
-  onDragEndCard,
   allowSelfDrop = false,
   faceDown = false,
   showOnlyTopFace = false,
@@ -66,15 +124,7 @@ export default function CardPile({
   count,
   emptyLabel = "",
 }: Readonly<CardPileProps>) {
-  const { dragOver, handlers } = useDropTarget({
-    stackId,
-    draggable,
-    allowedSourceIds,
-    onCardDrop,
-    onDragStartCard,
-    onDragEndCard,
-    allowSelfDrop,
-  });
+  const { ref, dragOver } = useDropTarget({ stackId, allowedSourceIds, allowSelfDrop });
 
   const badge = count ?? cards.length;
   const displayEmptyLabel = emptyLabel || stackId;   // show the stackId when empty
@@ -87,58 +137,68 @@ export default function CardPile({
     "--total-cards": cards.length
   } as React.CSSProperties;
 
-  const renderedCards = useMemo(() => {
-    return cards.map((card, index) => {
-      const isTop = index === cards.length - 1;
-      const isDraggable = draggable && (layout === "hand" || isTop);
+  const renderedCards = cards.map((card, index) => {
+    const isTop = index === cards.length - 1;
+    const canDrag =
+      draggable && (layout === "hand" || isTop);
 
-      const s = scatter
-        ? getScatter(index, card, scatterMaxRotation, scatterMaxTranslate)
-        : { rotation: 0, x: 0, y: 0 };
+    const scatterValues = scatter
+      ? getScatter(
+          index,
+          card,
+          scatterMaxRotation,
+          scatterMaxTranslate
+        )
+      : {
+          rotation: 0,
+          x: 0,
+          y: 0,
+        };
 
-      const itemStyles = {
-        "--card-index": index,
-        "--scatter-x": `${s.x}px`,
-        "--scatter-y": `${s.y}px`,
-        "--scatter-rot": `${s.rotation}deg`,
-      } as React.CSSProperties;
+    const itemStyles = {
+      "--card-index": index,
+      "--scatter-x": `${scatterValues.x}px`,
+      "--scatter-y": `${scatterValues.y}px`,
+      "--scatter-rot": `${scatterValues.rotation}deg`,
+    } as React.CSSProperties;
 
-      return (
-        <div
-          key={cardKey(card)}
-          className={`card-pile-item ${isDraggable ? "is-draggable" : ""}`}
-          style={itemStyles}
-          draggable={isDraggable}
-          onDragStart={(e) => handlers.onDragStart(e, card)}
-          onDragEnd={handlers.onDragEnd}
-        >
-          <CardView
-            card={card}
-            small={small}
-            resolution={resolution}
-            showBack={faceDown || (showOnlyTopFace && !isTop)}
-          />
-        </div>
-      );
-    });
-  }, [cards, draggable, layout, scatter, scatterMaxRotation, scatterMaxTranslate, small, resolution, faceDown, showOnlyTopFace, handlers]);
+    return (
+      <DraggableCard
+        key={cardKey(card)}
+        card={card}
+        stackId={stackId}
+        draggable={canDrag}
+        itemStyles={itemStyles}
+        small={small}
+        resolution={resolution}
+        showBack={
+          faceDown ||
+          (showOnlyTopFace && !isTop)
+        }
+        onCardDrop={onCardDrop}
+      />
+    );
+  });
 
   return (
     <div className="card-pile-wrapper" style={pileStyles}>
       <div
-        className={`card-pile-container layout-${layout} ${small ? "size-small" : "size-normal"} ${dragOver ? "is-drag-over" : ""}`}
+        ref={ref}
+        className={`card-pile-container layout-${layout} ${
+          small ? "size-small" : "size-normal"
+        } ${dragOver ? "is-drag-over" : ""}`}
         data-empty={cards.length === 0 || undefined}
-        onDragOver={handlers.onDragOver}
-        onDragEnter={handlers.onDragEnter}
-        onDragLeave={handlers.onDragLeave}
-        onDrop={handlers.onDrop}
       >
         {cards.length === 0 && displayEmptyLabel && (
-          <span className="card-pile-empty-label">{displayEmptyLabel}</span>
+          <span className="card-pile-empty-label">
+            {displayEmptyLabel}
+          </span>
         )}
 
         {badge > 1 && (
-          <div className="card-pile-badge">{badge}</div>
+          <div className="card-pile-badge">
+            {badge}
+          </div>
         )}
 
         {renderedCards}
