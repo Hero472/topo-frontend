@@ -1,5 +1,5 @@
 import CardPile from "./CardPile";
-import type { Card, OpponentBoard as OpponentBoardType } from "../../types/types";
+import type { OpponentBoard as OpponentBoardType } from "../../types/types";
 import "./OpponentBoard.css"; // Import the layout stylesheet
 
 interface Props {
@@ -11,15 +11,6 @@ export default function OpponentBoard({
   board,
   isMyTurn,
 }: Readonly<Props>) {
-  // Mock standard hidden card entities matching opponent hand size
-  const opponentCards: Card[] = Array.from(
-    { length: board.hand_count },
-    (_, i) => ({
-      suit: "spades",
-      value: (i % 13) + 1,
-      deck: "red",
-    })
-  );
 
   return (
     <section 
@@ -34,11 +25,10 @@ export default function OpponentBoard({
       {/* Opponent’s hand pile */}
       <div className="opponent-board-hand-row">
         <CardPile
-          cards={opponentCards}
+          cards={board.hand}
           stackId="opponent-hand"
           layout="hand"
           faceDown
-          count={board.hand_count}
           draggable={false}
         />
       </div>

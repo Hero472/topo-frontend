@@ -108,7 +108,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
               scale_idx,
               cards: [card],
             };
-            console.log(s.scales);
           }
         }
         break;
@@ -143,6 +142,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           ...s.opponent,
           personal_count: evt.personal_count,
           personal_top: evt.personal_top,
+          hand: evt.hand,
           side: evt.side,
         };
         break;

@@ -22,7 +22,7 @@ export interface PlayerBoard {
 export interface OpponentBoard {
   player_idx: number;
   username: string;
-  hand_count: number;
+  hand: Card[];
   personal_count: number;
   personal_top: Card | null;
   side: [Card[], Card[], Card[], Card[]];
@@ -116,6 +116,7 @@ export type ServerEvent =
       type: "opponent_update";
       player_id: string;
       player_idx: number;
+      hand: Card[];
       personal_count: number;
       personal_top: Card | null;
       side: [Card[], Card[], Card[], Card[]];
