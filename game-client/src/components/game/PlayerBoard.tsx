@@ -25,7 +25,7 @@ export default function PlayerBoard({
         <div className="player-board-side-piles">
           {board.side.map((stack, index) => (
             <CardPile
-              key={index}
+              key={`side-${index}`}
               cards={stack}
               stackId={`side-${index + 1}`}
               layout="stack"

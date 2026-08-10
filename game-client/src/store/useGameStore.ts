@@ -108,7 +108,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
               scale_idx,
               cards: [card],
             };
-            console.log(s.scales);
           }
         }
         break;

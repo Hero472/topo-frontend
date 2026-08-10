@@ -7,19 +7,19 @@ interface Props {
   isMyTurn: boolean;
 }
 
+function createHiddenCards(count: number): Card[] {
+  return Array.from({ length: count }, (_, i) => ({
+    suit: "spades",
+    value: (i % 13) + 1,
+    deck: "red",
+  }));
+}
+
 export default function OpponentBoard({
   board,
   isMyTurn,
 }: Readonly<Props>) {
-  // Mock standard hidden card entities matching opponent hand size
-  const opponentCards: Card[] = Array.from(
-    { length: board.hand_count },
-    (_, i) => ({
-      suit: "spades",
-      value: (i % 13) + 1,
-      deck: "red",
-    })
-  );
+  const opponentCards = createHiddenCards(board.hand_count);
 
   return (
     <section 
@@ -62,7 +62,7 @@ export default function OpponentBoard({
         <div className="opponent-board-side-piles">
           {board.side.map((stack, index) => (
             <CardPile
-              key={index}
+              key={`side-${index}`}
               cards={stack}
               stackId={`opponent-side-${index + 1}`}
               layout="stack"

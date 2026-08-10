@@ -11,6 +11,16 @@ interface Props {
   onDrop: (event: CardDropEvent) => void;
 }
 
+const CENTER_ALLOWED_SOURCES = [
+  "hand",
+  "personal",
+  "side-1",
+  "side-2",
+  "side-3",
+  "side-4",
+];
+
+
 export default function CenterBoard({
   scales,
   dealerCount,
@@ -18,12 +28,13 @@ export default function CenterBoard({
   onDrop,
 }: Readonly<Props>) {
   const stacks = scales.map(s => s?.cards ?? []);
-
   const visible = ScaleManager.visibleScaleIndices(stacks);
 
   return (
     <section className="center-board-container">
-      <h3 className="center-board-title">Center</h3>
+      <h3 className="center-board-title">
+        Center
+      </h3>
 
       <div className="center-board-content">
         <div className="center-board-scales-grid">
@@ -35,14 +46,7 @@ export default function CenterBoard({
               layout="stack"
               scatter
               onCardDrop={onDrop}
-              allowedSourceIds={[
-                "hand",
-                "personal",
-                "side-1",
-                "side-2",
-                "side-3",
-                "side-4",
-              ]}
+              allowedSourceIds={CENTER_ALLOWED_SOURCES}
             />
           ))}
         </div>
@@ -51,7 +55,13 @@ export default function CenterBoard({
           <CardPile
             cards={
               dealerTop
-                ? [{ suit: "spades", value: 0, deck: dealerTop }]
+                ? [
+                    {
+                      suit: "spades",
+                      value: 0,
+                      deck: dealerTop,
+                    },
+                  ]
                 : []
             }
             stackId="draw"
