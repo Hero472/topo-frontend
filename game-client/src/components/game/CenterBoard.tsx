@@ -1,5 +1,5 @@
 import CardPile from "./CardPile";
-import type { Scale, DeckColor } from "../../types/types";
+import type { Scale, DeckColor, Card } from "../../types/types";
 import type { CardDropEvent } from "../../hooks/useDropTarget";
 import "./CenterBoard.css";
 import { ScaleManager } from "../../game/ScaleManager";
@@ -7,7 +7,7 @@ import { ScaleManager } from "../../game/ScaleManager";
 interface Props {
   scales: (Scale | null)[];
   dealerCount: number;
-  dealerTop: DeckColor | null;
+  dealerPreview: DeckColor[];
   onDrop: (event: CardDropEvent) => void;
 }
 
@@ -24,11 +24,19 @@ const CENTER_ALLOWED_SOURCES = [
 export default function CenterBoard({
   scales,
   dealerCount,
-  dealerTop,
+  dealerPreview,
   onDrop,
 }: Readonly<Props>) {
   const stacks = scales.map(s => s?.cards ?? []);
   const visible = ScaleManager.visibleScaleIndices(stacks);
+
+  const dealerCards: Card[] = [...dealerPreview]
+    .reverse()
+    .map((deck) => ({
+      suit: "spades",
+      value: 0,
+      deck,
+    }));
 
   return (
     <section className="center-board-container">
@@ -53,17 +61,7 @@ export default function CenterBoard({
 
         <div className="center-board-dealer-wrapper">
           <CardPile
-            cards={
-              dealerTop
-                ? [
-                    {
-                      suit: "spades",
-                      value: 0,
-                      deck: dealerTop,
-                    },
-                  ]
-                : []
-            }
+            cards={dealerCards}
             stackId="draw"
             layout="stack"
             faceDown

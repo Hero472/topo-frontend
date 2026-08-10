@@ -6,15 +6,15 @@ export interface Card {
   deck: DeckColor;
 }
 
-export interface PersonalPile {
+export interface PersonalPileView {
   count: number;
   top: Card | null;
-  colors: string[];
+  colors: DeckColor[];
 }
 
 export interface PlayerBoard {
   player_idx: number;
-  personal: PersonalPile;
+  personal: PersonalPileView;
   side: [Card[], Card[], Card[], Card[]];
   hand: Card[];
 }
@@ -39,7 +39,7 @@ export interface FullState {
   your_turn: boolean;
   opponent: OpponentBoard;
   scales: (Scale | null)[];
-  dealer_top: DeckColor | null;
+  dealer_preview: DeckColor[];
   dealer_count: number;
   turn_seconds_remaining: number;
 }
@@ -73,6 +73,7 @@ export type ServerEvent =
       player_id: string;
       player_idx: number;
       cards: Card[];
+      turn_seconds_remaining: number;
     }
   
   // ── Public: Personal used and needs to show the next ──
@@ -80,8 +81,7 @@ export type ServerEvent =
     type: "personal_pile_updated";
     player_id: string;
     player_idx: number;
-    count: number;
-    top: Card | null;
+    personal_view: PersonalPileView;
   }
 
   // ── Public: card played on scale ──
@@ -92,6 +92,7 @@ export type ServerEvent =
       card: Card;
       scale_idx: number;
       completed: boolean;
+      turn_seconds_remaining: number;
     }
 
   // ── Public: card placed on side stack ──
@@ -101,6 +102,7 @@ export type ServerEvent =
       player_idx: number;
       card: Card;
       stack_idx: number;
+      turn_seconds_remaining: number;
     }
 
   // ── Public: scale completed ──
@@ -120,6 +122,7 @@ export type ServerEvent =
       personal_count: number;
       personal_top: Card | null;
       side: [Card[], Card[], Card[], Card[]];
+      turn_seconds_remaining: number;
     }
 
   // ── Turn ended ──
@@ -150,6 +153,7 @@ export type ServerEvent =
       type: "player_reconnected";
       player_id: string;
       player_idx: number;
+      turn_seconds_remaining: number;
     }
 
   // ── Error (server → client) ──

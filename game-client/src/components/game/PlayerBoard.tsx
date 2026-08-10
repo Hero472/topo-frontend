@@ -1,5 +1,5 @@
 import CardPile from "./CardPile";
-import type { PlayerBoard as PlayerBoardType } from "../../types/types";
+import type { Card, PlayerBoard as PlayerBoardType } from "../../types/types";
 import type { CardDropEvent } from "../../hooks/useDropTarget";
 import "./PlayerBoard.css"; // Import the layout stylesheet
 
@@ -14,6 +14,16 @@ export default function PlayerBoard({
   onDrop,
   isMyTurn,
 }: Readonly<Props>) {
+
+  const personalPreviewCards: Card[] = [
+    ...board.personal.colors.map((deck) => ({
+      suit: "spades" as const,
+      value: 0,
+      deck,
+    })),
+    ...(board.personal.top ? [board.personal.top] : []),
+  ];
+
   return (
     <section 
       className="player-board-container" 
@@ -45,7 +55,7 @@ export default function PlayerBoard({
         {/* Personal pile wrapper */}
         <div className="player-board-personal-pile">
           <CardPile
-            cards={board.personal.top ? [board.personal.top] : []}
+            cards={personalPreviewCards}
             stackId="personal"
             layout="stack"
             scatter

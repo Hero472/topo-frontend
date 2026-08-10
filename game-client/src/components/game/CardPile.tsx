@@ -164,7 +164,7 @@ export default function CardPile({
 
     return (
       <DraggableCard
-        key={cardKey(card)}
+        key={`${cardKey(card)}-${index}`}
         card={card}
         stackId={stackId}
         draggable={canDrag}

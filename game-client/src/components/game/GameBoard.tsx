@@ -116,7 +116,7 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
       <CenterBoard
         scales={fullState.scales}
         dealerCount={fullState.dealer_count}
-        dealerTop={fullState.dealer_top}
+        dealerPreview={fullState.dealer_preview}
         onDrop={handleDrop}
       />
 

@@ -18,14 +18,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
   timeoutMessage: null,
   canDraw: false,
 
-  applyFullState: (payload) =>
+  applyFullState: (payload) => {
+    console.log("FULL STATE:", payload);
+    console.log("DEALER PREVIEW:", payload.dealer_preview);
+
     set({
       fullState: payload,
       winnerId: null,
       timeoutMessage: null,
       canDraw: payload.your_turn,
-    }),
-
+    });
+  },
   applyEvent: (evt) => {
     const state = get();
     if (!state.fullState) return;
@@ -46,6 +49,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       case "hand_refill": {
+        s.turn_seconds_remaining = evt.turn_seconds_remaining;
+
         if (s.your_board.player_idx === evt.player_idx) {
           s.your_board.hand.push(...evt.cards);
           newCanDraw = false;
@@ -55,13 +60,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case "personal_pile_updated": {
         if (s.your_board.player_idx === evt.player_idx) {
-          s.your_board.personal.count = evt.count;
-          s.your_board.personal.top = evt.top;
+          s.your_board.personal = evt.personal_view;
         }
         break;
       }
 
       case "card_played_on_scale": {
+        s.turn_seconds_remaining = evt.turn_seconds_remaining;
+
         if (s.your_board.player_idx === evt.player_idx) {
           s.your_board.hand = s.your_board.hand.filter(
             (c) =>
@@ -114,6 +120,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       case "card_placed_on_side": {
+        s.turn_seconds_remaining = evt.turn_seconds_remaining;
+
         if (s.your_board.player_idx === evt.player_idx) {
           s.your_board.side[evt.stack_idx].push(evt.card);
           s.your_board.hand = s.your_board.hand.filter(
@@ -138,6 +146,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       case "opponent_update": {
+        s.turn_seconds_remaining = evt.turn_seconds_remaining;
+
         s.opponent = {
           ...s.opponent,
           personal_count: evt.personal_count,
@@ -181,8 +191,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       case "player_disconnected":
-      case "player_reconnected":
         break;
+
+      case "player_reconnected": {
+        s.turn_seconds_remaining = evt.turn_seconds_remaining;
+        break;
+      }
 
       case "error":
         console.error(`Server error [${evt.code}]:`, evt.message, evt.details);

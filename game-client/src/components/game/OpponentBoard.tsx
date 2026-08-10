@@ -1,6 +1,6 @@
 import CardPile from "./CardPile";
 import type { OpponentBoard as OpponentBoardType } from "../../types/types";
-import "./OpponentBoard.css"; // Import the layout stylesheet
+import "./OpponentBoard.css";
 
 interface Props {
   board: OpponentBoardType;
