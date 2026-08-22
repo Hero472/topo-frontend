@@ -127,9 +127,8 @@ export default function CardPile({
   const { ref, dragOver } = useDropTarget({ stackId, allowedSourceIds, allowSelfDrop });
 
   const badge = count ?? cards.length;
-  const displayEmptyLabel = emptyLabel || stackId;   // show the stackId when empty
+  const displayEmptyLabel = emptyLabel || stackId;
 
-  // Combine parent-level configurations into a clean CSS custom properties object
   const pileStyles = {
     "--pile-rotation": `${rotation}deg`,
     "--overlap-em": `${overlap}em`,
@@ -180,28 +179,34 @@ export default function CardPile({
     );
   });
 
+  const isScrollableHand = layout === "hand";
+
   return (
     <div className="card-pile-wrapper" style={pileStyles}>
       <div
-        ref={ref}
-        className={`card-pile-container layout-${layout} ${
-          small ? "size-small" : "size-normal"
-        } ${dragOver ? "is-drag-over" : ""}`}
-        data-empty={cards.length === 0 || undefined}
+        className={`card-pile-scroll-outer ${isScrollableHand ? "is-scrollable" : ""}`}
       >
-        {cards.length === 0 && displayEmptyLabel && (
-          <span className="card-pile-empty-label">
-            {displayEmptyLabel}
-          </span>
-        )}
+        <div
+          ref={ref}
+          className={`card-pile-container layout-${layout} ${
+            small ? "size-small" : "size-normal"
+          } ${dragOver ? "is-drag-over" : ""}`}
+          data-empty={cards.length === 0 || undefined}
+        >
+          {cards.length === 0 && displayEmptyLabel && (
+            <span className="card-pile-empty-label">
+              {displayEmptyLabel}
+            </span>
+          )}
 
-        {badge > 1 && (
-          <div className="card-pile-badge">
-            {badge}
-          </div>
-        )}
+          {badge > 1 && (
+            <div className="card-pile-badge">
+              {badge}
+            </div>
+          )}
 
-        {renderedCards}
+          {renderedCards}
+        </div>
       </div>
     </div>
   );

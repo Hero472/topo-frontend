@@ -1,6 +1,6 @@
 .card-view {
-    --card-width: clamp(60px, 10vw, 100px);
-    --card-height: calc(var(--card-width) * 1.4);
+    --card-width: var(--card-w, clamp(60px, 15vw, 100px));
+    --card-height: var(--card-h, calc(var(--card-width) * 1.4));
 
     display: inline-flex;
     align-items: center;
@@ -15,7 +15,7 @@
 
     background: white;
     border: 1px solid #aaa;
-    
+
     box-shadow: 0 2px 6px rgba(0,0,0,.2), 0 0 0 1px rgba(0,0,0,.05);
     position: relative;
     font-size: calc(var(--card-width) * .12);
@@ -27,7 +27,7 @@
 
 
 .card-view.small {
-    --card-width: clamp(35px, 7vw, 60px);
+    --card-width: var(--card-w, clamp(35px, 9vw, 60px));
     box-shadow: none;
 }
 
@@ -79,4 +79,15 @@
 
 .center-suit {
     font-size:2.5em;
+}
+
+@media (max-width: 420px) {
+    .card-view {
+        --card-height: var(--card-h, calc(var(--card-width) * 1.25));
+    }
+
+    .card-view img {
+        object-fit: contain;
+        background: white;
+    }
 }

@@ -1,0 +1,27 @@
+.debug-page {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 24px;
+    overflow-x: hidden;
+}
+
+.debug-section {
+    margin-bottom: 48px;
+}
+
+.debug-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+@media (max-width: 600px) {
+    .debug-page {
+        padding: 12px;
+    }
+
+    .debug-section {
+        margin-bottom: 32px;
+    }
+}

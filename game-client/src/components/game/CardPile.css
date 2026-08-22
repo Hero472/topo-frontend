@@ -1,7 +1,20 @@
 /* Container Wrapper */
 .card-pile-wrapper {
   display: inline-block;
+  max-width: 100%;
   transform: rotate(var(--pile-rotation, 0deg));
+}
+
+.card-pile-scroll-outer {
+  max-width: 100%;
+}
+
+.card-pile-scroll-outer.is-scrollable {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 6px 4px 14px;
 }
 
 .card-pile-container {
@@ -12,30 +25,28 @@
   transition: outline 0.15s ease;
 }
 
-/* Size Configurations */
 .card-pile-container.size-normal {
-  --card-w: 6em;
-  --card-h: 8.4em;
+  --card-w: clamp(56px, 16vw, 92px);
+  --card-h: calc(var(--card-w) * 1.4);
   --badge-size: 1.5em;
   --badge-font: 0.75rem;
 }
 
 .card-pile-container.size-small {
-  --card-w: 4em;
-  --card-h: 5.6em;
+  --card-w: clamp(38px, 11vw, 62px);
+  --card-h: calc(var(--card-w) * 1.4);
   --badge-size: 1.2em;
   --badge-font: 0.65rem;
 }
 
-/* Dragging visual states */
 .card-pile-container.is-drag-over {
   outline: 2px dashed #4a90e2;
 }
 
-/* Dynamically calculate container sizes using the total card count */
 .card-pile-container.layout-hand {
   width: calc(var(--card-w) + (var(--total-cards) - 1) * var(--overlap-em));
   height: var(--card-h);
+  flex: 0 0 auto;
 }
 
 .card-pile-container.layout-stack {
@@ -43,11 +54,9 @@
   height: calc(var(--card-h) + (var(--total-cards) - 1) * var(--offset-px));
 }
 
-/* Fallbacks for when the pile is empty */
 .card-pile-container[data-empty="true"].layout-hand { width: var(--card-w); }
 .card-pile-container[data-empty="true"].layout-stack { height: var(--card-h); }
 
-/* Labels and Badge overlays */
 .card-pile-empty-label {
   position: absolute;
   inset: 0;
@@ -78,7 +87,6 @@
   pointer-events: none;
 }
 
-/* Card Elements Positioning */
 .card-pile-item {
   position: absolute;
   width: var(--card-w);
@@ -108,7 +116,6 @@
   cursor: grabbing;
 }
 
-/* Responsive Media Queries */
 @media (max-width: 600px) {
   .card-pile-container.size-normal { font-size: 0.85em; }
   .card-pile-container.size-small { font-size: 0.75em; }
