@@ -2,10 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Action } from "../types/types";
 import { useGameStore } from "../store/useGameStore";
 
-type ConnectionStatus = "connecting" | "open" | "closed" | "error";
+type ConnectionStatus =
+  | "connecting"
+  | "open"
+  | "closed"
+  | "reconnecting"
+  | "error";
 
 function getPlayerId(): string {
   const key = "game-player-id";
+
   let id = sessionStorage.getItem(key);
   if (!id) {
     id = crypto.randomUUID();
@@ -14,14 +20,17 @@ function getPlayerId(): string {
   return id;
 }
 
-export function useGameSocket(room: string, username: string) {
+export function useGameSocket(gameId: string, username: string) {
   const applyFullState = useGameStore((s) => s.applyFullState);
   const applyEvent = useGameStore((s) => s.applyEvent);
+
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [error, setError] = useState<string | null>(null);
+
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>(0);
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptRef = useRef(0);
+
   const isUnmounted = useRef(false);
   const closedIntentionally = useRef(false);
 
@@ -35,19 +44,46 @@ export function useGameSocket(room: string, username: string) {
     }
   }, []);
 
+  const leaveGame = useCallback(() => {
+    closedIntentionally.current = true;
+
+    if (reconnectTimer.current) {
+      clearTimeout(reconnectTimer.current);
+      reconnectTimer.current = null;
+    }
+
+    if (wsRef.current) {
+      wsRef.current.close(1000, "Player left game");
+      wsRef.current = null;
+    }
+
+    setStatus("closed");
+  }, []);
+
   useEffect(() => {
     isUnmounted.current = false;
+
     let cancelled = false;
 
     function connect() {
-      if (cancelled || isUnmounted.current) return;
-      closedIntentionally.current = false; 
+      if (cancelled || isUnmounted.current) {
+        return;
+      }
 
-      const protocol = globalThis.location.protocol === 'https:' ? 'wss' : 'ws';
-      const url = `${protocol}://${globalThis.location.host}/ws/${room}?player_id=${playerId}&username=${encodeURIComponent(username)}`;
+      closedIntentionally.current = false;
+
+      const protocol = globalThis.location.protocol === "https:" ? "wss" : "ws";
+
+      const url =
+        `${protocol}://${globalThis.location.host}` +
+        `/ws/${encodeURIComponent(gameId)}` +
+        `?player_id=${encodeURIComponent(playerId)}` +
+        `&username=${encodeURIComponent(username)}`;
+
       console.log(
-        `🔌 Connecting to ${url} (attempt ${attemptRef.current + 1})`,
+        `🔌 Connecting to ${url} ` + `(attempt ${attemptRef.current + 1})`,
       );
+
       const ws = new WebSocket(url);
       wsRef.current = ws;
 
@@ -56,21 +92,25 @@ export function useGameSocket(room: string, username: string) {
           ws.close();
           return;
         }
+
         console.log("✅ WebSocket connected");
+
         setStatus("open");
         setError(null);
+
         attemptRef.current = 0;
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+
           console.log("📩 Received:", data);
 
           if (data.type === "full_state") {
-            applyFullState(data); // data already matches FullState interface
+            applyFullState(data);
           } else {
-            applyEvent(data); // data is a tagged ServerEvent (e.g. { type: 'turn_ended', ... })
+            applyEvent(data);
           }
         } catch (e) {
           console.error("❌ Failed to process message:", event.data, e);
@@ -80,20 +120,27 @@ export function useGameSocket(room: string, username: string) {
       ws.onerror = (err) => {
         console.error("⚠️ WebSocket error:", err);
         setError("WebSocket error");
+        setStatus("error");
       };
 
       ws.onclose = (event) => {
-        if (cancelled || isUnmounted.current) return;
+        if (cancelled || isUnmounted.current) {
+          return;
+        }
+
         console.log(`🔻 WebSocket closed (code ${event.code})`);
 
         if (closedIntentionally.current) {
-          console.log("👋 Closed intentionally – not reconnecting");
+          console.log("Closed intentionally – not reconnecting");
+
           setStatus("closed");
           return;
         }
 
+        setStatus("reconnecting");
         const delay = Math.min(1000 * 2 ** attemptRef.current, 30000);
         attemptRef.current++;
+
         console.log(`🔄 Reconnecting in ${delay / 1000}s...`);
         reconnectTimer.current = setTimeout(connect, delay);
       };
@@ -105,10 +152,21 @@ export function useGameSocket(room: string, username: string) {
       cancelled = true;
       isUnmounted.current = true;
       closedIntentionally.current = true;
-      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
-      if (wsRef.current) wsRef.current.close(1000, "Component unmounted");
-    };
-  }, [room, username, playerId, applyFullState, applyEvent]);
 
-  return { sendAction, status, error };
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+      }
+
+      if (wsRef.current) {
+        wsRef.current.close(1000, "Component unmounted");
+      }
+    };
+  }, [gameId, username, playerId, applyFullState, applyEvent]);
+
+  return {
+    sendAction,
+    leaveGame,
+    status,
+    error,
+  };
 }

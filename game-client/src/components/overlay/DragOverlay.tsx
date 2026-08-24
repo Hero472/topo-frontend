@@ -1,6 +1,5 @@
-// DragOverlay.tsx
-import { useDragStore } from "../store/useDragStore";
-import CardView from "./game/CardView";
+import { useDragStore } from "../../store/useDragStore";
+import CardView from "../game/CardView";
 
 export default function DragOverlay() {
   const { dragging, card, x, y } = useDragStore();

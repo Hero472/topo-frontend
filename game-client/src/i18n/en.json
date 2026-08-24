@@ -1,0 +1,80 @@
+{
+  "menu": {
+    "title": "Topo",
+    "subtitle": "Online Card Game",
+    "multiplayer": "Multiplayer",
+    "playCpu": "Play vs CPU",
+    "tutorial": "Tutorial",
+    "comingSoon": "Coming Soon",
+    "version": "Version"
+  },
+  "create": {
+    "title": "Create Game",
+    "subtitle": "Choose your username to create a game.",
+    "button": "Create Game",
+    "duration": {
+      "label": "Game duration",
+      "seconds30": "30 seconds",
+      "minute1": "1 minute",
+      "minutes2": "2 minutes",
+      "minutes3": "3 minutes",
+      "minutes4": "4 minutes",
+      "minutes5": "5 minutes"
+    },
+    "note": "Create a game and invite another player with a shareable link.",
+    "errors": {
+      "createFailed": "Could not create game"
+    }
+  },
+  "waiting": {
+    "title": "Waiting for an opponent",
+    "subtitle": "Your game is ready.",
+    "invite": "Send this link to your opponent.",
+    "copy": "Copy link",
+    "copied": "Copied!",
+    "connecting": "Connecting to game...",
+    "waitingForPlayer": "Waiting for another player...",
+    "gameId": "Game ID:"
+  },
+  "join": {
+    "title": "Topo Online",
+    "subtitle": "Enter a room and your name to start playing",
+    "room": {
+      "label": "Room",
+      "placeholder": "e.g. myroom"
+    },
+    "username": {
+      "label": "Username",
+      "placeholder": "e.g. Alice"
+    },
+    "button": "Join Game",
+    "note": "Share the room name with a friend to play together.",
+    "errors": {
+      "roomRequired": "Room name is required",
+      "usernameRequired": "Username is required",
+      "usernameTooLong": "Username must be 20 characters or less"
+    }
+  },
+  "game": {
+    "loading": {
+      "connecting": "Connecting…",
+      "waiting": "Waiting for game state…",
+      "joiningRoom": "Joining room, please wait",
+      "waitingForPlayers": "The game will start once both players are ready"
+    },
+    "leave": {
+      "title": "Leave",
+      "button": "Leave Button",
+      "message": "Leaving the game",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "result": {
+      "winner": "You Win!",
+      "loser": "You Lose",
+      "winnerMessage": "Congratulations! You won the game.",
+      "loserMessage": "Better luck next time!",
+      "backToMenu": "Back to Menu"
+    }
+  }
+}

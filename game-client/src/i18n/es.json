@@ -1,0 +1,58 @@
+{
+  "menu": {
+    "title": "Topo",
+    "subtitle": "Juego de Cartas Online",
+    "multiplayer": "Multijugador",
+    "playCpu": "Jugar contra la CPU",
+    "tutorial": "Tutorial",
+    "comingSoon": "Próximamente",
+    "version": "Versión"
+  },
+  "create": {
+    "title": "Crear partida",
+    "subtitle": "Elige tu nombre de usuario para crear una partida.",
+    "button": "Crear partida",
+    "note": "Crea una partida e invita a otro jugador con un enlace para compartir.",
+    "errors": {
+      "createFailed": "No se pudo crear la partida"
+    }
+  },
+
+  "waiting": {
+    "title": "Esperando a un oponente",
+    "subtitle": "Tu partida está lista.",
+    "invite": "Envía este enlace a tu oponente.",
+    "copy": "Copiar enlace",
+    "copied": "¡Copiado!",
+    "connecting": "Conectando a la partida...",
+    "waitingForPlayer": "Esperando a otro jugador...",
+    "gameId": "ID de partida:"
+  },
+  "join": {
+    "title": "Topo Online",
+    "subtitle": "Introduce una sala y tu nombre para empezar a jugar",
+    "room": {
+      "label": "Sala",
+      "placeholder": "ej. misala"
+    },
+    "username": {
+      "label": "Nombre de usuario",
+      "placeholder": "ej. Alice"
+    },
+    "button": "Unirse a la partida",
+    "note": "Comparte el nombre de la sala con un amigo para jugar juntos.",
+    "errors": {
+      "roomRequired": "El nombre de la sala es obligatorio",
+      "usernameRequired": "El nombre de usuario es obligatorio",
+      "usernameTooLong": "El nombre de usuario debe tener 20 caracteres o menos"
+    }
+  },
+  "game": {
+    "loading": {
+      "connecting": "Conectando…",
+      "waiting": "Esperando el estado del juego…",
+      "joiningRoom": "Uniéndose a la sala, espera por favor",
+      "waitingForPlayers": "La partida comenzará cuando ambos jugadores estén listos"
+    }
+  }
+}

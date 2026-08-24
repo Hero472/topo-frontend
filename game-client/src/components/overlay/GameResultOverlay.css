@@ -1,0 +1,163 @@
+.game-result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  animation: resultFadeIn 0.3s ease;
+}
+
+.game-result-card {
+  width: min(420px, 100%);
+  padding: clamp(2rem, 5vw, 3rem);
+
+  text-align: center;
+
+  background: rgba(30, 41, 59, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(59, 130, 246, 0.08);
+
+  animation: resultCardIn 0.4s ease;
+}
+
+.game-result-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 72px;
+  height: 72px;
+
+  margin: 0 auto 1.25rem;
+
+  border-radius: 20px;
+
+  font-size: 2.2rem;
+}
+
+.game-result-win {
+  background: rgba(250, 204, 21, 0.12);
+  box-shadow: 0 0 30px rgba(250, 204, 21, 0.12);
+}
+
+.game-result-loss {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.game-result-title {
+  margin: 0;
+
+  color: #f8fafc;
+
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.game-result-subtitle {
+  margin: 0.75rem 0 2rem;
+
+  color: #94a3b8;
+
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.game-result-button {
+  width: 100%;
+
+  padding: 0.9rem 1rem;
+
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+
+  color: white;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+.game-result-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 28px rgba(59, 130, 246, 0.5);
+}
+
+.game-result-button:active {
+  transform: scale(0.97);
+}
+
+@keyframes resultFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes resultCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 540px) {
+  .game-result-overlay {
+    padding: 1rem;
+  }
+
+  .game-result-card {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+
+  .game-result-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+  }
+
+  .game-result-title {
+    font-size: 1.8rem;
+  }
+
+  .game-result-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .game-result-button {
+    font-size: 0.95rem;
+    padding: 0.8rem;
+  }
+}

@@ -1,0 +1,421 @@
+/* =========================================================
+   WAITING GAME
+   Clean tabletop / card-game style
+   ========================================================= */
+
+:root {
+  --waiting-bg: #11100e;
+  --waiting-surface: #191816;
+  --waiting-surface-2: #151412;
+
+  --waiting-border: #35322d;
+  --waiting-border-strong: #4a453d;
+
+  --waiting-accent: #d6a84f;
+  --waiting-accent-hover: #e2b967;
+
+  --waiting-text: #f1eee7;
+  --waiting-muted: #9d978c;
+  --waiting-dim: #6f6a61;
+
+  --waiting-success: #78956d;
+
+  --waiting-radius: 10px;
+}
+
+/* ---------- PAGE ---------- */
+
+.waiting-game-page {
+  min-height: 100vh;
+  min-height: 100svh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: var(--waiting-bg);
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+/* Very subtle background texture */
+
+.waiting-game-page::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0.035;
+
+  background-image:
+    linear-gradient(90deg, transparent 49%, #fff 50%, transparent 51%),
+    linear-gradient(0deg, transparent 49%, #fff 50%, transparent 51%);
+
+  background-size: 32px 32px;
+}
+
+/* ---------- CARD ---------- */
+
+.waiting-game-card {
+  position: relative;
+  z-index: 1;
+
+  width: min(500px, 100%);
+
+  padding: 42px 40px 32px;
+
+  background: var(--waiting-surface);
+
+  border: 1px solid var(--waiting-border);
+  border-radius: var(--waiting-radius);
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+
+  text-align: center;
+}
+
+/* ---------- ICON ---------- */
+
+.waiting-game-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 20px;
+
+  background: var(--waiting-surface-2);
+
+  border: 1px solid var(--waiting-border-strong);
+  border-radius: 8px;
+
+  color: var(--waiting-accent);
+
+  font-family: Georgia, "Times New Roman", serif;
+
+  font-size: 1.45rem;
+
+  line-height: 1;
+}
+
+/* ---------- TITLE ---------- */
+
+.waiting-game-title {
+  margin: 0;
+
+  color: var(--waiting-text);
+
+  font-family: Georgia, "Times New Roman", serif;
+
+  font-size: clamp(2rem, 6vw, 2.8rem);
+
+  font-weight: 700;
+
+  letter-spacing: -0.04em;
+
+  line-height: 1;
+}
+
+/* ---------- SUBTITLE ---------- */
+
+.waiting-game-subtitle {
+  margin: 14px auto 0;
+
+  color: var(--waiting-muted);
+
+  font-size: 0.9rem;
+
+  line-height: 1.55;
+}
+
+/* ---------- INVITE LINK ---------- */
+
+.waiting-game-link-container {
+  display: flex;
+
+  width: 100%;
+
+  margin-top: 30px;
+}
+
+/* URL */
+
+.waiting-game-link {
+  min-width: 0;
+  flex: 1;
+
+  height: 52px;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--waiting-border);
+  border-right: none;
+
+  border-radius: 7px 0 0 7px;
+
+  background: var(--waiting-surface-2);
+
+  color: var(--waiting-muted);
+
+  font: inherit;
+  font-size: 0.78rem;
+
+  outline: none;
+
+  text-overflow: ellipsis;
+
+  transition: border-color 120ms ease;
+}
+
+.waiting-game-link:focus {
+  border-color: var(--waiting-accent);
+}
+
+/* Copy */
+
+.waiting-game-copy-button {
+  flex-shrink: 0;
+
+  height: 52px;
+
+  padding: 0 18px;
+
+  border: 1px solid var(--waiting-accent);
+  border-radius: 0 7px 7px 0;
+
+  background: var(--waiting-accent);
+
+  color: #17130c;
+
+  font: inherit;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.waiting-game-copy-button:hover {
+  background: var(--waiting-accent-hover);
+
+  border-color: var(--waiting-accent-hover);
+}
+
+.waiting-game-copy-button:active {
+  background: var(--waiting-accent);
+}
+
+.waiting-game-copy-button:focus-visible {
+  outline: 2px solid var(--waiting-accent);
+
+  outline-offset: 3px;
+}
+
+/* ---------- STATUS ---------- */
+
+.waiting-game-status {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  margin: 24px 0 0;
+
+  color: var(--waiting-muted);
+
+  font-size: 0.8rem;
+}
+
+/*
+    Small status indicator.
+    CSS-only, intentionally subtle.
+*/
+
+.waiting-game-status::before {
+  content: "";
+
+  width: 6px;
+  height: 6px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--waiting-success);
+
+  box-shadow: 0 0 0 3px rgba(120, 149, 109, 0.08);
+
+  animation: waiting-pulse 2s ease-in-out infinite;
+}
+
+@keyframes waiting-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------- GAME ID ---------- */
+
+.waiting-game-code {
+  margin: 14px 0 0;
+
+  color: var(--waiting-dim);
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  font-size: 0.68rem;
+
+  letter-spacing: 0.03em;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 540px) {
+  .waiting-game-page {
+    align-items: flex-start;
+
+    padding: 32px 16px 16px;
+  }
+
+  .waiting-game-card {
+    width: 100%;
+
+    padding: 34px 20px 28px;
+
+    border-radius: 9px;
+  }
+
+  .waiting-game-icon {
+    width: 42px;
+    height: 42px;
+
+    margin-bottom: 16px;
+  }
+
+  .waiting-game-title {
+    font-size: 2.35rem;
+  }
+
+  .waiting-game-link {
+    height: 54px;
+
+    font-size: 0.72rem;
+  }
+
+  .waiting-game-copy-button {
+    height: 54px;
+
+    padding: 0 15px;
+
+    font-size: 0.78rem;
+  }
+}
+
+/* ---------- SMALL PHONES ---------- */
+
+@media (max-width: 380px) {
+  .waiting-game-page {
+    padding: 20px 10px 10px;
+  }
+
+  .waiting-game-card {
+    padding: 28px 16px 24px;
+  }
+
+  .waiting-game-title {
+    font-size: 2rem;
+  }
+
+  .waiting-game-subtitle {
+    font-size: 0.82rem;
+  }
+
+  .waiting-game-link-container {
+    flex-direction: column;
+
+    gap: 8px;
+  }
+
+  .waiting-game-link {
+    width: 100%;
+
+    border-right: 1px solid var(--waiting-border);
+    border-radius: 7px;
+  }
+
+  .waiting-game-copy-button {
+    width: 100%;
+
+    border-radius: 7px;
+  }
+
+  .waiting-game-status {
+    margin-top: 20px;
+  }
+}
+
+/* ---------- SHORT LANDSCAPE ---------- */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .waiting-game-page {
+    padding: 16px;
+  }
+
+  .waiting-game-card {
+    padding: 24px 28px;
+  }
+
+  .waiting-game-icon {
+    display: none;
+  }
+
+  .waiting-game-title {
+    font-size: 2rem;
+  }
+
+  .waiting-game-subtitle {
+    margin-top: 8px;
+  }
+
+  .waiting-game-link-container {
+    margin-top: 18px;
+  }
+
+  .waiting-game-status {
+    margin-top: 14px;
+  }
+}
+
+/* ---------- REDUCED MOTION ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting-game-status::before {
+    animation: none;
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "menu": {
+    "title": "Topo",
+    "subtitle": "Jogo de Cartas Online",
+    "multiplayer": "Multijogador",
+    "playCpu": "Jogar contra a CPU",
+    "tutorial": "Tutorial",
+    "comingSoon": "Em Breve",
+    "version": "Versão"
+  },
+
+  "join": {
+    "title": "Topo Online",
+    "subtitle": "Digite uma sala e seu nome para começar a jogar",
+    "room": {
+      "label": "Sala",
+      "placeholder": "ex. minhasala"
+    },
+    "username": {
+      "label": "Nome de usuário",
+      "placeholder": "ex. Alice"
+    },
+    "button": "Entrar na partida",
+    "note": "Compartilhe o nome da sala com um amigo para jogarem juntos.",
+    "errors": {
+      "roomRequired": "O nome da sala é obrigatório",
+      "usernameRequired": "O nome de usuário é obrigatório",
+      "usernameTooLong": "O nome de usuário deve ter 20 caracteres ou menos"
+    }
+  },
+
+  "create": {
+    "title": "Criar partida",
+    "subtitle": "Escolha seu nome de usuário para criar uma partida.",
+    "button": "Criar partida",
+    "note": "Crie uma partida e convide outro jogador com um link compartilhável.",
+    "errors": {
+      "createFailed": "Não foi possível criar a partida"
+    }
+  },
+
+  "waiting": {
+    "title": "Esperando por um oponente",
+    "subtitle": "Sua partida está pronta.",
+    "invite": "Envie este link para seu oponente.",
+    "copy": "Copiar link",
+    "copied": "Copiado!",
+    "connecting": "Conectando à partida...",
+    "waitingForPlayer": "Esperando outro jogador...",
+    "gameId": "ID da partida:"
+  },
+
+  "game": {
+    "loading": {
+      "connecting": "Conectando…",
+      "waiting": "Esperando o estado do jogo…",
+      "joiningRoom": "Entrando na sala, aguarde",
+      "waitingForPlayers": "A partida começará quando os dois jogadores estiverem prontos"
+    }
+  }
+}

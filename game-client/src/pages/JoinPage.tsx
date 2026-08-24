@@ -1,62 +1,66 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { t, useLanguage } from "../i18n";
+
 import "./JoinPage.css";
 
 export function JoinPage() {
-  const [room, setRoom] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { gameId } = useParams<{ gameId: string }>();
+
+  useLanguage();
 
   const handleJoin = () => {
-    const trimmedRoom = room.trim();
     const trimmedUser = username.trim();
 
-    if (!trimmedRoom) {
-      setError("Room name is required");
-      return;
-    }
     if (!trimmedUser) {
-      setError("Username is required");
-      return;
-    }
-    if (trimmedUser.length > 20) {
-      setError("Username must be 20 characters or less");
+      setError(t("join.errors.usernameRequired"));
       return;
     }
 
-    navigate(`/game?room=${encodeURIComponent(trimmedRoom)}&username=${encodeURIComponent(trimmedUser)}`);
+    if (trimmedUser.length > 20) {
+      setError(t("join.errors.usernameTooLong"));
+      return;
+    }
+
+    if (!gameId) {
+      setError("Missing game id");
+      return;
+    }
+
+    sessionStorage.setItem("game-username", trimmedUser);
+    navigate(`/game/${encodeURIComponent(gameId)}/waiting`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleJoin();
-    }
+    if (e.key === "Enter") handleJoin();
   };
 
   return (
     <div className="join-outer">
       <div className="join-card">
         <div className="join-header">
-          <span className="join-logo" aria-hidden="true">♠️</span>
-          <h1 className="join-title">Topo Online</h1>
-          <p className="join-subtitle">
-            Enter a room and your name to start playing
-          </p>
+          <span className="join-logo" aria-hidden="true">
+            ♠️
+          </span>
+          <h1 className="join-title">{t("join.title")}</h1>
+          <p className="join-subtitle">{t("join.subtitle")}</p>
         </div>
 
         <div className="join-fields">
           <div className="join-field">
-            <label className="join-label" htmlFor="room-input">
-              Room
+            <label className="join-label" htmlFor="username-input">
+              {t("join.username.label")}
             </label>
             <input
-              id="room-input"
+              id="username-input"
               className="join-input"
-              placeholder="e.g. myroom"
-              value={room}
+              placeholder={t("join.username.placeholder")}
+              value={username}
               onChange={(e) => {
-                setRoom(e.target.value);
+                setUsername(e.target.value);
                 setError("");
               }}
               onKeyDown={handleKeyDown}
@@ -64,33 +68,12 @@ export function JoinPage() {
             />
           </div>
 
-          <div className="join-field">
-            <label className="join-label" htmlFor="username-input">
-              Username
-            </label>
-            <input
-              id="username-input"
-              className="join-input"
-              placeholder="e.g. Alice"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                setError("");
-              }}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-
           {error && <div className="join-error">{error}</div>}
 
           <button className="join-button" onClick={handleJoin}>
-            Join Game
+            {t("join.button")}
           </button>
         </div>
-
-        <p className="join-note">
-          Share the room name with a friend to play together.
-        </p>
       </div>
     </div>
   );

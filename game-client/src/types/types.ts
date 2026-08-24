@@ -35,6 +35,7 @@ export interface Scale {
 
 export interface FullState {
   type: 'full_state';
+  player_id: string, // now that I think about it this can be optimized with the join player to know if it is you or not
   your_board: PlayerBoard;
   your_turn: boolean;
   opponent: OpponentBoard;
@@ -58,7 +59,11 @@ export type ServerEvent =
       player_id: string;
       player_idx: number;
     }
-
+  |
+    {
+      type: "waiting_for_player";
+      game_id: string;
+    }
   // ── Game lifecycle ──
   | {
       type: "game_started";
@@ -124,7 +129,9 @@ export type ServerEvent =
       side: [Card[], Card[], Card[], Card[]];
       turn_seconds_remaining: number;
     }
-
+  | {
+      type: "opponent_left";
+    }
   // ── Turn ended ──
   | {
       type: "turn_ended";
@@ -155,6 +162,10 @@ export type ServerEvent =
       player_idx: number;
       turn_seconds_remaining: number;
     }
+  | {
+    type: "play_again";
+    player_id: string;
+  }
 
   // ── Error (server → client) ──
   | {
