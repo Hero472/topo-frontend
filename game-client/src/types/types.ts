@@ -64,6 +64,18 @@ export type ServerEvent =
       type: "waiting_for_player";
       game_id: string;
     }
+  | {
+      type: "player_ready";
+      player_id: string;
+    }
+  | {
+      type: "play_again_requested";
+      player_id: string;
+    }
+  | {
+      type: "game_starting";
+      seconds_remaining: number;
+    }
   // ── Game lifecycle ──
   | {
       type: "game_started";
@@ -155,6 +167,7 @@ export type ServerEvent =
       type: "player_disconnected";
       player_id: string;
       player_idx: number;
+      grace_period_seconds: number;
     }
   | {
       type: "player_reconnected";

@@ -8,11 +8,17 @@ export default function CreateGamePage() {
   const [username, setUsername] = useState("");
   const [duration, setDuration] = useState(180);
   const [error, setError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+
   const navigate = useNavigate();
 
   useLanguage();
 
   const handleCreateGame = async () => {
+    if (isCreating) {
+      return;
+    }
+
     const trimmedUser = username.trim();
 
     if (!trimmedUser) {
@@ -27,19 +33,31 @@ export default function CreateGamePage() {
 
     try {
       setError("");
-      sessionStorage.setItem("game-username", trimmedUser);
+      setIsCreating(true);
 
-      const { game_id } = await gameApi.createGame({ duration_seconds: duration });
+      sessionStorage.setItem(
+        "game-username",
+        trimmedUser,
+      );
 
-      navigate(`/game/${encodeURIComponent(game_id)}/waiting`);
+      const { game_id } = await gameApi.createGame({
+        duration_seconds: duration,
+      });
+
+      navigate(
+        `/game/${encodeURIComponent(game_id)}/waiting`,
+      );
     } catch (error) {
       console.error("Failed to create game:", error);
       setError(t("create.errors.createFailed"));
+      setIsCreating(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Enter") {
       void handleCreateGame();
     }
   };
@@ -60,14 +78,21 @@ export default function CreateGamePage() {
             ♠
           </span>
 
-          <h1 className="create-title">{t("create.title")}</h1>
+          <h1 className="create-title">
+            {t("create.title")}
+          </h1>
 
-          <p className="create-subtitle">{t("create.subtitle")}</p>
+          <p className="create-subtitle">
+            {t("create.subtitle")}
+          </p>
         </div>
 
         <div className="create-fields">
           <div className="create-field">
-            <label className="create-label" htmlFor="username-input">
+            <label
+              className="create-label"
+              htmlFor="username-input"
+            >
               {t("join.username.label")}
             </label>
 
@@ -76,17 +101,21 @@ export default function CreateGamePage() {
               className="create-input"
               placeholder={t("join.username.placeholder")}
               value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
+              onChange={(event) => {
+                setUsername(event.target.value);
                 setError("");
               }}
               onKeyDown={handleKeyDown}
               autoFocus
+              disabled={isCreating}
             />
           </div>
 
           <div className="create-field">
-            <label className="create-label" htmlFor="duration-input">
+            <label
+              className="create-label"
+              htmlFor="duration-input"
+            >
               {t("create.duration.label")}
             </label>
 
@@ -94,7 +123,10 @@ export default function CreateGamePage() {
               id="duration-input"
               className="create-input"
               value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
+              onChange={(event) => {
+                setDuration(Number(event.target.value));
+              }}
+              disabled={isCreating}
             >
               <option value={30}>30 seconds</option>
               <option value={60}>1 minute</option>
@@ -105,18 +137,27 @@ export default function CreateGamePage() {
             </select>
           </div>
 
-          {error && <div className="create-error">{error}</div>}
+          {error && (
+            <div className="create-error">
+              {error}
+            </div>
+          )}
 
           <button
             className="create-button"
             type="button"
             onClick={() => void handleCreateGame()}
+            disabled={isCreating}
           >
-            {t("create.button")}
+            {isCreating
+              ? t("create.creating")
+              : t("create.button")}
           </button>
         </div>
 
-        <p className="create-note">{t("create.note")}</p>
+        <p className="create-note">
+          {t("create.note")}
+        </p>
       </div>
     </div>
   );

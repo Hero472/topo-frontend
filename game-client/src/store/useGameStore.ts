@@ -4,135 +4,49 @@ import type { FullState, ServerEvent } from "../types/types";
 
 export interface GameStore {
   fullState: FullState | null;
-
-  gameStarted: boolean;
-  waitingForPlayer: boolean;
-
-  winnerId: string | null;
-  timeoutMessage: string | null;
-
   canDraw: boolean;
-
-  // Player who has requested a rematch.
-  playAgainRequestedBy: string | null;
+  turnTimeoutMessage: string | null;
 
   applyFullState: (payload: FullState) => void;
-  applyEvent: (payload: ServerEvent) => void;
-  clearTimeoutMessage: () => void;
-  clearPlayAgainRequest: () => void;
+  applyEvent: (evt: ServerEvent) => void;
+  clearTurnTimeoutMessage: () => void;
+  reset: () => void;
 }
 
-export const useGameStore = create<GameStore>((set, get) => ({
-  fullState: null,
-
-  gameStarted: false,
-  waitingForPlayer: false,
-
-  winnerId: null,
-  timeoutMessage: null,
-
+const initialState = {
+  fullState: null as FullState | null,
   canDraw: false,
+  turnTimeoutMessage: null as string | null,
+};
 
-  playAgainRequestedBy: null,
+export const useGameStore = create<GameStore>((set, get) => ({
+  ...initialState,
 
   applyFullState: (payload) => {
-    console.log("FULL STATE:", payload);
-    console.log("DEALER PREVIEW:", payload.dealer_preview);
-
     set({
       fullState: payload,
-      gameStarted: true,
-      waitingForPlayer: false,
-      winnerId: null,
-      timeoutMessage: null,
       canDraw: payload.your_turn,
-      playAgainRequestedBy: null,
+      turnTimeoutMessage: null,
     });
   },
 
   applyEvent: (evt) => {
     const state = get();
 
-    // ─────────────────────────────────────────────
-    // Lobby
-    // ─────────────────────────────────────────────
-
-    if (evt.type === "waiting_for_player") {
-      set({
-        waitingForPlayer: true,
-        gameStarted: false,
-      });
-
-      return;
-    }
-
-    // ─────────────────────────────────────────────
-    // Game started
-    // ─────────────────────────────────────────────
-
-    if (evt.type === "game_started") {
-      set({
-        waitingForPlayer: false,
-        gameStarted: true,
-        playAgainRequestedBy: null,
-      });
-
-      if (!state.fullState) {
-        return;
-      }
-
-      const s: FullState = structuredClone(state.fullState);
-
-      s.your_turn = evt.current_player_idx === s.your_board.player_idx;
-
-      s.turn_seconds_remaining = evt.turn_seconds;
-
-      set({
-        fullState: s,
-        canDraw: s.your_turn,
-      });
-
-      return;
-    }
-
-    // ─────────────────────────────────────────────
-    // Events that don't require FullState
-    // ─────────────────────────────────────────────
-
-    if (evt.type === "play_again") {
-      set({
-        playAgainRequestedBy: evt.player_id,
-      });
-
-      return;
-    }
-
-    if (evt.type === "opponent_left") {
-      set({
-        gameStarted: false,
-        waitingForPlayer: false,
-        canDraw: false,
-        timeoutMessage: "Your opponent left the game.",
-      });
-
-      return;
-    }
-
-    // ─────────────────────────────────────────────
-    // Everything below requires FullState
-    // ─────────────────────────────────────────────
-
     if (!state.fullState) {
       return;
     }
 
     const s: FullState = structuredClone(state.fullState);
-
-    let newCanDraw = state.canDraw;
+    let canDraw = state.canDraw;
+    let turnTimeoutMessage = state.turnTimeoutMessage;
 
     switch (evt.type) {
-      case "player_joined":
-      case "player_left": {
+      case "game_started": {
+        s.your_turn = evt.current_player_idx === s.your_board.player_idx;
+        s.turn_seconds_remaining = evt.turn_seconds;
+        canDraw = s.your_turn;
+        turnTimeoutMessage = null;
         break;
       }
 
@@ -141,10 +55,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
         if (s.your_board.player_idx === evt.player_idx) {
           s.your_board.hand.push(...evt.cards);
-
-          newCanDraw = false;
+          canDraw = false;
         }
-
         break;
       }
 
@@ -152,7 +64,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
         if (s.your_board.player_idx === evt.player_idx) {
           s.your_board.personal = evt.personal_view;
         }
-
         break;
       }
 
@@ -170,8 +81,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
               ),
           );
 
-          // The card may have come from the top
-          // of one of the side stacks.
+          // The card may have come from the top of one of the side stacks.
           for (let index = 0; index < s.your_board.side.length; index++) {
             const stack = s.your_board.side[index];
 
@@ -187,16 +97,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
               top.deck === evt.card.deck
             ) {
               const side = [...s.your_board.side] as typeof s.your_board.side;
-
               side[index] = side[index].slice(0, -1);
-
               s.your_board.side = side;
-
               break;
             }
           }
 
-          newCanDraw = false;
+          canDraw = false;
         }
 
         const { scale_idx, card } = evt;
@@ -204,17 +111,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         if (scale_idx >= 0 && scale_idx < s.scales.length) {
           const scale = s.scales[scale_idx];
 
-          if (scale) {
-            s.scales[scale_idx] = {
-              ...scale,
-              cards: [...scale.cards, card],
-            };
-          } else {
-            s.scales[scale_idx] = {
-              scale_idx,
-              cards: [card],
-            };
-          }
+          s.scales[scale_idx] = scale
+            ? { ...scale, cards: [...scale.cards, card] }
+            : { scale_idx, cards: [card] };
         }
 
         break;
@@ -237,7 +136,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
               ),
           );
 
-          newCanDraw = false;
+          canDraw = false;
         }
 
         break;
@@ -256,8 +155,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       case "opponent_update": {
         s.turn_seconds_remaining = evt.turn_seconds_remaining;
 
-        // Make sure this update belongs to the
-        // opponent currently represented in FullState.
+        // Make sure this update belongs to the opponent currently
+        // represented in FullState.
         if (s.opponent.player_idx !== evt.player_idx) {
           break;
         }
@@ -275,42 +174,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case "turn_ended": {
         s.your_turn = evt.next_player_idx === s.your_board.player_idx;
-
         s.turn_seconds_remaining = evt.turn_seconds;
+        canDraw = s.your_turn;
 
-        newCanDraw = s.your_turn;
-
-        let timeoutMessage: string | null = null;
-
-        if (evt.timed_out_player_id != null) {
-          timeoutMessage =
-            evt.timed_out_player_idx === s.your_board.player_idx
+        turnTimeoutMessage =
+          evt.timed_out_player_id == null
+            ? null
+            : evt.timed_out_player_idx === s.your_board.player_idx
               ? "You ran out of time!"
               : "Your opponent ran out of time!";
-        }
 
-        set({
-          fullState: s,
-          timeoutMessage,
-          canDraw: newCanDraw,
-          winnerId: state.winnerId,
-        });
-
-        return;
-      }
-
-      case "game_over": {
-        set({
-          fullState: s,
-          winnerId: evt.winner_id,
-          timeoutMessage: null,
-          canDraw: false,
-        });
-
-        return;
-      }
-
-      case "player_disconnected": {
         break;
       }
 
@@ -319,36 +192,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
       }
 
+      case "game_over": {
+        canDraw = false;
+        break;
+      }
+
       case "error": {
         console.error(`Server error [${evt.code}]:`, evt.message, evt.details);
-
         break;
       }
 
       default: {
-        console.warn("Unhandled event:", evt);
+        // Room-level event (lobby roster, ready state, rematch voting,
+        // disconnect banner, etc.) - not this store's concern. See
+        // roomStore.ts.
         break;
       }
     }
 
-    set({
-      fullState: s,
-      winnerId: state.winnerId,
-      timeoutMessage: state.timeoutMessage,
-      canDraw: newCanDraw,
-      playAgainRequestedBy: state.playAgainRequestedBy,
-    });
+    set({ fullState: s, canDraw, turnTimeoutMessage });
   },
 
-  clearTimeoutMessage: () => {
-    set({
-      timeoutMessage: null,
-    });
-  },
+  clearTurnTimeoutMessage: () => set({ turnTimeoutMessage: null }),
 
-  clearPlayAgainRequest: () => {
-    set({
-      playAgainRequestedBy: null,
-    });
-  },
+  reset: () => set(initialState),
 }));

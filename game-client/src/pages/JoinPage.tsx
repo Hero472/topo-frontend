@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
-
 import "./JoinPage.css";
 
 export function JoinPage() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
 
@@ -30,12 +30,22 @@ export function JoinPage() {
       return;
     }
 
-    sessionStorage.setItem("game-username", trimmedUser);
-    navigate(`/game/${encodeURIComponent(gameId)}/waiting`);
+    sessionStorage.setItem(
+      "game-username",
+      trimmedUser,
+    );
+
+    navigate(
+      `/game/${encodeURIComponent(gameId)}/waiting`,
+    );
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleJoin();
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Enter") {
+      handleJoin();
+    }
   };
 
   return (
@@ -43,24 +53,34 @@ export function JoinPage() {
       <div className="join-card">
         <div className="join-header">
           <span className="join-logo" aria-hidden="true">
-            ♠️
+            ♠
           </span>
-          <h1 className="join-title">{t("join.title")}</h1>
-          <p className="join-subtitle">{t("join.subtitle")}</p>
+
+          <h1 className="join-title">
+            {t("join.title")}
+          </h1>
+
+          <p className="join-subtitle">
+            {t("join.subtitle")}
+          </p>
         </div>
 
         <div className="join-fields">
           <div className="join-field">
-            <label className="join-label" htmlFor="username-input">
+            <label
+              className="join-label"
+              htmlFor="username-input"
+            >
               {t("join.username.label")}
             </label>
+
             <input
               id="username-input"
               className="join-input"
               placeholder={t("join.username.placeholder")}
               value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
+              onChange={(event) => {
+                setUsername(event.target.value);
                 setError("");
               }}
               onKeyDown={handleKeyDown}
@@ -68,9 +88,17 @@ export function JoinPage() {
             />
           </div>
 
-          {error && <div className="join-error">{error}</div>}
+          {error && (
+            <div className="join-error">
+              {error}
+            </div>
+          )}
 
-          <button className="join-button" onClick={handleJoin}>
+          <button
+            className="join-button"
+            type="button"
+            onClick={handleJoin}
+          >
             {t("join.button")}
           </button>
         </div>
