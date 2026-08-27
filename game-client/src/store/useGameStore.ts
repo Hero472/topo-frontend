@@ -1,5 +1,4 @@
 import { create } from "zustand";
-
 import type { FullState, ServerEvent } from "../types/types";
 
 export interface GameStore {
@@ -32,10 +31,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   applyEvent: (evt) => {
     const state = get();
-
-    if (!state.fullState) {
-      return;
-    }
+    if (!state.fullState) return; // Gatekeeper: ignores events until full_state arrives
 
     const s: FullState = structuredClone(state.fullState);
     let canDraw = state.canDraw;
@@ -52,7 +48,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       case "hand_refill": {
         s.turn_seconds_remaining = evt.turn_seconds_remaining;
-
         if (s.your_board.player_idx === evt.player_idx) {
           s.your_board.hand.push(...evt.cards);
           canDraw = false;
@@ -71,26 +66,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
         s.turn_seconds_remaining = evt.turn_seconds_remaining;
 
         if (s.your_board.player_idx === evt.player_idx) {
-          // Remove the card from the hand.
           s.your_board.hand = s.your_board.hand.filter(
             (c) =>
               !(
                 c.suit === evt.card.suit &&
                 c.value === evt.card.value &&
                 c.deck === evt.card.deck
-              ),
+              )
           );
 
-          // The card may have come from the top of one of the side stacks.
           for (let index = 0; index < s.your_board.side.length; index++) {
             const stack = s.your_board.side[index];
-
-            if (stack.length === 0) {
-              continue;
-            }
+            if (stack.length === 0) continue;
 
             const top = stack[stack.length - 1];
-
             if (
               top.suit === evt.card.suit &&
               top.value === evt.card.value &&
@@ -102,20 +91,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
               break;
             }
           }
-
           canDraw = false;
         }
 
         const { scale_idx, card } = evt;
-
         if (scale_idx >= 0 && scale_idx < s.scales.length) {
           const scale = s.scales[scale_idx];
-
           s.scales[scale_idx] = scale
             ? { ...scale, cards: [...scale.cards, card] }
             : { scale_idx, cards: [card] };
         }
-
         break;
       }
 
@@ -133,33 +118,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 c.suit === evt.card.suit &&
                 c.value === evt.card.value &&
                 c.deck === evt.card.deck
-              ),
+              )
           );
-
           canDraw = false;
         }
-
         break;
       }
 
       case "scale_completed": {
         const { scale_idx } = evt;
-
         if (scale_idx >= 0 && scale_idx < s.scales.length) {
           s.scales[scale_idx] = null;
         }
-
         break;
       }
 
       case "opponent_update": {
         s.turn_seconds_remaining = evt.turn_seconds_remaining;
-
-        // Make sure this update belongs to the opponent currently
-        // represented in FullState.
-        if (s.opponent.player_idx !== evt.player_idx) {
-          break;
-        }
+        if (s.opponent.player_idx !== evt.player_idx) break;
 
         s.opponent = {
           ...s.opponent,
@@ -168,7 +144,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
           hand: evt.hand,
           side: evt.side,
         };
-
         break;
       }
 
@@ -183,7 +158,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
             : evt.timed_out_player_idx === s.your_board.player_idx
               ? "You ran out of time!"
               : "Your opponent ran out of time!";
-
         break;
       }
 
@@ -202,18 +176,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
         break;
       }
 
-      default: {
-        // Room-level event (lobby roster, ready state, rematch voting,
-        // disconnect banner, etc.) - not this store's concern. See
-        // roomStore.ts.
+      default:
         break;
-      }
     }
 
     set({ fullState: s, canDraw, turnTimeoutMessage });
   },
 
   clearTurnTimeoutMessage: () => set({ turnTimeoutMessage: null }),
-
   reset: () => set(initialState),
 }));

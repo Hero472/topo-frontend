@@ -12,6 +12,7 @@
     "title": "Create Game",
     "subtitle": "Choose your username to create a game.",
     "button": "Create Game",
+    "creating": "",
     "duration": {
       "label": "Game duration",
       "seconds30": "30 seconds",
@@ -34,7 +35,18 @@
     "copied": "Copied!",
     "connecting": "Connecting to game...",
     "waitingForPlayer": "Waiting for another player...",
-    "gameId": "Game ID:"
+    "gameId": "Game ID:",
+    "starting": "Game is starting...",
+    "getReady": "Get ready!",
+    "ready": "Ready",
+    "notReady": "Not ready",
+    "youAreReady": "You are ready",
+    "readyButton": "Ready",
+    "startingIn": "Starting in",
+    "errors": {
+      "notFound": "Game not found",
+      "backHome": "Back to Home"
+    }
   },
   "join": {
     "title": "Topo Online",
@@ -63,11 +75,18 @@
       "waitingForPlayers": "The game will start once both players are ready"
     },
     "leave": {
-      "title": "Leave",
-      "button": "Leave Button",
-      "message": "Leaving the game",
+      "title": "Leave Game",
+      "button": "Leave",
+      "message": "Are you sure you want to leave the game?",
       "cancel": "Cancel",
       "confirm": "Confirm"
+    },
+    "over": {
+      "youWon": "You won!",
+      "youLost": "You lost!",
+      "opponentWantsRematch": "Your opponent wants to play again!",
+      "waitingForOpponent": "Waiting for your opponent...",
+      "playAgain": "Play Again"
     },
     "result": {
       "winner": "You Win!",

@@ -1,97 +1,77 @@
 import { useState } from "react";
-
-import { useNavigate, useParams } from "react-router-dom";
-
-import { useGameSocket } from "../hooks/useGameSocket";
-
+import { useNavigate } from "react-router-dom";
 import { useGameStore } from "../store/useGameStore";
+import { useRoomStore } from "../store/useRoomStore";
+import { useGameSocket } from "../hooks/useGameSocket"; // Keep imported for the type
 
 import GameBoard from "../components/game/GameBoard";
-
 import DragOverlay from "../components/overlay/DragOverlay";
-
 import ConnectionStatusOverlay from "../components/overlay/ConnectionStatusOverlay";
 
 import { t, useLanguage } from "../i18n";
-
 import "./GamePage.css";
 
-export default function GamePage() {
+// ✅ Accept socket as a prop
+export default function GamePage({ 
+  socket 
+}: Readonly<{ 
+  socket: ReturnType<typeof useGameSocket> 
+}>) {
   useLanguage();
-
-  const { gameId } = useParams<{ gameId: string }>();
+  
   const navigate = useNavigate();
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
-  const username = sessionStorage.getItem("game-username") ?? "";
-
-  const { sendAction, status, leaveGame } = useGameSocket(
-    gameId ?? "",
-    username,
-  );
-
   const fullState = useGameStore((s) => s.fullState);
-  const winnerId = useGameStore((s) => s.winnerId);
-  const timeoutMessage = useGameStore((s) => s.timeoutMessage);
-  const playAgainRequestedBy = useGameStore(
-    (s) => s.playAgainRequestedBy,
-  );
+  const turnTimeoutMessage = useGameStore((s) => s.turnTimeoutMessage);
+
+  const phase = useRoomStore((s) => s.phase);
+  const winnerId = useRoomStore((s) => s.winnerId);
+  const reason = useRoomStore((s) => s.reason);
+  const playAgainRequestedBy = useRoomStore((s) => s.playAgainRequestedBy);
 
   const playAgain = () => {
-    sendAction({
-      type: "play_again",
-    });
+    socket.sendAction({ type: "play_again" });
   };
 
   const handleLeave = () => {
-    leaveGame();
+    useRoomStore.getState().reset();
+    useGameStore.getState().reset();
+    socket.leaveGame(); // ✅ Use the socket's leaveGame method
     navigate("/", { replace: true });
   };
 
-  /*
-   * We don't have FullState yet.
-   */
   if (!fullState) {
-    const isConnecting = status === "connecting";
-
+    const isConnecting = socket.status === "connecting";
     return (
       <div className="game-page">
         <div className="game-loading">
           <div className="game-loading-icon" aria-hidden="true">
             {isConnecting ? "🃏" : "♠"}
           </div>
-
           <div className="game-loading-text">
-            {isConnecting
-              ? t("game.loading.connecting")
-              : t("game.loading.waiting")}
+            {isConnecting ? t("game.loading.connecting") : t("game.loading.waiting")}
           </div>
-
           <p className="game-loading-subtext">
-            {isConnecting
-              ? t("game.loading.joiningRoom")
-              : t("game.loading.waitingForPlayers")}
+            {isConnecting ? t("game.loading.joiningRoom") : t("game.loading.waitingForPlayers")}
           </p>
         </div>
       </div>
     );
   }
 
-  const isGameOver = winnerId !== null;
-
+  const isGameOver = phase === "over" && winnerId !== null;
   const isWinner = winnerId === fullState.player_id;
 
   const opponentRequestedPlayAgain =
-    playAgainRequestedBy !== null &&
-    playAgainRequestedBy !== fullState.player_id;
+    playAgainRequestedBy.size > 0 && !playAgainRequestedBy.has(fullState.player_id);
 
-  const iRequestedPlayAgain =
-    playAgainRequestedBy === fullState.player_id;
+  const iRequestedPlayAgain = playAgainRequestedBy.has(fullState.player_id);
 
   return (
     <div className="game-page game-board-container">
-      <GameBoard sendAction={sendAction} />
+      <GameBoard sendAction={socket.sendAction} />
 
       {!isGameOver && <DragOverlay />}
 
@@ -103,51 +83,31 @@ export default function GamePage() {
         {t("game.leave.button")}
       </button>
 
-      <ConnectionStatusOverlay status={status} />
+      <ConnectionStatusOverlay status={socket.status} />
 
       {isGameOver && (
         <div className="game-over-backdrop">
-          <div
-            className="game-over-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="game-over-title"
-          >
+          <div className="game-over-dialog" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
             <h2 id="game-over-title">
-              {isWinner ? "You won!" : "You lost!"}
+              {isWinner ? t("game.over.youWon") : t("game.over.youLost")}
             </h2>
 
-            {timeoutMessage && (
-              <p className="game-over-message">
-                {timeoutMessage}
-              </p>
-            )}
+            {reason && <p className="game-over-message">{reason}</p>}
+            {turnTimeoutMessage && <p className="game-over-message">{turnTimeoutMessage}</p>}
 
             {opponentRequestedPlayAgain && (
-              <p className="game-over-message">
-                Your opponent wants to play again!
-              </p>
+              <p className="game-over-message">{t("game.over.opponentWantsRematch")}</p>
             )}
 
             {iRequestedPlayAgain ? (
-              <p className="game-over-message">
-                Waiting for your opponent...
-              </p>
+              <p className="game-over-message">{t("game.over.waitingForOpponent")}</p>
             ) : (
-              <button
-                type="button"
-                className="game-play-again-button"
-                onClick={playAgain}
-              >
-                Play Again
+              <button type="button" className="game-play-again-button" onClick={playAgain}>
+                {t("game.over.playAgain")}
               </button>
             )}
 
-            <button
-              type="button"
-              className="game-leave-button"
-              onClick={handleLeave}
-            >
+            <button type="button" className="game-leave-button" onClick={handleLeave}>
               {t("game.leave.button")}
             </button>
           </div>
@@ -156,32 +116,14 @@ export default function GamePage() {
 
       {showLeaveConfirm && (
         <div className="leave-dialog-backdrop">
-          <div
-            className="leave-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="leave-dialog-title"
-          >
-            <h2 id="leave-dialog-title">
-              {t("game.leave.title")}
-            </h2>
-
+          <div className="leave-dialog" role="dialog" aria-modal="true" aria-labelledby="leave-dialog-title">
+            <h2 id="leave-dialog-title">{t("game.leave.title")}</h2>
             <p>{t("game.leave.message")}</p>
-
             <div className="leave-dialog-actions">
-              <button
-                type="button"
-                className="leave-cancel-button"
-                onClick={() => setShowLeaveConfirm(false)}
-              >
+              <button type="button" className="leave-cancel-button" onClick={() => setShowLeaveConfirm(false)}>
                 {t("game.leave.cancel")}
               </button>
-
-              <button
-                type="button"
-                className="leave-confirm-button"
-                onClick={handleLeave}
-              >
+              <button type="button" className="leave-confirm-button" onClick={handleLeave}>
                 {t("game.leave.confirm")}
               </button>
             </div>

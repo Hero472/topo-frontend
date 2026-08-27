@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Action } from "../types/types";
-import { useGameStore } from "../store/useGameStore";
+import { applyServerMessage } from "../EventDispatcher";
+// Import the helper you already created that updates BOTH stores
+
 
 type ConnectionStatus =
   | "connecting"
@@ -21,9 +23,6 @@ function getPlayerId(): string {
 }
 
 export function useGameSocket(gameId: string, username: string) {
-  const applyFullState = useGameStore((s) => s.applyFullState);
-  const applyEvent = useGameStore((s) => s.applyEvent);
-
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +35,7 @@ export function useGameSocket(gameId: string, username: string) {
 
   const playerId = useMemo(() => getPlayerId(), []);
 
+  // Renamed conceptually, but keeps the same name for simplicity
   const sendAction = useCallback((action: Action) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(action));
@@ -62,7 +62,6 @@ export function useGameSocket(gameId: string, username: string) {
 
   useEffect(() => {
     isUnmounted.current = false;
-
     let cancelled = false;
 
     function connect() {
@@ -94,24 +93,18 @@ export function useGameSocket(gameId: string, username: string) {
         }
 
         console.log("✅ WebSocket connected");
-
         setStatus("open");
         setError(null);
-
         attemptRef.current = 0;
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-
           console.log("📩 Received:", data);
-
-          if (data.type === "full_state") {
-            applyFullState(data);
-          } else {
-            applyEvent(data);
-          }
+          
+          applyServerMessage(data);
+          
         } catch (e) {
           console.error("❌ Failed to process message:", event.data, e);
         }
@@ -132,7 +125,6 @@ export function useGameSocket(gameId: string, username: string) {
 
         if (closedIntentionally.current) {
           console.log("Closed intentionally – not reconnecting");
-
           setStatus("closed");
           return;
         }
@@ -161,12 +153,13 @@ export function useGameSocket(gameId: string, username: string) {
         wsRef.current.close(1000, "Component unmounted");
       }
     };
-  }, [gameId, username, playerId, applyFullState, applyEvent]);
+  }, [gameId, username, playerId]);
 
   return {
     sendAction,
     leaveGame,
     status,
     error,
+    playerId
   };
 }

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-
 import type { ServerEvent } from "../types/types";
 
 export interface LobbyPlayer {
@@ -13,8 +12,6 @@ export interface DisconnectInfo {
   playerId: string;
   playerIdx: number;
   gracePeriodSeconds: number;
-  /** Date.now() in ms when the disconnect happened, so the UI can compute
-   *  "time left" itself without needing a server-driven tick. */
   disconnectedAt: number;
 }
 
@@ -23,20 +20,12 @@ export type RoomPhase = "lobby" | "playing" | "over";
 export interface RoomStore {
   phase: RoomPhase;
   gameId: string | null;
-
-  // ── Lobby ──
   players: Record<string, LobbyPlayer>;
   startingIn: number | null;
-
-  // ── Connection status (relevant during "playing" and "over") ──
   disconnected: DisconnectInfo | null;
-
-  // ── Game over / rematch ──
   winnerId: string | null;
   reason: string | null;
   playAgainRequestedBy: Set<string>;
-
-  // ── Transient one-line banner, e.g. "opponent left the lobby" ──
   notice: string | null;
 
   applyEvent: (evt: ServerEvent) => void;
@@ -86,7 +75,6 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
       case "player_ready": {
         const existing = state.players[evt.player_id];
         if (!existing) break;
-
         set({
           players: {
             ...state.players,
@@ -103,9 +91,6 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
         break;
       }
 
-      // Not wired up on the backend yet (LobbyPhase currently starts
-      // immediately once both players are ready) - safe to leave handled
-      // here so it "just works" once the countdown ships.
       case "game_starting": {
         set({ startingIn: evt.seconds_remaining });
         break;
@@ -144,14 +129,10 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
       }
 
       case "opponent_left": {
-        // Fired in two different situations - word it accordingly. It is
-        // NOT fired for an in-match departure anymore: that now ends the
-        // game directly via a "game_over" event carrying a reason string.
         const notice =
           state.phase === "lobby"
             ? "Your opponent left the lobby."
             : "Your opponent disconnected.";
-
         set({ notice });
         break;
       }
@@ -173,14 +154,23 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
         break;
       }
 
-      default: {
-        // Not a room-level event - the game store (or nothing) handles it.
+      // ── POINT 2 FIX: Handle game restart ──
+      case "play_again": {
+        set({
+          phase: "lobby",
+          winnerId: null,
+          reason: null,
+          playAgainRequestedBy: new Set(),
+          notice: "Starting a new game...",
+        });
         break;
       }
+
+      default:
+        break;
     }
   },
 
   clearNotice: () => set({ notice: null }),
-
   reset: () => set(initialState),
 }));

@@ -203,3 +203,5 @@ export type Action =
   | { type: "play_side"; stack_idx: number; scale_idx: number }
   | { type: "move_to_side"; hand_idx: number; stack_idx: number }
   | { type: "move_personal_to_side"; stack_idx: number }
+  | { type: "player_ready" }
+  | { type: "play_again" };

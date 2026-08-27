@@ -1,34 +1,23 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useGameSocket } from "../hooks/useGameSocket";
+import { useState} from "react";
+import { useParams } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
 import { useRoomStore } from "../store/useRoomStore";
+import { useGameSocket } from "../hooks/useGameSocket"; // Keep imported for the type
 import "./WaitingGamePage.css";
 
-export default function WaitingGamePage() {
+// ✅ Accept socket as a prop
+export default function WaitingGamePage({ 
+  socket 
+}: Readonly<{ 
+  socket: ReturnType<typeof useGameSocket> 
+}>) {
   useLanguage();
 
   const { gameId } = useParams<{ gameId: string }>();
-  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
   const username = sessionStorage.getItem("game-username") ?? "";
 
-  useEffect(() => {
-    if (!username && gameId) {
-      navigate(
-        `/game/${encodeURIComponent(gameId)}/join`,
-        { replace: true },
-      );
-    }
-  }, [username, gameId, navigate]);
-
-  const { status, sendCommand } = useGameSocket(
-    gameId ?? "",
-    username,
-  );
-
-  const phase = useRoomStore((state) => state.phase);
   const players = useRoomStore((state) => state.players);
   const startingIn = useRoomStore((state) => state.startingIn);
   const notice = useRoomStore((state) => state.notice);
@@ -38,90 +27,65 @@ export default function WaitingGamePage() {
     `${globalThis.location.origin}/game/` +
     `${encodeURIComponent(gameId ?? "")}/join`;
 
-  useEffect(() => {
-    if (phase === "playing") {
-      navigate(
-        `/game/${encodeURIComponent(gameId ?? "")}`,
-        { replace: true },
-      );
-    }
-  }, [phase, gameId, navigate]);
-
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 2000);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error("Failed to copy invite link:", error);
     }
   };
 
   const handleReady = () => {
-    sendCommand({
-      type: "player_ready",
-    });
+    socket.sendAction({ type: "player_ready" });
   };
 
-  if (!username) {
-    return null;
-  }
+  if (!username) return null;
 
-  if (status === "error") {
+  if (socket.status === "error") {
     return (
       <div className="waiting-game-page">
         <div className="waiting-game-card">
-          <h1 className="waiting-game-title">
-            {t("waiting.errors.notFound")}
-          </h1>
-
+          <h1 className="waiting-game-title">{t("waiting.errors.notFound")}</h1>
           <button
             className="waiting-game-copy-button"
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => (window.location.href = "/")}
           >
             {t("waiting.errors.backHome")}
           </button>
-        </div>
+                </div>
       </div>
     );
   }
 
-  const isConnecting = status === "connecting";
+  const isConnecting = socket.status === "connecting";
   const playerList = Object.values(players);
 
-  const me = playerList.find(
-    (player) => player.username === username,
-  );
+  // ✅ Use socket.playerId to reliably find "me"
+  const me = playerList.find((player) => player.playerId === socket.playerId);
 
   const isReady = me?.ready ?? false;
   const bothJoined = playerList.length === 2;
+  const isStarting = startingIn !== null;
 
   return (
     <div className="waiting-game-page">
       <div className="waiting-game-card">
-        <div className="waiting-game-icon" aria-hidden="true">
-          ♠
-        </div>
+        <div className="waiting-game-icon" aria-hidden="true">♠</div>
 
         <h1 className="waiting-game-title">
-          {phase === "starting"
-            ? t("waiting.starting")
-            : t("waiting.title")}
+          {isStarting ? t("waiting.starting") : t("waiting.title")}
         </h1>
 
         <p className="waiting-game-subtitle">
-          {phase === "starting"
-            ? t("waiting.getReady")
-            : t("waiting.subtitle")}
+          {isStarting ? t("waiting.getReady") : t("waiting.subtitle")}
           <br />
-          {phase !== "starting" && t("waiting.invite")}
+          {!isStarting && t("waiting.invite")}
         </p>
 
-        {phase !== "starting" && (
+        {!isStarting && (
           <div className="waiting-game-link-container">
             <input
               className="waiting-game-link"
@@ -129,15 +93,12 @@ export default function WaitingGamePage() {
               readOnly
               aria-label="Game invite link"
             />
-
             <button
               className="waiting-game-copy-button"
               type="button"
               onClick={() => void handleCopy()}
             >
-              {copied
-                ? t("waiting.copied")
-                : t("waiting.copy")}
+              {copied ? t("waiting.copied") : t("waiting.copy")}
             </button>
           </div>
         )}
@@ -149,26 +110,18 @@ export default function WaitingGamePage() {
             tabIndex={0}
             onClick={clearNotice}
             onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                clearNotice();
-              }
+              if (event.key === "Enter" || event.key === " ") clearNotice();
             }}
           >
             {notice}
           </p>
         )}
 
-        {playerList.length > 0 && phase !== "starting" && (
+        {playerList.length > 0 && !isStarting && (
           <ul className="waiting-game-roster">
             {playerList.map((player) => (
-              <li
-                key={player.playerId}
-                className="waiting-game-roster-item"
-              >
-                <span className="waiting-game-roster-name">
-                  {player.username}
-                </span>
-
+              <li key={player.playerId} className="waiting-game-roster-item">
+                <span className="waiting-game-roster-name">{player.username}</span>
                 <span
                   className={
                     player.ready
@@ -176,21 +129,16 @@ export default function WaitingGamePage() {
                       : "waiting-game-roster-status"
                   }
                 >
-                  {player.ready
-                    ? t("waiting.ready")
-                    : t("waiting.notReady")}
+                  {player.ready ? t("waiting.ready") : t("waiting.notReady")}
                 </span>
               </li>
             ))}
           </ul>
         )}
 
-        {phase === "starting" && startingIn != null ? (
+        {isStarting ? (
           <div className="waiting-game-countdown">
-            <span className="waiting-game-countdown-number">
-              {startingIn}
-            </span>
-
+            <span className="waiting-game-countdown-number">{startingIn}</span>
             <span className="waiting-game-countdown-label">
               {t("waiting.startingIn")}
             </span>
@@ -202,15 +150,11 @@ export default function WaitingGamePage() {
             onClick={handleReady}
             disabled={isReady}
           >
-            {isReady
-              ? t("waiting.youAreReady")
-              : t("waiting.readyButton")}
+            {isReady ? t("waiting.youAreReady") : t("waiting.readyButton")}
           </button>
         ) : (
           <p className="waiting-game-status">
-            {isConnecting
-              ? t("waiting.connecting")
-              : t("waiting.waitingForPlayer")}
+            {isConnecting ? t("waiting.connecting") : t("waiting.waitingForPlayer")}
           </p>
         )}
 
