@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
 import "./JoinPage.css";
+import LanguageSelector from "../components/language/LanguageSelector";
 
 export function JoinPage() {
   const [username, setUsername] = useState("");
@@ -50,6 +51,7 @@ export function JoinPage() {
 
   return (
     <div className="join-outer">
+      <LanguageSelector />
       <div className="join-card">
         <div className="join-header">
           <span className="join-logo" aria-hidden="true">

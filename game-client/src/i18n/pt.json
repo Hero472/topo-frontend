@@ -1,14 +1,56 @@
 {
+  "common": {
+    "back": "Voltar"
+  },
   "menu": {
     "title": "Topo",
     "subtitle": "Jogo de Cartas Online",
     "multiplayer": "Multijogador",
     "playCpu": "Jogar contra a CPU",
     "tutorial": "Tutorial",
-    "comingSoon": "Em Breve",
+    "comingSoon": "Em breve",
     "version": "Versão"
   },
-
+  "create": {
+    "title": "Criar partida",
+    "subtitle": "Escolha seu nome de usuário para criar uma partida.",
+    "button": "Criar partida",
+    "creating": "",
+    "duration": {
+      "label": "Duração da partida",
+      "seconds30": "30 segundos",
+      "minute1": "1 minuto",
+      "minutes2": "2 minutos",
+      "minutes3": "3 minutos",
+      "minutes4": "4 minutos",
+      "minutes5": "5 minutos"
+    },
+    "note": "Crie uma partida e convide outro jogador com um link compartilhável.",
+    "errors": {
+      "createFailed": "Não foi possível criar a partida"
+    }
+  },
+  "waiting": {
+    "title": "Esperando por um oponente",
+    "subtitle": "Sua partida está pronta.",
+    "invite": "Envie este link para seu oponente.",
+    "copy": "Copiar link",
+    "copied": "Copiado!",
+    "connecting": "Conectando à partida...",
+    "waitingForPlayer": "Esperando por outro jogador...",
+    "gameId": "ID da partida:",
+    "starting": "A partida está começando...",
+    "getReady": "Prepare-se!",
+    "ready": "Pronto",
+    "notReady": "Não está pronto",
+    "youAreReady": "Você está pronto",
+    "readyButton": "Pronto",
+    "startingIn": "Começando em",
+    "errors": {
+      "notFound": "Partida não encontrada",
+      "backHome": "Voltar ao início"
+    }
+  },
   "join": {
     "title": "Topo Online",
     "subtitle": "Digite uma sala e seu nome para começar a jogar",
@@ -21,41 +63,90 @@
       "placeholder": "ex. Alice"
     },
     "button": "Entrar na partida",
-    "note": "Compartilhe o nome da sala com um amigo para jogarem juntos.",
+    "note": "Compartilhe o nome da sala com um amigo para jogar juntos.",
     "errors": {
       "roomRequired": "O nome da sala é obrigatório",
       "usernameRequired": "O nome de usuário é obrigatório",
-      "usernameTooLong": "O nome de usuário deve ter 20 caracteres ou menos"
+      "usernameTooLong": "O nome de usuário deve ter no máximo 20 caracteres"
     }
   },
-
-  "create": {
-    "title": "Criar partida",
-    "subtitle": "Escolha seu nome de usuário para criar uma partida.",
-    "button": "Criar partida",
-    "note": "Crie uma partida e convide outro jogador com um link compartilhável.",
-    "errors": {
-      "createFailed": "Não foi possível criar a partida"
-    }
-  },
-
-  "waiting": {
-    "title": "Esperando por um oponente",
-    "subtitle": "Sua partida está pronta.",
-    "invite": "Envie este link para seu oponente.",
-    "copy": "Copiar link",
-    "copied": "Copiado!",
-    "connecting": "Conectando à partida...",
-    "waitingForPlayer": "Esperando outro jogador...",
-    "gameId": "ID da partida:"
-  },
-
   "game": {
     "loading": {
       "connecting": "Conectando…",
-      "waiting": "Esperando o estado do jogo…",
+      "waiting": "Esperando pelo estado da partida…",
       "joiningRoom": "Entrando na sala, aguarde",
-      "waitingForPlayers": "A partida começará quando os dois jogadores estiverem prontos"
+      "waitingForPlayers": "A partida começará quando ambos os jogadores estiverem prontos"
+    },
+    "leave": {
+      "title": "Sair da partida",
+      "button": "Sair",
+      "message": "Tem certeza de que deseja sair da partida?",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "over": {
+      "youWon": "Você venceu!",
+      "youLost": "Você perdeu!",
+      "opponentWantsRematch": "Seu oponente quer jogar novamente!",
+      "waitingForOpponent": "Esperando pelo seu oponente...",
+      "playAgain": "Jogar novamente"
+    },
+    "result": {
+      "winner": "Você venceu!",
+      "loser": "Você perdeu",
+      "winnerMessage": "Parabéns! Você venceu a partida.",
+      "loserMessage": "Mais sorte da próxima vez!",
+      "backToMenu": "Voltar ao menu"
+    },
+    "reconnecting": {
+      "title": "Reconectando...",
+      "message": "Aguarde enquanto restauramos sua conexão. Não atualize a página.",
+      "opponent": "Seu oponente está se reconectando..."
+    }
+  },
+  "tutorial": {
+    "title": "Tutorial do Topo",
+    "objective": {
+      "title": "Objetivo",
+      "text": "Seu objetivo é esvaziar sua pilha pessoal de 13 cartas. Para fazer isso, construa sequências nas pilhas centrais, do Ás até a Dama, e jogue as cartas da sua pilha pessoal sobre elas."
+    },
+    "board": {
+      "title": "O tabuleiro",
+      "central": "Pilhas centrais",
+      "centralText": "Construa sequências aqui, começando pelo Ás (A) e indo até a Dama (Q). Os Reis (K) funcionam como curingas.",
+      "side": "Pilhas laterais",
+      "sideText": "Você tem 4 pilhas laterais. As cartas colocadas aqui formam pilhas e podem ajudar a organizar sua mão e preparar jogadas futuras.",
+      "personal": "Pilha pessoal",
+      "personalText": "Você começa com 13 cartas na sua pilha pessoal. Seu objetivo é jogar todas essas cartas nas pilhas centrais."
+    },
+    "howToPlay": {
+      "title": "Como jogar",
+      "step1": "Compre cartas até ter 5 cartas na sua mão.",
+      "step2": "Jogue o máximo de cartas que puder. Se você tiver um Ás, pode usá-lo para começar uma nova sequência central. Depois, continue a sequência em ordem.",
+      "step3": "Use suas pilhas laterais para guardar cartas e preparar jogadas futuras.",
+      "step4": "Termine seu turno colocando uma carta em uma das suas 4 pilhas laterais."
+    },
+    "scales": {
+      "title": "Construindo sequências",
+      "text": "As pilhas centrais devem ser construídas em ordem, começando com um Ás e continuando até a Dama.",
+      "example": "A → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → J → Q",
+      "ace": "Um Ás só pode ser usado para começar uma nova sequência.",
+      "king": "Um Rei é um curinga e pode representar qualquer carta necessária para continuar uma sequência."
+    },
+    "king": {
+      "title": "O Rei",
+      "text": "Os Reis são curingas. Eles podem ser usados como qualquer carta necessária para continuar uma sequência.",
+      "cannotStart": "Um Rei não pode ser usado para começar uma nova sequência. Toda sequência deve começar com um Ás.",
+      "noDoubleKing": "Você não pode usar Reis duas vezes seguidas na mesma sequência."
+    },
+    "turn": {
+      "title": "Seu turno",
+      "text": "No início do seu turno, compre cartas até ter 5 cartas. Depois, jogue cartas da sua mão e da sua pilha pessoal sempre que possível.",
+      "ending": "Quando terminar de jogar, coloque uma carta em uma das suas 4 pilhas laterais. Isso encerra seu turno."
+    },
+    "winning": {
+      "title": "Como vencer",
+      "text": "Continue colocando cartas da sua pilha pessoal nas sequências centrais. O primeiro jogador a esvaziar completamente sua pilha pessoal de 13 cartas e terminar o turno com sua última carta na mão vence!"
     }
   }
 }

@@ -10,7 +10,6 @@ export interface CardDropEvent {
 
 interface UseDropTargetOptions {
   stackId: string;
-
   allowSelfDrop?: boolean;
   allowedSourceIds?: string[];
 }
@@ -22,62 +21,86 @@ export function useDropTarget({
 }: UseDropTargetOptions) {
   const ref = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  
+  // Use refs to track state synchronously and prevent infinite loops
+  const dragOverRef = useRef(false);
+  const isHoveredRef = useRef(false);
 
-  const {
-    dragging,
-    sourceStackId,
-    x,
-    y,
-    hoverStackId,
-    setHover,
-  } = useDragStore();
+  // Only subscribe to `dragging` to trigger the effect setup/teardown
+  const dragging = useDragStore((s) => s.dragging);
 
   function canDrop(source: string) {
-    if (allowedSourceIds && !allowedSourceIds.includes(source)) {
-      return false;
-    }
-
-    if (!allowSelfDrop && source === stackId) {
-      return false;
-    }
-
+    if (allowedSourceIds && !allowedSourceIds.includes(source)) return false;
+    if (!allowSelfDrop && source === stackId) return false;
     return true;
   }
 
   useEffect(() => {
-    if (!dragging || !ref.current || !sourceStackId) {
-      setDragOver(false);
+    // If not dragging, ensure states are clean and exit
+    if (!dragging) {
+      if (dragOverRef.current) {
+        dragOverRef.current = false;
+        setDragOver(false);
+      }
+      if (isHoveredRef.current) {
+        isHoveredRef.current = false;
+        useDragStore.getState().setHover(null);
+      }
       return;
     }
 
-    const rect = ref.current.getBoundingClientRect();
-
-    const inside =
-      x >= rect.left &&
-      x <= rect.right &&
-      y >= rect.top &&
-      y <= rect.bottom;
-
-    if (inside && canDrop(sourceStackId)) {
-      setDragOver(true);
-
-      if (hoverStackId !== stackId) {
-        setHover(stackId);
+    // Subscribe directly to the store to avoid React re-render loops on every mouse move
+    const unsubscribe = useDragStore.subscribe((state) => {
+      if (!state.dragging || !ref.current || !state.sourceStackId) {
+        if (dragOverRef.current) {
+          dragOverRef.current = false;
+          setDragOver(false);
+        }
+        if (isHoveredRef.current) {
+          isHoveredRef.current = false;
+          useDragStore.getState().setHover(null);
+        }
+        return;
       }
-    } else {
-      setDragOver(false);
 
-      if (hoverStackId === stackId) {
-        setHover(null);
+      const rect = ref.current.getBoundingClientRect();
+      const inside =
+        state.x >= rect.left &&
+        state.x <= rect.right &&
+        state.y >= rect.top &&
+        state.y <= rect.bottom;
+
+      const canDropHere = inside && canDrop(state.sourceStackId);
+
+      if (canDropHere) {
+        if (!dragOverRef.current) {
+          dragOverRef.current = true;
+          setDragOver(true);
+        }
+        if (!isHoveredRef.current) {
+          isHoveredRef.current = true;
+          useDragStore.getState().setHover(stackId);
+        }
+      } else {
+        if (dragOverRef.current) {
+          dragOverRef.current = false;
+          setDragOver(false);
+        }
+        if (isHoveredRef.current) {
+          isHoveredRef.current = false;
+          useDragStore.getState().setHover(null);
+        }
       }
-    }
-  }, [
-    dragging,
-    x,
-    y,
-    hoverStackId,
-    sourceStackId,
-  ]);
+    });
+
+    return () => {
+      unsubscribe();
+      // Cleanup on unmount
+      if (isHoveredRef.current) {
+        useDragStore.getState().setHover(null);
+      }
+    };
+  }, [dragging, stackId, allowedSourceIds, allowSelfDrop]);
 
   return {
     ref,

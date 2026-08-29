@@ -12,14 +12,14 @@ export interface GameStore {
   reset: () => void;
 }
 
-const initialState = {
+const getInitialState = () => ({
   fullState: null as FullState | null,
   canDraw: false,
   turnTimeoutMessage: null as string | null,
-};
+});
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  ...initialState,
+  ...getInitialState(),
 
   applyFullState: (payload) => {
     set({
@@ -33,6 +33,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     if (!state.fullState) return; // Gatekeeper: ignores events until full_state arrives
 
+    // structuredClone creates a completely independent deep copy, 
+    // so we can safely mutate nested arrays/objects directly.
     const s: FullState = structuredClone(state.fullState);
     let canDraw = state.canDraw;
     let turnTimeoutMessage = state.turnTimeoutMessage;
@@ -66,6 +68,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         s.turn_seconds_remaining = evt.turn_seconds_remaining;
 
         if (s.your_board.player_idx === evt.player_idx) {
+          // Remove from hand
           s.your_board.hand = s.your_board.hand.filter(
             (c) =>
               !(
@@ -75,25 +78,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
               )
           );
 
-          for (let index = 0; index < s.your_board.side.length; index++) {
-            const stack = s.your_board.side[index];
-            if (stack.length === 0) continue;
-
-            const top = stack[stack.length - 1];
-            if (
-              top.suit === evt.card.suit &&
-              top.value === evt.card.value &&
-              top.deck === evt.card.deck
-            ) {
-              const side = [...s.your_board.side] as typeof s.your_board.side;
-              side[index] = side[index].slice(0, -1);
-              s.your_board.side = side;
-              break;
+          // Remove from side stacks (simplified thanks to structuredClone)
+          for (const stack of s.your_board.side) {
+            if (stack.length > 0) {
+              const top = stack[stack.length - 1];
+              if (
+                top.suit === evt.card.suit &&
+                top.value === evt.card.value &&
+                top.deck === evt.card.deck
+              ) {
+                stack.pop(); // Safe to mutate directly because `s` is a deep clone
+                break;
+              }
             }
           }
           canDraw = false;
         }
 
+        // Add to scale
         const { scale_idx, card } = evt;
         if (scale_idx >= 0 && scale_idx < s.scales.length) {
           const scale = s.scales[scale_idx];
@@ -184,5 +186,5 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   clearTurnTimeoutMessage: () => set({ turnTimeoutMessage: null }),
-  reset: () => set(initialState),
+  reset: () => set(getInitialState()),
 }));

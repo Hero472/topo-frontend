@@ -11,6 +11,11 @@ export default function MainMenuPage() {
   return (
     <div className="menu-page">
       <div className="menu-card">
+        
+        <div className="card-top-actions">
+          <LanguageSelector />
+        </div>
+
         <div className="menu-header">
           <div className="logo-icon" aria-hidden="true">
             ♠
@@ -32,18 +37,17 @@ export default function MainMenuPage() {
             <span className="coming-soon">{t("menu.comingSoon")}</span>
           </button>
 
-          <button className="menu-button" disabled>
+          <button 
+            className="menu-button"
+            onClick={() => navigate("/tutorial")}>
             {t("menu.tutorial")}
-            <span className="coming-soon">{t("menu.comingSoon")}</span>
           </button>
         </div>
 
         <div className="menu-footer">
           <span className="version-dot" />
-          {t("menu.version")} 0.3.0
+          {t("menu.version")} 0.5.0
         </div>
-
-        <LanguageSelector />
       </div>
     </div>
   );

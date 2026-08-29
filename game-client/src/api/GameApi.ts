@@ -26,4 +26,4 @@ export class GameApi {
   }
 }
 
-export const gameApi = new GameApi("http://localhost:8080");
+export const gameApi = new GameApi(""); // done by the proxy

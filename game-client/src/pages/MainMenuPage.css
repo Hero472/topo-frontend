@@ -108,6 +108,13 @@ body {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
+.card-top-actions {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 2;
+}
+
 /* ---------- HEADER ---------- */
 
 .menu-header {
@@ -351,6 +358,11 @@ body {
     padding: 32px 20px 24px;
 
     border-radius: 9px;
+  }
+
+  .card-top-actions {
+    top: 16px;
+    right: 16px;
   }
 
   .menu-header {

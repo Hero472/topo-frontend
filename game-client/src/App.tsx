@@ -5,6 +5,7 @@ import CreateGamePage from "./pages/CreateGamePage";
 import { JoinPage } from "./pages/JoinPage";
 import GameSession from "./pages/GameSession";
 import DragOverlay from "./components/overlay/DragOverlay";
+import TutorialPage from "./pages/TutorialPage";
 
 export default function App() {
     return (
@@ -15,6 +16,7 @@ export default function App() {
             <Route path="/game/:gameId/join" element={<JoinPage />} />
             <Route path="/game/:gameId/*" element={<GameSession />} />
             <Route path="/debug" element={<DebugPage />} />
+            <Route path="tutorial" element={<TutorialPage/> } />
         </Routes>
         <DragOverlay/>
         </>

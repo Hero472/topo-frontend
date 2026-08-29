@@ -224,6 +224,169 @@
   outline-offset: 3px;
 }
 
+/* ---------- NOTICE ---------- */
+
+.waiting-game-notice {
+  margin: 20px 0 0;
+  padding: 12px 16px;
+
+  background: var(--waiting-surface-2);
+  border: 1px solid var(--waiting-border);
+  border-radius: 8px;
+
+  color: var(--waiting-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.waiting-game-notice:hover {
+  border-color: var(--waiting-border-strong);
+  color: var(--waiting-text);
+}
+
+.waiting-game-notice:focus-visible {
+  outline: 2px solid var(--waiting-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- ROSTER ---------- */
+
+.waiting-game-roster {
+  list-style: none;
+
+  margin: 24px 0 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  text-align: left;
+}
+
+.waiting-game-roster-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  background: var(--waiting-surface-2);
+  border: 1px solid var(--waiting-border);
+  border-radius: 8px;
+}
+
+.waiting-game-roster-name {
+  color: var(--waiting-text);
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waiting-game-roster-status {
+  flex-shrink: 0;
+  margin-left: 12px;
+
+  color: var(--waiting-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.waiting-game-roster-status--ready {
+  color: var(--waiting-success);
+}
+
+/* ---------- COUNTDOWN ---------- */
+
+.waiting-game-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  margin: 28px 0 0;
+}
+
+.waiting-game-countdown-number {
+  color: var(--waiting-accent);
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.waiting-game-countdown-label {
+  margin-top: 8px;
+
+  color: var(--waiting-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- READY BUTTON ---------- */
+
+.waiting-game-ready-button {
+  width: 100%;
+  height: 56px;
+  margin-top: 28px;
+
+  border: 1px solid var(--waiting-accent);
+  border-radius: 8px;
+
+  background: var(--waiting-accent);
+  color: #17130c;
+
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+
+  cursor: pointer;
+
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.waiting-game-ready-button:hover:not(:disabled) {
+  background: var(--waiting-accent-hover);
+  border-color: var(--waiting-accent-hover);
+}
+
+.waiting-game-ready-button:active:not(:disabled) {
+  background: var(--waiting-accent);
+  transform: scale(0.98);
+}
+
+/* When disabled, it means the user is already ready */
+.waiting-game-ready-button:disabled {
+  background: var(--waiting-surface-2);
+  border-color: var(--waiting-success);
+  color: var(--waiting-success);
+  cursor: default;
+}
+
+.waiting-game-ready-button:focus-visible {
+  outline: 2px solid var(--waiting-accent);
+  outline-offset: 3px;
+}
+
 /* ---------- STATUS ---------- */
 
 .waiting-game-status {
@@ -335,6 +498,19 @@
 
     font-size: 0.78rem;
   }
+
+  .waiting-game-roster-item {
+    padding: 12px 14px;
+  }
+
+  .waiting-game-countdown-number {
+    font-size: 3rem;
+  }
+
+  .waiting-game-ready-button {
+    height: 54px;
+    font-size: 0.9rem;
+  }
 }
 
 /* ---------- SMALL PHONES ---------- */
@@ -378,6 +554,18 @@
   .waiting-game-status {
     margin-top: 20px;
   }
+
+  .waiting-game-roster-item {
+    padding: 10px 12px;
+  }
+
+  .waiting-game-roster-name {
+    font-size: 0.88rem;
+  }
+
+  .waiting-game-countdown-number {
+    font-size: 2.5rem;
+  }
 }
 
 /* ---------- SHORT LANDSCAPE ---------- */
@@ -410,6 +598,19 @@
   .waiting-game-status {
     margin-top: 14px;
   }
+
+  .waiting-game-countdown {
+    margin-top: 16px;
+  }
+
+  .waiting-game-countdown-number {
+    font-size: 2.5rem;
+  }
+
+  .waiting-game-ready-button {
+    margin-top: 16px;
+    height: 48px;
+  }
 }
 
 /* ---------- REDUCED MOTION ---------- */
@@ -417,5 +618,9 @@
 @media (prefers-reduced-motion: reduce) {
   .waiting-game-status::before {
     animation: none;
+  }
+  
+  .waiting-game-ready-button {
+    transition: none;
   }
 }

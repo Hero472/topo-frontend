@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Action } from "../types/types";
 import { applyServerMessage } from "../EventDispatcher";
-// Import the helper you already created that updates BOTH stores
 
+export type ConnectionStatus = "connecting" | "open" | "closed" | "reconnecting" | "error";
 
-type ConnectionStatus =
-  | "connecting"
-  | "open"
-  | "closed"
-  | "reconnecting"
-  | "error";
+export interface GameSocket {
+  sendAction: (action: Action) => void;
+  leaveGame: () => void;
+  status: ConnectionStatus;
+  error: string | null;
+  playerId: string;
+}
 
 function getPlayerId(): string {
   const key = "game-player-id";
-
   let id = sessionStorage.getItem(key);
   if (!id) {
     id = crypto.randomUUID();
@@ -22,7 +22,7 @@ function getPlayerId(): string {
   return id;
 }
 
-export function useGameSocket(gameId: string, username: string) {
+export function useGameSocket(gameId: string, username: string): GameSocket {
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [error, setError] = useState<string | null>(null);
 
@@ -32,10 +32,8 @@ export function useGameSocket(gameId: string, username: string) {
 
   const isUnmounted = useRef(false);
   const closedIntentionally = useRef(false);
-
   const playerId = useMemo(() => getPlayerId(), []);
 
-  // Renamed conceptually, but keeps the same name for simplicity
   const sendAction = useCallback((action: Action) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(action));
@@ -46,6 +44,11 @@ export function useGameSocket(gameId: string, username: string) {
 
   const leaveGame = useCallback(() => {
     closedIntentionally.current = true;
+
+    // Explicitly tell the backend this is an intentional leave
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "leave" }));
+    }
 
     if (reconnectTimer.current) {
       clearTimeout(reconnectTimer.current);
@@ -65,23 +68,13 @@ export function useGameSocket(gameId: string, username: string) {
     let cancelled = false;
 
     function connect() {
-      if (cancelled || isUnmounted.current) {
-        return;
-      }
-
+      if (cancelled || isUnmounted.current) return;
       closedIntentionally.current = false;
 
       const protocol = globalThis.location.protocol === "https:" ? "wss" : "ws";
+      const url = `${protocol}://${globalThis.location.host}/ws/${encodeURIComponent(gameId)}?player_id=${encodeURIComponent(playerId)}&username=${encodeURIComponent(username)}`;
 
-      const url =
-        `${protocol}://${globalThis.location.host}` +
-        `/ws/${encodeURIComponent(gameId)}` +
-        `?player_id=${encodeURIComponent(playerId)}` +
-        `&username=${encodeURIComponent(username)}`;
-
-      console.log(
-        `🔌 Connecting to ${url} ` + `(attempt ${attemptRef.current + 1})`,
-      );
+      console.log(`Connecting to ${url} (attempt ${attemptRef.current + 1})`);
 
       const ws = new WebSocket(url);
       wsRef.current = ws;
@@ -91,8 +84,7 @@ export function useGameSocket(gameId: string, username: string) {
           ws.close();
           return;
         }
-
-        console.log("✅ WebSocket connected");
+        console.log("WebSocket connected");
         setStatus("open");
         setError(null);
         attemptRef.current = 0;
@@ -101,30 +93,24 @@ export function useGameSocket(gameId: string, username: string) {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("📩 Received:", data);
-          
+
+          console.log(data)
+
           applyServerMessage(data);
-          
         } catch (e) {
           console.error("❌ Failed to process message:", event.data, e);
         }
       };
 
-      ws.onerror = (err) => {
-        console.error("⚠️ WebSocket error:", err);
+      ws.onerror = () => {
         setError("WebSocket error");
         setStatus("error");
       };
 
-      ws.onclose = (event) => {
-        if (cancelled || isUnmounted.current) {
-          return;
-        }
-
-        console.log(`🔻 WebSocket closed (code ${event.code})`);
+      ws.onclose = () => {
+        if (cancelled || isUnmounted.current) return;
 
         if (closedIntentionally.current) {
-          console.log("Closed intentionally – not reconnecting");
           setStatus("closed");
           return;
         }
@@ -132,8 +118,6 @@ export function useGameSocket(gameId: string, username: string) {
         setStatus("reconnecting");
         const delay = Math.min(1000 * 2 ** attemptRef.current, 30000);
         attemptRef.current++;
-
-        console.log(`🔄 Reconnecting in ${delay / 1000}s...`);
         reconnectTimer.current = setTimeout(connect, delay);
       };
     }
@@ -144,22 +128,10 @@ export function useGameSocket(gameId: string, username: string) {
       cancelled = true;
       isUnmounted.current = true;
       closedIntentionally.current = true;
-
-      if (reconnectTimer.current) {
-        clearTimeout(reconnectTimer.current);
-      }
-
-      if (wsRef.current) {
-        wsRef.current.close(1000, "Component unmounted");
-      }
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
+      if (wsRef.current) wsRef.current.close(1000, "Component unmounted");
     };
   }, [gameId, username, playerId]);
 
-  return {
-    sendAction,
-    leaveGame,
-    status,
-    error,
-    playerId
-  };
+  return { sendAction, leaveGame, status, error, playerId };
 }

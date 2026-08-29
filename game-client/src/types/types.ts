@@ -204,4 +204,5 @@ export type Action =
   | { type: "move_to_side"; hand_idx: number; stack_idx: number }
   | { type: "move_personal_to_side"; stack_idx: number }
   | { type: "player_ready" }
-  | { type: "play_again" };
+  | { type: "play_again" }
+  | { type: "leave" };

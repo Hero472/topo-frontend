@@ -6,6 +6,8 @@ import type { ServerEvent } from "./types/types";
 export function applyServerMessage(msg: ServerEvent) {
   if (msg.type === "full_state") {
     useGameStore.getState().applyFullState(msg);
+    useRoomStore.getState().applyEvent(msg);
+    useRoomStore.setState({ phase: "playing" }); 
     return;
   }
 

@@ -1,4 +1,7 @@
 {
+  "common": {
+    "back": "Atrás"
+  },
   "menu": {
     "title": "Topo",
     "subtitle": "Juego de Cartas Online",
@@ -12,12 +15,21 @@
     "title": "Crear partida",
     "subtitle": "Elige tu nombre de usuario para crear una partida.",
     "button": "Crear partida",
+    "creating": "",
+    "duration": {
+      "label": "Duración de la partida",
+      "seconds30": "30 segundos",
+      "minute1": "1 minuto",
+      "minutes2": "2 minutos",
+      "minutes3": "3 minutos",
+      "minutes4": "4 minutos",
+      "minutes5": "5 minutos"
+    },
     "note": "Crea una partida e invita a otro jugador con un enlace para compartir.",
     "errors": {
       "createFailed": "No se pudo crear la partida"
     }
   },
-
   "waiting": {
     "title": "Esperando a un oponente",
     "subtitle": "Tu partida está lista.",
@@ -26,11 +38,22 @@
     "copied": "¡Copiado!",
     "connecting": "Conectando a la partida...",
     "waitingForPlayer": "Esperando a otro jugador...",
-    "gameId": "ID de partida:"
+    "gameId": "ID de partida:",
+    "starting": "La partida está comenzando...",
+    "getReady": "¡Prepárate!",
+    "ready": "Listo",
+    "notReady": "No listo",
+    "youAreReady": "Estás listo",
+    "readyButton": "Listo",
+    "startingIn": "Comenzando en",
+    "errors": {
+      "notFound": "Partida no encontrada",
+      "backHome": "Volver al inicio"
+    }
   },
   "join": {
     "title": "Topo Online",
-    "subtitle": "Introduce una sala y tu nombre para empezar a jugar",
+    "subtitle": "Ingresa a una sala y tu nombre para comenzar a jugar",
     "room": {
       "label": "Sala",
       "placeholder": "ej. misala"
@@ -50,9 +73,80 @@
   "game": {
     "loading": {
       "connecting": "Conectando…",
-      "waiting": "Esperando el estado del juego…",
+      "waiting": "Esperando el estado de la partida…",
       "joiningRoom": "Uniéndose a la sala, espera por favor",
       "waitingForPlayers": "La partida comenzará cuando ambos jugadores estén listos"
+    },
+    "leave": {
+      "title": "Salir de la partida",
+      "button": "Salir",
+      "message": "¿Estás seguro de que quieres salir de la partida?",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "over": {
+      "youWon": "¡Ganaste!",
+      "youLost": "¡Perdiste!",
+      "opponentWantsRematch": "¡Tu oponente quiere jugar de nuevo!",
+      "waitingForOpponent": "Esperando a tu oponente...",
+      "playAgain": "Jugar de nuevo"
+    },
+    "result": {
+      "winner": "¡Ganaste!",
+      "loser": "Perdiste",
+      "winnerMessage": "¡Felicitaciones! Ganaste la partida.",
+      "loserMessage": "¡Mejor suerte la próxima vez!",
+      "backToMenu": "Volver al menú"
+    },
+    "reconnecting": {
+      "title": "Reconectando...",
+      "message": "Espera mientras restauramos tu conexión. No actualices la página.",
+      "opponent": "Tu oponente se está reconectando..."
+    }
+  },
+  "tutorial": {
+    "title": "Tutorial de Topo",
+    "objective": {
+      "title": "Objetivo",
+      "text": "Tu objetivo es vaciar tu pila personal de 13 cartas. Para hacerlo, construye escalas en las pilas centrales desde el As hasta la Reina y juega las cartas de tu pila personal sobre ellas."
+    },
+    "board": {
+      "title": "El tablero",
+      "central": "Pilas centrales",
+      "centralText": "Construye escalas aquí desde el As (A) hasta la Reina (Q). Los Reyes (K) funcionan como comodines.",
+      "side": "Pilas laterales",
+      "sideText": "Tienes 4 pilas laterales. Las cartas colocadas aquí forman pilas y pueden ayudarte a organizar tu mano y preparar futuras jugadas.",
+      "personal": "Pila personal",
+      "personalText": "Comienzas con 13 cartas en tu pila personal. Tu objetivo es jugar todas esas cartas en las pilas centrales."
+    },
+    "howToPlay": {
+      "title": "Cómo jugar",
+      "step1": "Roba cartas hasta tener 5 cartas en tu mano.",
+      "step2": "Juega tantas cartas como puedas. Si tienes un As, puedes usarlo para comenzar una nueva escala central. Luego continúa la escala en orden.",
+      "step3": "Usa tus pilas laterales para guardar cartas y preparar futuras jugadas.",
+      "step4": "Termina tu turno colocando una carta en una de tus 4 pilas laterales."
+    },
+    "scales": {
+      "title": "Construyendo escalas",
+      "text": "Las pilas centrales deben construirse en orden, comenzando con un As y continuando hasta la Reina.",
+      "example": "A → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → J → Q",
+      "ace": "Un As solo puede utilizarse para comenzar una nueva escala.",
+      "king": "Un Rey es un comodín y puede representar cualquier carta necesaria para continuar una escala."
+    },
+    "king": {
+      "title": "El Rey",
+      "text": "Los Reyes son comodines. Pueden utilizarse como cualquier carta necesaria para continuar una escala.",
+      "cannotStart": "Un Rey no puede utilizarse para comenzar una nueva escala. Toda escala debe comenzar con un As.",
+      "noDoubleKing": "No puedes usar Reyes dos veces seguidas en la misma escala."
+    },
+    "turn": {
+      "title": "Tu turno",
+      "text": "Al comienzo de tu turno, roba cartas hasta tener 5 cartas. Luego juega cartas de tu mano y de tu pila personal siempre que sea posible.",
+      "ending": "Cuando termines de jugar, coloca una carta en una de tus 4 pilas laterales. Esto termina tu turno."
+    },
+    "winning": {
+      "title": "Cómo ganar",
+      "text": "Sigue colocando cartas de tu pila personal en las escalas centrales. ¡El primer jugador que vacíe completamente su pila personal de 13 cartas y termine el turno con su última carta en la mano gana!"
     }
   }
 }

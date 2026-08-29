@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { gameApi } from "../api/GameApi";
 import { t, useLanguage } from "../i18n";
 import "./CreateGamePage.css";
+// import LanguageSelector from "../components/language/LanguageSelector";
 
 export default function CreateGamePage() {
   const [username, setUsername] = useState("");
@@ -14,10 +15,9 @@ export default function CreateGamePage() {
 
   useLanguage();
 
-  const handleCreateGame = async () => {
-    if (isCreating) {
-      return;
-    }
+  const handleCreateGame = async (e?: FormEvent) => {
+    if (e) e.preventDefault(); // Prevent default browser form reload
+    if (isCreating) return;
 
     const trimmedUser = username.trim();
 
@@ -35,18 +35,16 @@ export default function CreateGamePage() {
       setError("");
       setIsCreating(true);
 
-      sessionStorage.setItem(
-        "game-username",
-        trimmedUser,
-      );
+      sessionStorage.setItem("game-username", trimmedUser);
 
       const { game_id } = await gameApi.createGame({
         duration_seconds: duration,
       });
 
-      navigate(
-        `/game/${encodeURIComponent(game_id)}/waiting`,
-      );
+      // ✅ Added { replace: true } to prevent back-button loops
+      navigate(`/game/${encodeURIComponent(game_id)}/waiting`, {
+        replace: true,
+      });
     } catch (error) {
       console.error("Failed to create game:", error);
       setError(t("create.errors.createFailed"));
@@ -54,9 +52,7 @@ export default function CreateGamePage() {
     }
   };
 
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       void handleCreateGame();
     }
@@ -78,21 +74,14 @@ export default function CreateGamePage() {
             ♠
           </span>
 
-          <h1 className="create-title">
-            {t("create.title")}
-          </h1>
+          <h1 className="create-title">{t("create.title")}</h1>
 
-          <p className="create-subtitle">
-            {t("create.subtitle")}
-          </p>
+          <p className="create-subtitle">{t("create.subtitle")}</p>
         </div>
 
         <div className="create-fields">
           <div className="create-field">
-            <label
-              className="create-label"
-              htmlFor="username-input"
-            >
+            <label className="create-label" htmlFor="username-input">
               {t("join.username.label")}
             </label>
 
@@ -112,10 +101,7 @@ export default function CreateGamePage() {
           </div>
 
           <div className="create-field">
-            <label
-              className="create-label"
-              htmlFor="duration-input"
-            >
+            <label className="create-label" htmlFor="duration-input">
               {t("create.duration.label")}
             </label>
 
@@ -137,11 +123,7 @@ export default function CreateGamePage() {
             </select>
           </div>
 
-          {error && (
-            <div className="create-error">
-              {error}
-            </div>
-          )}
+          {error && <div className="create-error">{error}</div>}
 
           <button
             className="create-button"
@@ -149,15 +131,11 @@ export default function CreateGamePage() {
             onClick={() => void handleCreateGame()}
             disabled={isCreating}
           >
-            {isCreating
-              ? t("create.creating")
-              : t("create.button")}
+            {isCreating ? t("create.creating") : t("create.button")}
           </button>
         </div>
 
-        <p className="create-note">
-          {t("create.note")}
-        </p>
+        <p className="create-note">{t("create.note")}</p>
       </div>
     </div>
   );

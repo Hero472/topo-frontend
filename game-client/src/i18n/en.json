@@ -1,4 +1,7 @@
 {
+  "common": {
+    "back": "back"
+  },
   "menu": {
     "title": "Topo",
     "subtitle": "Online Card Game",
@@ -94,6 +97,63 @@
       "winnerMessage": "Congratulations! You won the game.",
       "loserMessage": "Better luck next time!",
       "backToMenu": "Back to Menu"
+    },
+    "reconnecting": {
+      "title": "Reconnecting...",
+      "message": "Please wait while we restore your connection. Do not refresh the page.",
+      "opponent": "Opponent is reconnecting..."
+    }
+  },
+  "tutorial": {
+    "title": "Topo Tutorial",
+
+    "objective": {
+      "title": "Objective",
+      "text": "Your goal is to empty your 13-card personal pile. To do this, build scales in the central piles from Ace to Queen and play the cards from your personal pile onto them."
+    },
+
+    "board": {
+      "title": "The Board",
+      "central": "Central Piles",
+      "centralText": "Build scales here from Ace (A) to Queen (Q). Kings (K) act as wild cards.",
+      "side": "Side Piles",
+      "sideText": "You have 4 side piles. Cards placed here form stacks and can be used to help organize your hand and prepare future plays.",
+      "personal": "Personal Pile",
+      "personalText": "You start with 13 cards in your personal pile. Your objective is to play all of them onto the central piles."
+    },
+
+    "howToPlay": {
+      "title": "How to Play",
+      "step1": "Draw cards until you have 5 cards in your hand.",
+      "step2": "Play as many cards as you can. If you have an Ace, you can use it to start a new central scale. Then continue the scale in order.",
+      "step3": "Use your side piles to store cards and help you set up future plays.",
+      "step4": "End your turn by placing a card onto one of your 4 side piles."
+    },
+
+    "scales": {
+      "title": "Building Scales",
+      "text": "Central piles must be built in order, starting with an Ace and continuing through Queen.",
+      "example": "A → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → J → Q",
+      "ace": "An Ace can only be used to start a new scale.",
+      "king": "A King is a wild card and can represent any card needed to continue a scale."
+    },
+
+    "king": {
+      "title": "The King",
+      "text": "Kings are wild cards. They can be used as any card needed to continue a scale.",
+      "cannotStart": "A King cannot be used to start a new scale. Every scale must begin with an Ace.",
+      "noDoubleKing": "You cannot use Kings twice in a row in the same scale."
+    },
+
+    "turn": {
+      "title": "Your Turn",
+      "text": "At the start of your turn, draw cards until you have 5 cards. Then play cards from your hand and your personal pile whenever possible.",
+      "ending": "When you are finished playing, place one card onto one of your 4 side piles. This ends your turn."
+    },
+
+    "winning": {
+      "title": "How to Win",
+      "text": "Keep moving cards from your personal pile onto the central scales. The first player to completely empty their 13-card personal pile and end the turn with their last card in the hand wins!"
     }
   }
 }

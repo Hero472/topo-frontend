@@ -33,20 +33,24 @@ export interface RoomStore {
   reset: () => void;
 }
 
-const initialState = {
-  phase: "lobby" as RoomPhase,
-  gameId: null as string | null,
-  players: {} as Record<string, LobbyPlayer>,
-  startingIn: null as number | null,
-  disconnected: null as DisconnectInfo | null,
-  winnerId: null as string | null,
-  reason: null as string | null,
+type RoomState = Omit<RoomStore, "applyEvent" | "clearNotice" | "reset">;
+
+// ✅ BEST PRACTICE: Use a function for initial state to avoid shared reference bugs
+// (especially important for `new Set()`)
+const getInitialState = (): RoomState => ({
+  phase: "lobby",
+  gameId: null,
+  players: {},
+  startingIn: null,
+  disconnected: null,
+  winnerId: null,
+  reason: null,
   playAgainRequestedBy: new Set<string>(),
-  notice: null as string | null,
-};
+  notice: null,
+});
 
 export const useRoomStore = create<RoomStore>((set, get) => ({
-  ...initialState,
+  ...getInitialState(),
 
   applyEvent: (evt) => {
     const state = get();
@@ -154,7 +158,6 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
         break;
       }
 
-      // ── POINT 2 FIX: Handle game restart ──
       case "play_again": {
         set({
           phase: "lobby",
@@ -172,5 +175,5 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
   },
 
   clearNotice: () => set({ notice: null }),
-  reset: () => set(initialState),
+  reset: () => set(getInitialState()), // ✅ Now safely generates a fresh Set and object references
 }));
