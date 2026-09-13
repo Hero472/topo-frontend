@@ -22,12 +22,15 @@ export function Modal({
 }: Readonly<ModalProps>) {
   useEffect(() => {
     if (!open) return;
+    
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape" && onClose && closeOnBackdrop) onClose();
     };
+    
     window.addEventListener("keydown", handleEsc);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    
     return () => {
       window.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = originalOverflow;
@@ -45,7 +48,19 @@ export function Modal({
       aria-label={ariaLabel ?? title}
     >
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        {title && <h2 className="modal-title">{title}</h2>}
+        <div className="modal-header">
+          {title && <h2 className="modal-title">{title}</h2>}
+          {onClose && (
+            <button 
+              className="modal-close-btn" 
+              onClick={onClose} 
+              aria-label="Close modal"
+              type="button"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
