@@ -46,6 +46,14 @@
     "youAreReady": "You are ready",
     "readyButton": "Ready",
     "startingIn": "Starting in",
+    "pleaseReadTutorial": "Please review the tutorial before getting ready.",
+    "tutorial": {
+      "title": "How to play",
+      "description": "Drag cards from your hand and drop them onto the board to play them.",
+      "confirm": "Got it",
+      "alt": "Drag and drop tutorial animation",
+      "videoNotSupported": "Video not supported"
+    },
     "errors": {
       "notFound": "Game not found",
       "backHome": "Back to Home"

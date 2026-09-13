@@ -213,6 +213,28 @@
   animation: waiting-pulse 2s ease-in-out infinite;
 }
 
+.waiting-tutorial-text {
+  margin: 0 0 1rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #555);
+}
+
+.waiting-tutorial-media {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.waiting-tutorial-video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+}
+
 @keyframes waiting-pulse {
   0%, 100% { opacity: 0.45; }
   50% { opacity: 1; }

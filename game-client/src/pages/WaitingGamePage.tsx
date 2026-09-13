@@ -6,6 +6,8 @@ import { type GameSocket } from "../hooks/useGameSocket";
 import { Card } from "../components/common/Card";
 import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
+import { Modal } from "../components/common/Modal";
+import tutorialVideo from "../assets/drag_drop_tutorial.mp4";
 import "./WaitingGamePage.css";
 
 export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocket }>) {
@@ -13,6 +15,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
   const [copied, setCopied] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const username = sessionStorage.getItem("game-username") ?? "";
 
@@ -35,6 +38,28 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     }
   };
 
+  // Scope the storage key to the current gameId so new games get a fresh tutorial
+  const tutorialStorageKey = gameId ? `game-tutorial-seen-${gameId}` : "game-tutorial-seen";
+
+  const handleReadyClick = () => {
+    const alreadySeen = sessionStorage.getItem(tutorialStorageKey) === "1";
+    if (alreadySeen) {
+      socket.sendAction({ type: "player_ready" });
+      return;
+    }
+    setShowTutorial(true);
+  };
+
+  const handleTutorialConfirm = () => {
+    sessionStorage.setItem(tutorialStorageKey, "1");
+    setShowTutorial(false);
+    socket.sendAction({ type: "player_ready" });
+  };
+
+  const handleTutorialClose = () => {
+    setShowTutorial(false);
+  };
+
   if (!username) return null;
 
   if (socket.status === "error") {
@@ -52,9 +77,9 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
   const isConnecting = socket.status === "connecting";
   const playerList = Object.values(players);
-  
+
   const me = playerList.find((player) => player.playerId === myPlayerId);
-  
+
   const isReady = me?.ready ?? false;
   const bothJoined = playerList.length === 2;
   const isStarting = startingIn !== null;
@@ -72,26 +97,23 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
         {!isStarting && (
           <div className="waiting-game-link-container">
-            <Input 
-              value={inviteUrl} 
-              readOnly 
+            <Input
+              value={inviteUrl}
+              readOnly
               aria-label="Game invite link"
               className="waiting-game-input"
             />
-            <Button 
-              variant="primary" 
-              onClick={handleCopy}
-            >
+            <Button variant="primary" onClick={handleCopy}>
               {copied ? t("waiting.copied") : t("waiting.copy")}
             </Button>
           </div>
         )}
 
         {notice && (
-          <Card 
-            variant="outlined" 
-            clickable 
-            onClick={clearNotice} 
+          <Card
+            variant="outlined"
+            clickable
+            onClick={clearNotice}
             className="waiting-game-notice"
           >
             {notice}
@@ -117,21 +139,47 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
             <span className="waiting-game-countdown-label">{t("waiting.startingIn")}</span>
           </div>
         ) : bothJoined ? (
-          <Button 
-            variant={isReady ? "secondary" : "primary"} 
-            fullWidth 
-            onClick={() => socket.sendAction({ type: "player_ready" })} 
+          <Button
+            variant={isReady ? "secondary" : "primary"}
+            fullWidth
+            onClick={handleReadyClick}
             disabled={isReady}
             className={isReady ? "waiting-game-ready-button--ready" : ""}
           >
             {isReady ? t("waiting.youAreReady") : t("waiting.readyButton")}
           </Button>
         ) : (
-          <p className="waiting-game-status">{isConnecting ? t("waiting.connecting") : t("waiting.waitingForPlayer")}</p>
+          <p className="waiting-game-status">
+            {isConnecting ? t("waiting.connecting") : t("waiting.waitingForPlayer")}
+          </p>
         )}
 
         <p className="waiting-game-code">{t("waiting.gameId")} {gameId}</p>
       </Card>
+
+      <Modal
+        open={showTutorial}
+        title={t("waiting.tutorial.title")}
+        onClose={handleTutorialClose}
+        footer={
+          <Button variant="primary" onClick={handleTutorialConfirm}>
+            {t("waiting.tutorial.confirm")}
+          </Button>
+        }
+      >
+        <p className="waiting-tutorial-text">{t("waiting.tutorial.description")}</p>
+        <div className="waiting-tutorial-media">
+          {/* 2. Use the imported variable directly in the src attribute */}
+          <video
+            src={tutorialVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="waiting-tutorial-video"
+          />
+        </div>
+      </Modal>
     </div>
   );
 }
