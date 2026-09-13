@@ -2,8 +2,11 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { gameApi } from "../api/GameApi";
 import { t, useLanguage } from "../i18n";
+import { Card } from "../components/common/Card";
+import { Button } from "../components/common/Button";
+import { Input } from "../components/common/Input";
+import { Select } from "../components/common/Select";
 import "./CreateGamePage.css";
-// import LanguageSelector from "../components/language/LanguageSelector";
 
 export default function CreateGamePage() {
   const [username, setUsername] = useState("");
@@ -12,11 +15,10 @@ export default function CreateGamePage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const navigate = useNavigate();
-
   useLanguage();
 
-  const handleCreateGame = async (e?: FormEvent) => {
-    if (e) e.preventDefault(); // Prevent default browser form reload
+  const handleCreateGame = async (e: FormEvent) => {
+    e.preventDefault();
     if (isCreating) return;
 
     const trimmedUser = username.trim();
@@ -41,7 +43,6 @@ export default function CreateGamePage() {
         duration_seconds: duration,
       });
 
-      // ✅ Added { replace: true } to prevent back-button loops
       navigate(`/game/${encodeURIComponent(game_id)}/waiting`, {
         replace: true,
       });
@@ -52,91 +53,66 @@ export default function CreateGamePage() {
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      void handleCreateGame();
-    }
-  };
-
   return (
-    <div className="create-outer">
-      <div className="create-card">
-        <button
-          className="create-back-button"
-          type="button"
-          onClick={() => navigate("/")}
-        >
-          ← Back
-        </button>
-
+    <div className="create-page">
+      <Card variant="elevated" className="create-card">
+        
         <div className="create-header">
-          <span className="create-logo" aria-hidden="true">
-            ♠
-          </span>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={() => navigate("/")}
+          >
+            ← {t("common.back")}
+          </Button>
+        </div>
 
+        <div className="create-title-section">
+          <span className="create-logo" aria-hidden="true">♠</span>
           <h1 className="create-title">{t("create.title")}</h1>
-
           <p className="create-subtitle">{t("create.subtitle")}</p>
         </div>
 
-        <div className="create-fields">
-          <div className="create-field">
-            <label className="create-label" htmlFor="username-input">
-              {t("join.username.label")}
-            </label>
+        <form onSubmit={handleCreateGame} className="create-form">
+          <Input
+            label={t("join.username.label")}
+            placeholder={t("join.username.placeholder")}
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setError("");
+            }}
+            error={error}
+            disabled={isCreating}
+            autoFocus
+          />
 
-            <input
-              id="username-input"
-              className="create-input"
-              placeholder={t("join.username.placeholder")}
-              value={username}
-              onChange={(event) => {
-                setUsername(event.target.value);
-                setError("");
-              }}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              disabled={isCreating}
-            />
-          </div>
-
-          <div className="create-field">
-            <label className="create-label" htmlFor="duration-input">
-              {t("create.duration.label")}
-            </label>
-
-            <select
-              id="duration-input"
-              className="create-input"
-              value={duration}
-              onChange={(event) => {
-                setDuration(Number(event.target.value));
-              }}
-              disabled={isCreating}
-            >
-              <option value={30}>30 seconds</option>
-              <option value={60}>1 minute</option>
-              <option value={120}>2 minutes</option>
-              <option value={180}>3 minutes</option>
-              <option value={240}>4 minutes</option>
-              <option value={300}>5 minutes</option>
-            </select>
-          </div>
-
-          {error && <div className="create-error">{error}</div>}
-
-          <button
-            className="create-button"
-            type="button"
-            onClick={() => void handleCreateGame()}
+          <Select
+            label={t("create.duration.label")}
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
             disabled={isCreating}
           >
+            <option value={30}>30 seconds</option>
+            <option value={60}>1 minute</option>
+            <option value={120}>2 minutes</option>
+            <option value={180}>3 minutes</option>
+            <option value={240}>4 minutes</option>
+            <option value={300}>5 minutes</option>
+          </Select>
+
+          <Button 
+            type="submit" 
+            variant="primary" 
+            fullWidth 
+            loading={isCreating}
+          >
             {isCreating ? t("create.creating") : t("create.button")}
-          </button>
-        </div>
+          </Button>
+        </form>
 
         <p className="create-note">{t("create.note")}</p>
-      </div>
+      </Card>
     </div>
   );
 }

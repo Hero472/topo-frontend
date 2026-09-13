@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { FullState, ServerEvent } from "../types/types";
+import type { FullState, FullStatePlaying, ServerEvent } from "../types/types";
 
 export interface GameStore {
-  fullState: FullState | null;
+  fullState: FullStatePlaying | null; // Scoped strictly to the Playing phase
   canDraw: boolean;
   turnTimeoutMessage: string | null;
 
@@ -13,7 +13,7 @@ export interface GameStore {
 }
 
 const getInitialState = () => ({
-  fullState: null as FullState | null,
+  fullState: null as FullStatePlaying | null,
   canDraw: false,
   turnTimeoutMessage: null as string | null,
 });
@@ -22,6 +22,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   ...getInitialState(),
 
   applyFullState: (payload) => {
+    if (payload.phase !== "playing") {
+      set({
+        fullState: null,
+        canDraw: false,
+        turnTimeoutMessage: null,
+      });
+      return;
+    }
+
     set({
       fullState: payload,
       canDraw: payload.your_turn,
@@ -31,11 +40,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   applyEvent: (evt) => {
     const state = get();
-    if (!state.fullState) return; // Gatekeeper: ignores events until full_state arrives
+    if (!state.fullState) return; 
 
-    // structuredClone creates a completely independent deep copy, 
-    // so we can safely mutate nested arrays/objects directly.
-    const s: FullState = structuredClone(state.fullState);
+    const s: FullStatePlaying = structuredClone(state.fullState);
     let canDraw = state.canDraw;
     let turnTimeoutMessage = state.turnTimeoutMessage;
 
@@ -68,7 +75,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
         s.turn_seconds_remaining = evt.turn_seconds_remaining;
 
         if (s.your_board.player_idx === evt.player_idx) {
-          // Remove from hand
           s.your_board.hand = s.your_board.hand.filter(
             (c) =>
               !(
@@ -78,7 +84,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
               )
           );
 
-          // Remove from side stacks (simplified thanks to structuredClone)
           for (const stack of s.your_board.side) {
             if (stack.length > 0) {
               const top = stack[stack.length - 1];
@@ -87,7 +92,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 top.value === evt.card.value &&
                 top.deck === evt.card.deck
               ) {
-                stack.pop(); // Safe to mutate directly because `s` is a deep clone
+                stack.pop();
                 break;
               }
             }
@@ -95,7 +100,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
           canDraw = false;
         }
 
-        // Add to scale
         const { scale_idx, card } = evt;
         if (scale_idx >= 0 && scale_idx < s.scales.length) {
           const scale = s.scales[scale_idx];

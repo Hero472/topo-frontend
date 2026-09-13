@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
-import "./MainMenuPage.css";
+import { Button } from "../components/common/Button";
 import LanguageSelector from "../components/language/LanguageSelector";
+import "./MainMenuPage.css";
 
 export default function MainMenuPage() {
   const navigate = useNavigate();
@@ -25,23 +26,21 @@ export default function MainMenuPage() {
         </div>
 
         <div className="menu-buttons">
-          <button
-            className="menu-button primary"
+          <Button 
+            variant="primary"
             onClick={() => navigate("/join")}
           >
             {t("menu.multiplayer")}
-          </button>
+          </Button>
 
-          <button className="menu-button" disabled>
+          <Button disabled>
             {t("menu.playCpu")}
             <span className="coming-soon">{t("menu.comingSoon")}</span>
-          </button>
+          </Button>
 
-          <button 
-            className="menu-button"
-            onClick={() => navigate("/tutorial")}>
+          <Button variant="secondary" onClick={() => navigate("/tutorial")}>
             {t("menu.tutorial")}
-          </button>
+          </Button>
         </div>
 
         <div className="menu-footer">

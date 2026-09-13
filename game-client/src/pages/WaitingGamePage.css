@@ -1,273 +1,122 @@
 /* =========================================================
-   WAITING GAME
-   Clean tabletop / card-game style
+   WAITING GAME PAGE
    ========================================================= */
 
-:root {
-  --waiting-bg: #11100e;
-  --waiting-surface: #191816;
-  --waiting-surface-2: #151412;
-
-  --waiting-border: #35322d;
-  --waiting-border-strong: #4a453d;
-
-  --waiting-accent: #d6a84f;
-  --waiting-accent-hover: #e2b967;
-
-  --waiting-text: #f1eee7;
-  --waiting-muted: #9d978c;
-  --waiting-dim: #6f6a61;
-
-  --waiting-success: #78956d;
-
-  --waiting-radius: 10px;
-}
-
-/* ---------- PAGE ---------- */
-
 .waiting-game-page {
-  min-height: 100vh;
   min-height: 100svh;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 24px;
-
-  background: var(--waiting-bg);
-
+  padding: var(--space-lg);
+  background: var(--bg);
   position: relative;
-
   overflow: hidden;
 }
 
-/* Very subtle background texture */
-
+/* Very subtle background texture (uses currentColor to adapt to light/dark) */
 .waiting-game-page::before {
   content: "";
-
   position: absolute;
   inset: 0;
-
   pointer-events: none;
-
-  opacity: 0.035;
-
+  opacity: 0.04;
   background-image:
-    linear-gradient(90deg, transparent 49%, #fff 50%, transparent 51%),
-    linear-gradient(0deg, transparent 49%, #fff 50%, transparent 51%);
-
+    linear-gradient(90deg, transparent 49%, currentColor 50%, transparent 51%),
+    linear-gradient(0deg, transparent 49%, currentColor 50%, transparent 51%);
   background-size: 32px 32px;
 }
 
 /* ---------- CARD ---------- */
-
-.waiting-game-card {
+/* Higher specificity to cleanly override default Card padding */
+.waiting-game-page .waiting-game-card {
   position: relative;
   z-index: 1;
-
   width: min(500px, 100%);
-
-  padding: 42px 40px 32px;
-
-  background: var(--waiting-surface);
-
-  border: 1px solid var(--waiting-border);
-  border-radius: var(--waiting-radius);
-
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-
+  padding: var(--space-2xl) var(--space-xl) var(--space-xl);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
   text-align: center;
 }
 
 /* ---------- ICON ---------- */
-
 .waiting-game-icon {
   width: 48px;
   height: 48px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  margin: 0 auto 20px;
-
-  background: var(--waiting-surface-2);
-
-  border: 1px solid var(--waiting-border-strong);
-  border-radius: 8px;
-
-  color: var(--waiting-accent);
-
-  font-family: Georgia, "Times New Roman", serif;
-
+  margin: 0 auto var(--space-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  font-family: var(--font-serif);
   font-size: 1.45rem;
-
   line-height: 1;
 }
 
-/* ---------- TITLE ---------- */
-
+/* ---------- TITLE & SUBTITLE ---------- */
 .waiting-game-title {
   margin: 0;
-
-  color: var(--waiting-text);
-
-  font-family: Georgia, "Times New Roman", serif;
-
+  color: var(--text-heading);
+  font-family: var(--font-serif);
   font-size: clamp(2rem, 6vw, 2.8rem);
-
   font-weight: 700;
-
   letter-spacing: -0.04em;
-
   line-height: 1;
 }
 
-/* ---------- SUBTITLE ---------- */
-
 .waiting-game-subtitle {
-  margin: 14px auto 0;
-
-  color: var(--waiting-muted);
-
+  margin: var(--space-sm) auto 0;
+  color: var(--text-muted);
   font-size: 0.9rem;
-
   line-height: 1.55;
 }
 
 /* ---------- INVITE LINK ---------- */
-
 .waiting-game-link-container {
   display: flex;
-
   width: 100%;
-
-  margin-top: 30px;
+  margin-top: var(--space-xl);
+  gap: var(--space-sm);
 }
 
-/* URL */
-
-.waiting-game-link {
-  min-width: 0;
+/* Allow the Input wrapper to flex and share space with the button */
+.waiting-game-link-container .input-wrapper {
   flex: 1;
-
-  height: 52px;
-
-  padding: 0 14px;
-
-  border: 1px solid var(--waiting-border);
-  border-right: none;
-
-  border-radius: 7px 0 0 7px;
-
-  background: var(--waiting-surface-2);
-
-  color: var(--waiting-muted);
-
-  font: inherit;
-  font-size: 0.78rem;
-
-  outline: none;
-
-  text-overflow: ellipsis;
-
-  transition: border-color 120ms ease;
-}
-
-.waiting-game-link:focus {
-  border-color: var(--waiting-accent);
-}
-
-/* Copy */
-
-.waiting-game-copy-button {
-  flex-shrink: 0;
-
-  height: 52px;
-
-  padding: 0 18px;
-
-  border: 1px solid var(--waiting-accent);
-  border-radius: 0 7px 7px 0;
-
-  background: var(--waiting-accent);
-
-  color: #17130c;
-
-  font: inherit;
-
-  font-size: 0.82rem;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition:
-    background 120ms ease,
-    border-color 120ms ease;
-}
-
-.waiting-game-copy-button:hover {
-  background: var(--waiting-accent-hover);
-
-  border-color: var(--waiting-accent-hover);
-}
-
-.waiting-game-copy-button:active {
-  background: var(--waiting-accent);
-}
-
-.waiting-game-copy-button:focus-visible {
-  outline: 2px solid var(--waiting-accent);
-
-  outline-offset: 3px;
 }
 
 /* ---------- NOTICE ---------- */
-
-.waiting-game-notice {
-  margin: 20px 0 0;
-  padding: 12px 16px;
-
-  background: var(--waiting-surface-2);
-  border: 1px solid var(--waiting-border);
-  border-radius: 8px;
-
-  color: var(--waiting-muted);
-  font-size: 0.82rem;
+/* Overrides for when Card is used as a clickable notice */
+.waiting-game-page .waiting-game-notice {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.875rem;
   line-height: 1.45;
-
   text-align: left;
   cursor: pointer;
-
-  transition:
-    border-color 120ms ease,
-    color 120ms ease;
+  transition: border-color 120ms ease, color 120ms ease;
 }
 
-.waiting-game-notice:hover {
-  border-color: var(--waiting-border-strong);
-  color: var(--waiting-text);
-}
-
-.waiting-game-notice:focus-visible {
-  outline: 2px solid var(--waiting-accent);
-  outline-offset: 2px;
+.waiting-game-page .waiting-game-notice:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 /* ---------- ROSTER ---------- */
-
 .waiting-game-roster {
   list-style: none;
-
-  margin: 24px 0 0;
+  margin: var(--space-lg) 0 0;
   padding: 0;
-
   display: flex;
   flex-direction: column;
-  gap: 8px;
-
+  gap: var(--space-sm);
   text-align: left;
 }
 
@@ -275,19 +124,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  padding: 14px 16px;
-
-  background: var(--waiting-surface-2);
-  border: 1px solid var(--waiting-border);
-  border-radius: 8px;
+  padding: var(--space-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .waiting-game-roster-name {
-  color: var(--waiting-text);
+  color: var(--text);
   font-size: 0.95rem;
   font-weight: 500;
-
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -295,9 +141,8 @@
 
 .waiting-game-roster-status {
   flex-shrink: 0;
-  margin-left: 12px;
-
-  color: var(--waiting-dim);
+  margin-left: var(--space-sm);
+  color: var(--text-dim);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -305,322 +150,144 @@
 }
 
 .waiting-game-roster-status--ready {
-  color: var(--waiting-success);
+  color: var(--success);
 }
 
 /* ---------- COUNTDOWN ---------- */
-
 .waiting-game-countdown {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  margin: 28px 0 0;
+  margin-top: var(--space-xl);
 }
 
 .waiting-game-countdown-number {
-  color: var(--waiting-accent);
-
-  font-family: Georgia, "Times New Roman", serif;
+  color: var(--accent);
+  font-family: var(--font-serif);
   font-size: 3.5rem;
   font-weight: 700;
   line-height: 1;
 }
 
 .waiting-game-countdown-label {
-  margin-top: 8px;
-
-  color: var(--waiting-muted);
+  margin-top: var(--space-xs);
+  color: var(--text-muted);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-/* ---------- READY BUTTON ---------- */
-
-.waiting-game-ready-button {
-  width: 100%;
-  height: 56px;
-  margin-top: 28px;
-
-  border: 1px solid var(--waiting-accent);
-  border-radius: 8px;
-
-  background: var(--waiting-accent);
-  color: #17130c;
-
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-
-  cursor: pointer;
-
-  transition:
-    background 120ms ease,
-    border-color 120ms ease,
-    transform 120ms ease;
-}
-
-.waiting-game-ready-button:hover:not(:disabled) {
-  background: var(--waiting-accent-hover);
-  border-color: var(--waiting-accent-hover);
-}
-
-.waiting-game-ready-button:active:not(:disabled) {
-  background: var(--waiting-accent);
-  transform: scale(0.98);
-}
-
-/* When disabled, it means the user is already ready */
-.waiting-game-ready-button:disabled {
-  background: var(--waiting-surface-2);
-  border-color: var(--waiting-success);
-  color: var(--waiting-success);
+/* ---------- READY BUTTON OVERRIDE ---------- */
+/* Elegantly handles the specific "You are ready" disabled state */
+.btn.waiting-game-ready-button--ready:disabled {
+  background: var(--surface-2);
+  border-color: var(--success);
+  color: var(--success);
   cursor: default;
-}
-
-.waiting-game-ready-button:focus-visible {
-  outline: 2px solid var(--waiting-accent);
-  outline-offset: 3px;
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ---------- STATUS ---------- */
-
 .waiting-game-status {
   display: flex;
-
   align-items: center;
   justify-content: center;
-
-  gap: 8px;
-
-  margin: 24px 0 0;
-
-  color: var(--waiting-muted);
-
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 
-/*
-    Small status indicator.
-    CSS-only, intentionally subtle.
-*/
-
 .waiting-game-status::before {
   content: "";
-
   width: 6px;
   height: 6px;
-
   flex-shrink: 0;
-
   border-radius: 50%;
-
-  background: var(--waiting-success);
-
-  box-shadow: 0 0 0 3px rgba(120, 149, 109, 0.08);
-
+  background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 15%, transparent);
   animation: waiting-pulse 2s ease-in-out infinite;
 }
 
 @keyframes waiting-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-
-  50% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
 }
 
 /* ---------- GAME ID ---------- */
-
 .waiting-game-code {
-  margin: 14px 0 0;
-
-  color: var(--waiting-dim);
-
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
+  margin-top: var(--space-md);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
   font-size: 0.68rem;
-
   letter-spacing: 0.03em;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
-/* ---------- MOBILE ---------- */
-
+/* ---------- RESPONSIVE ---------- */
 @media (max-width: 540px) {
   .waiting-game-page {
     align-items: flex-start;
-
-    padding: 32px 16px 16px;
+    padding: var(--space-xl) var(--space-md) var(--space-md);
   }
 
-  .waiting-game-card {
+  .waiting-game-page .waiting-game-card {
     width: 100%;
-
-    padding: 34px 20px 28px;
-
-    border-radius: 9px;
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
   }
 
   .waiting-game-icon {
     width: 42px;
     height: 42px;
-
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
 
-  .waiting-game-title {
-    font-size: 2.35rem;
-  }
-
-  .waiting-game-link {
-    height: 54px;
-
-    font-size: 0.72rem;
-  }
-
-  .waiting-game-copy-button {
-    height: 54px;
-
-    padding: 0 15px;
-
-    font-size: 0.78rem;
-  }
-
-  .waiting-game-roster-item {
-    padding: 12px 14px;
-  }
-
-  .waiting-game-countdown-number {
-    font-size: 3rem;
-  }
-
-  .waiting-game-ready-button {
-    height: 54px;
-    font-size: 0.9rem;
-  }
+  .waiting-game-title { font-size: 2.35rem; }
+  .waiting-game-countdown-number { font-size: 3rem; }
 }
-
-/* ---------- SMALL PHONES ---------- */
 
 @media (max-width: 380px) {
   .waiting-game-page {
-    padding: 20px 10px 10px;
+    padding: var(--space-lg) var(--space-sm) var(--space-sm);
   }
 
-  .waiting-game-card {
-    padding: 28px 16px 24px;
+  .waiting-game-page .waiting-game-card {
+    padding: var(--space-lg) var(--space-md) var(--space-lg);
   }
 
-  .waiting-game-title {
-    font-size: 2rem;
-  }
-
-  .waiting-game-subtitle {
-    font-size: 0.82rem;
-  }
+  .waiting-game-title { font-size: 2rem; }
+  .waiting-game-subtitle { font-size: 0.82rem; }
 
   .waiting-game-link-container {
     flex-direction: column;
-
-    gap: 8px;
+    gap: var(--space-sm);
   }
 
-  .waiting-game-link {
-    width: 100%;
-
-    border-right: 1px solid var(--waiting-border);
-    border-radius: 7px;
-  }
-
-  .waiting-game-copy-button {
-    width: 100%;
-
-    border-radius: 7px;
-  }
-
-  .waiting-game-status {
-    margin-top: 20px;
-  }
-
-  .waiting-game-roster-item {
-    padding: 10px 12px;
-  }
-
-  .waiting-game-roster-name {
-    font-size: 0.88rem;
-  }
-
-  .waiting-game-countdown-number {
-    font-size: 2.5rem;
-  }
+  .waiting-game-status { margin-top: var(--space-lg); }
+  .waiting-game-roster-item { padding: var(--space-sm) var(--space-md); }
+  .waiting-game-roster-name { font-size: 0.88rem; }
+  .waiting-game-countdown-number { font-size: 2.5rem; }
 }
-
-/* ---------- SHORT LANDSCAPE ---------- */
 
 @media (max-height: 500px) and (orientation: landscape) {
-  .waiting-game-page {
-    padding: 16px;
-  }
-
-  .waiting-game-card {
-    padding: 24px 28px;
-  }
-
-  .waiting-game-icon {
-    display: none;
-  }
-
-  .waiting-game-title {
-    font-size: 2rem;
-  }
-
-  .waiting-game-subtitle {
-    margin-top: 8px;
-  }
-
-  .waiting-game-link-container {
-    margin-top: 18px;
-  }
-
-  .waiting-game-status {
-    margin-top: 14px;
-  }
-
-  .waiting-game-countdown {
-    margin-top: 16px;
-  }
-
-  .waiting-game-countdown-number {
-    font-size: 2.5rem;
-  }
-
-  .waiting-game-ready-button {
-    margin-top: 16px;
-    height: 48px;
-  }
+  .waiting-game-page { padding: var(--space-md); }
+  .waiting-game-page .waiting-game-card { padding: var(--space-lg) var(--space-xl); }
+  .waiting-game-icon { display: none; }
+  .waiting-game-title { font-size: 2rem; }
+  .waiting-game-subtitle { margin-top: var(--space-xs); }
+  .waiting-game-link-container { margin-top: var(--space-md); }
+  .waiting-game-status { margin-top: var(--space-sm); }
+  .waiting-game-countdown { margin-top: var(--space-md); }
+  .waiting-game-countdown-number { font-size: 2.5rem; }
 }
 
-/* ---------- REDUCED MOTION ---------- */
-
 @media (prefers-reduced-motion: reduce) {
-  .waiting-game-status::before {
-    animation: none;
-  }
-  
-  .waiting-game-ready-button {
-    transition: none;
-  }
+  .waiting-game-status::before { animation: none; }
 }

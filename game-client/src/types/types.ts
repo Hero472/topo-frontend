@@ -33,9 +33,28 @@ export interface Scale {
   cards: Card[];
 }
 
-export interface FullState {
-  type: 'full_state';
-  player_id: string, // now that I think about it this can be optimized with the join player to know if it is you or not
+export interface LobbyPlayerView {
+  player_id: string;
+  player_idx: number;
+  username: string;
+  is_ready: boolean;
+  is_disconnected: boolean;
+}
+
+interface BaseFullState {
+  type: "full_state";
+  player_id: string;
+  player_idx: number;
+}
+
+export type FullStateLobby = BaseFullState & {
+  phase: "lobby";
+  game_id: string;
+  players: LobbyPlayerView[];
+};
+
+export type FullStatePlaying = BaseFullState & {
+  phase: "playing";
   your_board: PlayerBoard;
   your_turn: boolean;
   opponent: OpponentBoard;
@@ -43,7 +62,16 @@ export interface FullState {
   dealer_preview: DeckColor[];
   dealer_count: number;
   turn_seconds_remaining: number;
-}
+};
+
+export type FullStateGameOver = BaseFullState & {
+  phase: "game_over";
+  winner_id: string;
+  winner_idx: number;
+  reason: string;
+};
+
+export type FullState = FullStateLobby | FullStatePlaying | FullStateGameOver;
 
 // ── All server‑side events (matching your ServerEvent enum) ──
 export type ServerEvent =
@@ -193,7 +221,7 @@ export type ServerEvent =
     }
 
   // ── Full state (sync) ──
-  | FullState;   // already covered above
+  | FullState;
 
 export type Action =
   | { type: "draw" }

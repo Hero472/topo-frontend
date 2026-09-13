@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
 import { useRoomStore } from "../store/useRoomStore";
 import { type GameSocket } from "../hooks/useGameSocket";
+import { Card } from "../components/common/Card";
+import { Button } from "../components/common/Button";
+import { Input } from "../components/common/Input";
 import "./WaitingGamePage.css";
 
 export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocket }>) {
@@ -12,6 +15,9 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const [copied, setCopied] = useState(false);
 
   const username = sessionStorage.getItem("game-username") ?? "";
+
+  const myPlayerId = useRoomStore((state) => state.myPlayerId) ?? socket.playerId;
+
   const players = useRoomStore((state) => state.players);
   const startingIn = useRoomStore((state) => state.startingIn);
   const notice = useRoomStore((state) => state.notice);
@@ -34,19 +40,20 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   if (socket.status === "error") {
     return (
       <div className="waiting-game-page">
-        <div className="waiting-game-card">
+        <Card variant="elevated" className="waiting-game-card">
           <h1 className="waiting-game-title">{t("waiting.errors.notFound")}</h1>
-          <button className="waiting-game-copy-button" type="button" onClick={() => navigate("/", { replace: true })}>
+          <Button variant="secondary" onClick={() => navigate("/", { replace: true })}>
             {t("waiting.errors.backHome")}
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     );
   }
 
   const isConnecting = socket.status === "connecting";
   const playerList = Object.values(players);
-  const me = playerList.find((player) => player.playerId === socket.playerId);
+  
+  const me = playerList.find((player) => player.playerId === myPlayerId);
   
   const isReady = me?.ready ?? false;
   const bothJoined = playerList.length === 2;
@@ -54,7 +61,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
   return (
     <div className="waiting-game-page">
-      <div className="waiting-game-card">
+      <Card variant="elevated" className="waiting-game-card">
         <div className="waiting-game-icon" aria-hidden="true">♠</div>
         <h1 className="waiting-game-title">{isStarting ? t("waiting.starting") : t("waiting.title")}</h1>
         <p className="waiting-game-subtitle">
@@ -65,17 +72,30 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
         {!isStarting && (
           <div className="waiting-game-link-container">
-            <input className="waiting-game-link" value={inviteUrl} readOnly aria-label="Game invite link" />
-            <button className="waiting-game-copy-button" type="button" onClick={handleCopy}>
+            <Input 
+              value={inviteUrl} 
+              readOnly 
+              aria-label="Game invite link"
+              className="waiting-game-input"
+            />
+            <Button 
+              variant="primary" 
+              onClick={handleCopy}
+            >
               {copied ? t("waiting.copied") : t("waiting.copy")}
-            </button>
+            </Button>
           </div>
         )}
 
         {notice && (
-          <p className="waiting-game-notice" role="button" tabIndex={0} onClick={clearNotice} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") clearNotice(); }}>
+          <Card 
+            variant="outlined" 
+            clickable 
+            onClick={clearNotice} 
+            className="waiting-game-notice"
+          >
             {notice}
-          </p>
+          </Card>
         )}
 
         {playerList.length > 0 && !isStarting && (
@@ -83,7 +103,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
             {playerList.map((player) => (
               <li key={player.playerId} className="waiting-game-roster-item">
                 <span className="waiting-game-roster-name">{player.username}</span>
-                <span className={player.ready ? "waiting-game-roster-status waiting-game-roster-status--ready" : "waiting-game-roster-status"}>
+                <span className={`waiting-game-roster-status ${player.ready ? "waiting-game-roster-status--ready" : ""}`}>
                   {player.ready ? t("waiting.ready") : t("waiting.notReady")}
                 </span>
               </li>
@@ -97,15 +117,21 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
             <span className="waiting-game-countdown-label">{t("waiting.startingIn")}</span>
           </div>
         ) : bothJoined ? (
-          <button className="waiting-game-ready-button" type="button" onClick={() => socket.sendAction({ type: "player_ready" })} disabled={isReady}>
+          <Button 
+            variant={isReady ? "secondary" : "primary"} 
+            fullWidth 
+            onClick={() => socket.sendAction({ type: "player_ready" })} 
+            disabled={isReady}
+            className={isReady ? "waiting-game-ready-button--ready" : ""}
+          >
             {isReady ? t("waiting.youAreReady") : t("waiting.readyButton")}
-          </button>
+          </Button>
         ) : (
           <p className="waiting-game-status">{isConnecting ? t("waiting.connecting") : t("waiting.waitingForPlayer")}</p>
         )}
 
         <p className="waiting-game-code">{t("waiting.gameId")} {gameId}</p>
-      </div>
+      </Card>
     </div>
   );
 }

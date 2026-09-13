@@ -51,7 +51,7 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
 
   const isCurrentPlayerReconnecting = 
     socket.status === "reconnecting" || 
-    (disconnected !== null && disconnected.playerId === fullState.player_id);
+    (socket.status === "connecting" && disconnected !== null && disconnected.playerId === fullState.player_id);
 
   const isOpponentReconnecting = 
     disconnected !== null && disconnected.playerId !== fullState.player_id;
@@ -68,7 +68,6 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
         </div>
       )}
 
-      {/* 👇 CURRENT PLAYER RECONNECTING OVERLAY 👇 */}
       {isCurrentPlayerReconnecting && (
         <div className="reconnect-backdrop">
           <div className="reconnect-dialog" role="alert" aria-live="assertive">

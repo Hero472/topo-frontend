@@ -1,423 +1,143 @@
 /* =========================================================
    JOIN PAGE
-   Clean card-game style
    ========================================================= */
 
-:root {
-  --join-bg: #11100e;
-  --join-surface: #191816;
-  --join-surface-2: #151412;
-
-  --join-border: #35322d;
-  --join-border-strong: #4a453d;
-
-  --join-accent: #d6a84f;
-  --join-accent-hover: #e2b967;
-
-  --join-text: #f1eee7;
-  --join-muted: #9d978c;
-  --join-dim: #6f6a61;
-
-  --join-error: #c96b61;
-
-  --join-radius: 10px;
-}
-
-/* ---------- PAGE ---------- */
-
-.join-outer {
-  min-height: 100vh;
+.join-page {
   min-height: 100svh;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 24px;
-
-  background: var(--join-bg);
-
+  padding: var(--space-lg);
+  background: var(--bg);
   position: relative;
-
   overflow: hidden;
 }
 
-/*
-    Extremely subtle texture.
-    Keeps the background from looking like a plain black
-    rectangle without using the usual AI glow effects.
-*/
-
-.join-outer::before {
+/* Extremely subtle texture */
+.join-page::before {
   content: "";
-
   position: absolute;
   inset: 0;
-
   pointer-events: none;
-
-  opacity: 0.035;
-
+  opacity: 0.04;
   background-image:
-    linear-gradient(90deg, transparent 49%, #fff 50%, transparent 51%),
-    linear-gradient(0deg, transparent 49%, #fff 50%, transparent 51%);
-
+    linear-gradient(90deg, transparent 49%, currentColor 50%, transparent 51%),
+    linear-gradient(0deg, transparent 49%, currentColor 50%, transparent 51%);
   background-size: 32px 32px;
 }
 
 /* ---------- CARD ---------- */
-
-.join-card {
+.join-page .join-card {
   position: relative;
   z-index: 1;
-
   width: min(420px, 100%);
+  padding: var(--space-2xl) var(--space-xl) var(--space-xl);
+}
 
-  padding: 40px 38px 36px;
-
-  background: var(--join-surface);
-
-  border: 1px solid var(--join-border);
-  border-radius: var(--join-radius);
-
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+/* ---------- TOP ACTIONS (Language Selector) ---------- */
+.join-top-actions {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  z-index: 2;
 }
 
 /* ---------- HEADER ---------- */
-
 .join-header {
   text-align: center;
-
-  margin-bottom: 34px;
+  margin-bottom: var(--space-xl);
 }
-
-/* Suit icon */
 
 .join-logo {
   width: 46px;
   height: 46px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  margin: 0 auto 18px;
-
-  border: 1px solid var(--join-border-strong);
-  border-radius: 8px;
-
-  background: var(--join-surface-2);
-
-  color: var(--join-accent);
-
+  margin: 0 auto var(--space-md);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--accent);
+  font-family: var(--font-serif);
   font-size: 1.35rem;
-
   line-height: 1;
-
-  /*
-        Prevents the emoji from introducing
-        a different visual style.
-    */
-  font-family: Georgia, "Times New Roman", serif;
 }
-
-/* Title */
 
 .join-title {
   margin: 0;
-
-  color: var(--join-text);
-
-  font-family: Georgia, "Times New Roman", serif;
-
+  color: var(--text-heading);
+  font-family: var(--font-serif);
   font-size: clamp(2.2rem, 7vw, 3rem);
-
   font-weight: 700;
-
   letter-spacing: -0.04em;
-
   line-height: 1;
 }
 
-/* Subtitle */
-
 .join-subtitle {
   max-width: 300px;
-
-  margin: 12px auto 0;
-
-  color: var(--join-muted);
-
+  margin: var(--space-sm) auto 0;
+  color: var(--text-muted);
   font-size: 0.88rem;
-
   line-height: 1.5;
 }
 
 /* ---------- FORM ---------- */
-
-.join-fields {
+.join-form {
   display: flex;
   flex-direction: column;
-
-  gap: 12px;
+  gap: var(--space-md);
 }
 
-.join-field {
-  text-align: left;
-}
-
-/* Label */
-
-.join-label {
-  display: block;
-
-  margin-bottom: 8px;
-
-  color: var(--join-muted);
-
-  font-size: 0.72rem;
-
-  font-weight: 600;
-
-  letter-spacing: 0.1em;
-
-  text-transform: uppercase;
-}
-
-/* Input */
-
-.join-input {
-  width: 100%;
-
-  height: 58px;
-
-  padding: 0 16px;
-
-  border: 1px solid var(--join-border);
-  border-radius: 7px;
-
-  background: var(--join-surface-2);
-
-  color: var(--join-text);
-
-  font: inherit;
-  font-size: 1rem;
-
-  outline: none;
-
-  transition:
-    border-color 120ms ease,
-    background 120ms ease;
-}
-
-.join-input::placeholder {
-  color: var(--join-dim);
-}
-
-.join-input:hover {
-  border-color: var(--join-border-strong);
-}
-
-.join-input:focus {
-  background: #181714;
-
-  border-color: var(--join-accent);
-
-  /*
-        No giant blue glow.
-        Just a small, precise focus indicator.
-    */
-  box-shadow: 0 0 0 2px rgba(214, 168, 79, 0.12);
-}
-
-/* ---------- ERROR ---------- */
-
-.join-error {
-  padding: 10px 12px;
-
-  border-left: 2px solid var(--join-error);
-
-  background: rgba(201, 107, 97, 0.06);
-
-  color: #d98a82;
-
-  font-size: 0.82rem;
-
-  line-height: 1.4;
-
-  text-align: left;
-}
-
-/* ---------- BUTTON ---------- */
-
-.join-button {
-  width: 100%;
-
-  height: 60px;
-
-  margin-top: 10px;
-
-  padding: 0 18px;
-
-  border: 1px solid var(--join-accent);
-  border-radius: 7px;
-
-  background: var(--join-accent);
-
-  color: #17130c;
-
-  font: inherit;
-
-  font-size: 0.95rem;
-  font-weight: 700;
-
-  letter-spacing: 0.01em;
-
-  cursor: pointer;
-
-  transition:
-    background 120ms ease,
-    border-color 120ms ease,
-    transform 120ms ease;
-}
-
-.join-button:hover {
-  background: var(--join-accent-hover);
-
-  border-color: var(--join-accent-hover);
-
-  transform: translateY(-1px);
-}
-
-.join-button:active {
-  transform: translateY(0);
-}
-
-.join-button:focus-visible {
-  outline: 2px solid var(--join-accent);
-
-  outline-offset: 3px;
-}
-
-/* ---------- OPTIONAL NOTE ---------- */
-
-.join-note {
-  margin-top: 22px;
-
-  color: var(--join-dim);
-
-  font-size: 0.72rem;
-
-  line-height: 1.5;
-
-  text-align: center;
-}
-
-/* ---------- MOBILE ---------- */
-
+/* ---------- RESPONSIVE ---------- */
 @media (max-width: 540px) {
-  .join-outer {
+  .join-page {
     align-items: flex-start;
-
-    padding: 32px 16px 16px;
+    padding: var(--space-xl) var(--space-md) var(--space-md);
   }
 
-  .join-card {
+  .join-page .join-card {
     width: 100%;
-
-    padding: 32px 20px 28px;
-
-    border-radius: 9px;
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
   }
 
-  .join-header {
-    margin-bottom: 28px;
+  .join-top-actions {
+    top: var(--space-md);
+    right: var(--space-md);
   }
 
+  .join-header { margin-bottom: var(--space-lg); }
   .join-logo {
     width: 42px;
     height: 42px;
-
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
-
-  .join-title {
-    font-size: 2.5rem;
-  }
-
-  .join-input {
-    height: 56px;
-  }
-
-  .join-button {
-    height: 58px;
-  }
+  .join-title { font-size: 2.5rem; }
 }
-
-/* ---------- SMALL PHONES ---------- */
 
 @media (max-width: 380px) {
-  .join-outer {
-    padding: 20px 10px 10px;
+  .join-page {
+    padding: var(--space-lg) var(--space-sm) var(--space-sm);
   }
 
-  .join-card {
-    padding: 28px 16px 24px;
+  .join-page .join-card {
+    padding: var(--space-lg) var(--space-md) var(--space-lg);
   }
 
-  .join-title {
-    font-size: 2.2rem;
-  }
-
-  .join-subtitle {
-    font-size: 0.82rem;
-  }
-
-  .join-input {
-    height: 54px;
-
-    padding: 0 14px;
-
-    font-size: 0.95rem;
-  }
-
-  .join-button {
-    height: 56px;
-  }
+  .join-title { font-size: 2.2rem; }
+  .join-subtitle { font-size: 0.82rem; }
 }
 
-/* ---------- SHORT LANDSCAPE ---------- */
-
 @media (max-height: 500px) and (orientation: landscape) {
-  .join-outer {
-    padding: 16px;
+  .join-page { padding: var(--space-md); }
+  .join-page .join-card { padding: var(--space-lg) var(--space-xl); }
+  .join-top-actions {
+    top: var(--space-md);
+    right: var(--space-md);
   }
-
-  .join-card {
-    padding: 24px 28px;
-  }
-
-  .join-header {
-    margin-bottom: 18px;
-  }
-
-  .join-logo {
-    display: none;
-  }
-
-  .join-title {
-    font-size: 2rem;
-  }
-
-  .join-subtitle {
-    margin-top: 6px;
-  }
-
-  .join-input {
-    height: 48px;
-  }
-
-  .join-button {
-    height: 50px;
-  }
+  .join-header { margin-bottom: var(--space-md); }
+  .join-logo { display: none; }
+  .join-title { font-size: 2rem; }
+  .join-subtitle { margin-top: var(--space-xs); }
 }

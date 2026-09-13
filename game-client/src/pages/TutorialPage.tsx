@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
+import { Card, CardContent } from "../components/common/Card";
+import { Button } from "../components/common/Button";
 import "./TutorialPage.css";
-// import LanguageSelector from "../components/language/LanguageSelector";
 
 export default function TutorialPage() {
   const navigate = useNavigate();
@@ -9,19 +10,19 @@ export default function TutorialPage() {
 
   return (
     <div className="tutorial-page">
-      <div className="tutorial-card">
+      <Card variant="elevated" className="tutorial-card">
         <div className="tutorial-header">
-          <button
-            className="back-button"
+          <Button 
+            variant="secondary" 
+            size="sm" 
             onClick={() => navigate("/")}
           >
             ← {t("common.back")}
-          </button>
-
+          </Button>
           <h1>{t("tutorial.title")}</h1>
         </div>
 
-        <div className="tutorial-content">
+        <CardContent className="tutorial-content">
           <section className="tutorial-section">
             <h2>1. {t("tutorial.objective.title")}</h2>
             <p>{t("tutorial.objective.text")}</p>
@@ -79,8 +80,8 @@ export default function TutorialPage() {
             <h2>7. {t("tutorial.winning.title")}</h2>
             <p>{t("tutorial.winning.text")}</p>
           </section>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

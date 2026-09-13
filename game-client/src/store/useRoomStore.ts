@@ -20,6 +20,7 @@ export type RoomPhase = "lobby" | "playing" | "over";
 export interface RoomStore {
   phase: RoomPhase;
   gameId: string | null;
+  myPlayerId: string | null;
   players: Record<string, LobbyPlayer>;
   startingIn: number | null;
   disconnected: DisconnectInfo | null;
@@ -35,11 +36,10 @@ export interface RoomStore {
 
 type RoomState = Omit<RoomStore, "applyEvent" | "clearNotice" | "reset">;
 
-// ✅ BEST PRACTICE: Use a function for initial state to avoid shared reference bugs
-// (especially important for `new Set()`)
 const getInitialState = (): RoomState => ({
   phase: "lobby",
   gameId: null,
+  myPlayerId: null,
   players: {},
   startingIn: null,
   disconnected: null,
@@ -56,6 +56,53 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
     const state = get();
 
     switch (evt.type) {
+      case "full_state": {
+        if (evt.phase === "lobby") {
+          const newPlayers: Record<string, LobbyPlayer> = {};
+          for (const p of evt.players) {
+            newPlayers[p.player_id] = {
+              playerId: p.player_id,
+              username: p.username,
+              playerIdx: p.player_idx,
+              ready: p.is_ready,
+            };
+          }
+          set({
+            phase: "lobby",
+            gameId: evt.game_id,
+            myPlayerId: evt.player_id,
+            players: newPlayers,
+            startingIn: null,
+            disconnected: null,
+            winnerId: null,
+            reason: null,
+            playAgainRequestedBy: new Set(),
+            notice: null,
+          });
+        } else if (evt.phase === "playing") {
+          set({
+            phase: "playing",
+            myPlayerId: evt.player_id,
+            startingIn: null,
+            disconnected: null,
+            winnerId: null,
+            reason: null,
+            playAgainRequestedBy: new Set(),
+            notice: null,
+          });
+        } else if (evt.phase === "game_over") {
+          set({
+            phase: "over",
+            myPlayerId: evt.player_id,
+            winnerId: evt.winner_id,
+            reason: evt.reason,
+            startingIn: null,
+            disconnected: null,
+          });
+        }
+        break;
+      }
+
       case "waiting_for_player": {
         set({ phase: "lobby", gameId: evt.game_id, startingIn: null });
         break;
@@ -175,5 +222,5 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
   },
 
   clearNotice: () => set({ notice: null }),
-  reset: () => set(getInitialState()), // ✅ Now safely generates a fresh Set and object references
+  reset: () => set(getInitialState()),
 }));

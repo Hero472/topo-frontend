@@ -1,51 +1,121 @@
-.language-selector {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+/* =========================================================
+   LANGUAGE SELECTOR
+   ========================================================= */
 
-    margin-top: 16px;
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
 .language-icon {
-    font-size: 16px;
-    line-height: 1;
-    opacity: 0.75;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
+.language-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- SELECT WRAPPER ---------- */
+
+.language-select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---------- SELECT ---------- */
+
 .language-select {
-    appearance: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 
-    padding: 7px 32px 7px 10px;
+  padding: var(--space-xs) var(--space-lg) var(--space-xs) var(--space-sm);
 
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 
-    background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--surface);
 
-    color: inherit;
+  color: var(--text);
 
-    font-family: inherit;
-    font-size: 13px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
 
-    cursor: pointer;
+  cursor: pointer;
 
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .language-select:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
+  background-color: var(--surface-2);
+  border-color: var(--border-strong);
 }
 
 .language-select:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
+/* ---------- OPTIONS (Dark mode fix) ---------- */
+
 .language-select option {
-    background-color: #1a1a1a;
-    color: white;
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+/* ---------- CHEVRON ---------- */
+
+.language-chevron {
+  position: absolute;
+  right: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 150ms ease;
+}
+
+.language-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+
+.language-select:hover ~ .language-chevron {
+  color: var(--text);
+}
+
+.language-select:focus ~ .language-chevron {
+  color: var(--accent);
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 540px) {
+  .language-select {
+    font-size: 0.75rem;
+    padding: 6px var(--space-lg) 6px var(--space-xs);
+  }
+
+  .language-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .language-chevron svg {
+    width: 12px;
+    height: 12px;
+  }
 }

@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
-import "./JoinPage.css";
+import { Card } from "../components/common/Card";
+import { Button } from "../components/common/Button";
+import { Input } from "../components/common/Input";
 import LanguageSelector from "../components/language/LanguageSelector";
+import "./JoinPage.css";
 
 export function JoinPage() {
   const [username, setUsername] = useState("");
@@ -13,7 +16,8 @@ export function JoinPage() {
 
   useLanguage();
 
-  const handleJoin = () => {
+  const handleJoin = (e: FormEvent) => {
+    e.preventDefault();
     const trimmedUser = username.trim();
 
     if (!trimmedUser) {
@@ -31,80 +35,42 @@ export function JoinPage() {
       return;
     }
 
-    sessionStorage.setItem(
-      "game-username",
-      trimmedUser,
-    );
-
-    navigate(
-      `/game/${encodeURIComponent(gameId)}/waiting`,
-    );
-  };
-
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (event.key === "Enter") {
-      handleJoin();
-    }
+    sessionStorage.setItem("game-username", trimmedUser);
+    navigate(`/game/${encodeURIComponent(gameId)}/waiting`);
   };
 
   return (
-    <div className="join-outer">
-      <LanguageSelector />
-      <div className="join-card">
+    <div className="join-page">
+      <Card variant="elevated" className="join-card">
+        <div className="join-top-actions">
+          <LanguageSelector />
+        </div>
+
         <div className="join-header">
-          <span className="join-logo" aria-hidden="true">
-            ♠
-          </span>
-
-          <h1 className="join-title">
-            {t("join.title")}
-          </h1>
-
-          <p className="join-subtitle">
-            {t("join.subtitle")}
-          </p>
+          <span className="join-logo" aria-hidden="true">♠</span>
+          <h1 className="join-title">{t("join.title")}</h1>
+          <p className="join-subtitle">{t("join.subtitle")}</p>
         </div>
 
-        <div className="join-fields">
-          <div className="join-field">
-            <label
-              className="join-label"
-              htmlFor="username-input"
-            >
-              {t("join.username.label")}
-            </label>
+        <form onSubmit={handleJoin} className="join-form">
+          <Input
+            label={t("join.username.label")}
+            placeholder={t("join.username.placeholder")}
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setError("");
+            }}
+            error={error}
+            autoFocus
+            size="lg"
+          />
 
-            <input
-              id="username-input"
-              className="join-input"
-              placeholder={t("join.username.placeholder")}
-              value={username}
-              onChange={(event) => {
-                setUsername(event.target.value);
-                setError("");
-              }}
-              onKeyDown={handleKeyDown}
-              autoFocus
-            />
-          </div>
-
-          {error && (
-            <div className="join-error">
-              {error}
-            </div>
-          )}
-
-          <button
-            className="join-button"
-            type="button"
-            onClick={handleJoin}
-          >
+          <Button type="submit" variant="primary" fullWidth size="lg">
             {t("join.button")}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }
