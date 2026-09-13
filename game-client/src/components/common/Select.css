@@ -1,0 +1,157 @@
+/* =========================================
+   SELECT COMPONENT
+   ========================================= */
+
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.select-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-heading);
+  font-family: var(--font-sans);
+}
+
+.select-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition:
+    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    background 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select-container:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  background: var(--surface-2);
+}
+
+.select-container--error {
+  border-color: var(--error);
+}
+.select-container--error:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 20%, transparent);
+}
+
+.select-container--disabled {
+  background: var(--surface);
+  border-color: var(--border);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Sizes */
+.select-container--sm { min-height: 36px; }
+.select-container--sm .select-field {
+  padding: 0.375rem 2rem 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.select-container--md { min-height: 44px; }
+.select-container--md .select-field {
+  padding: 0.625rem 2.5rem 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.select-container--lg { min-height: 52px; }
+.select-container--lg .select-field {
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+/* Field */
+.select-field {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-heading);
+  font-family: var(--font-sans);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select-field:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+/* =========================================
+   DROPDOWN OPTIONS (Fixes dark mode popup)
+   ========================================= */
+.select-field option {
+  background-color: var(--surface);
+  color: var(--text-heading);
+  /* Note: padding on <option> has limited browser support, 
+     but background and color work reliably across all major browsers */
+}
+
+/* Icon */
+.select-icon {
+  position: absolute;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 200ms ease;
+}
+
+.select-icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.select-container:focus-within .select-icon {
+  color: var(--accent);
+}
+.select-container--error:focus-within .select-icon {
+  color: var(--error);
+}
+
+/* Messages */
+.select-message {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.select-message--helper {
+  color: var(--text-muted);
+}
+.select-message--error {
+  color: var(--error);
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select-container {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .select-container {
+    border: 2px solid ButtonText;
+  }
+  .select-container:focus-within {
+    border-color: Highlight;
+  }
+  .select-container--error {
+    border-color: Mark;
+  }
+}
