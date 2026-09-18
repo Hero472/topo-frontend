@@ -15,7 +15,7 @@
     "title": "Criar partida",
     "subtitle": "Escolha seu nome de usuário para criar uma partida.",
     "button": "Criar partida",
-    "creating": "",
+    "creating": "Criando...",
     "duration": {
       "label": "Duração da partida",
       "seconds30": "30 segundos",
@@ -46,6 +46,14 @@
     "youAreReady": "Você está pronto",
     "readyButton": "Pronto",
     "startingIn": "Começando em",
+    "pleaseReadTutorial": "Por favor, revise o tutorial antes de ficar pronto.",
+    "tutorial": {
+      "title": "Como jogar",
+      "description": "Arraste cartas da sua mão e solte-as no tabuleiro para jogá-las.",
+      "confirm": "Entendi",
+      "alt": "Animação do tutorial de arrastar e soltar",
+      "videoNotSupported": "Vídeo não suportado"
+    },
     "errors": {
       "notFound": "Partida não encontrada",
       "backHome": "Voltar ao início"

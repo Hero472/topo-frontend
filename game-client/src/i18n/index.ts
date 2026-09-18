@@ -23,7 +23,7 @@ type TranslationKey<T> = {
 
 export type TranslationKeys = TranslationKey<Translation>;
 
-let currentLanguage: Language = "en";
+let currentLanguage: Language = "es";
 
 const listeners = new Set<() => void>();
 

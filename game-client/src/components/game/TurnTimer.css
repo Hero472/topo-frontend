@@ -1,53 +1,105 @@
 .turn-timer-container {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: clamp(280px, 90vw, 500px);
-  padding: clamp(0.4rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.25rem);
-  border-radius: clamp(6px, 1.5vw, 12px);
-  background: #20242a;
-  color: white;
+  max-width: clamp(280px, 90vw, 400px);
+  padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+  border-radius: clamp(8px, 2vw, 16px);
+  background: #1a1d21;
+  color: #e0e0e0;
   font-weight: 600;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   box-sizing: border-box;
-  gap: clamp(0.25rem, 1vw, 0.5rem);
-  transition: all 150ms ease;
-  
-  /* Centering placeholder helper if integrated inside the game board structure */
-  margin: 0 auto; 
+  overflow: hidden; /* Contains the progress bar */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  margin: 0 auto;
+  border: 2px solid transparent; /* Prevents layout shift when border color changes */
 }
 
-/* Dynamic State Borders */
+/* --- Dynamic State Styling --- */
 .turn-timer-container[data-state="danger"] {
-  border: 2px solid #d32f2f;
+  border-color: #ff4444;
+  background: #2a1a1a;
+  box-shadow: 0 0 16px rgba(255, 68, 68, 0.25);
+  animation: pulse-danger 1.5s infinite ease-in-out;
 }
 
 .turn-timer-container[data-state="my-turn"] {
-  border: 2px solid #4caf50;
+  border-color: #4caf50;
+  background: #1a2a1a;
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.2);
 }
 
 .turn-timer-container[data-state="opponent-turn"] {
-  border: 2px solid #555;
+  border-color: #4a4e54;
+  background: #20242a;
+  color: #8a8f98;
 }
 
-/* Text Element Layouts */
+/* --- Content Layout --- */
+.turn-timer-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+}
+
 .turn-timer-label {
   display: flex;
   align-items: center;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  letter-spacing: 0.02em;
 }
 
 .turn-timer-countdown {
   flex-shrink: 0;
-  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
   font-variant-numeric: tabular-nums; /* Keeps numbers from shifting horizontally */
-  color: white;
+  font-weight: 700;
+  color: #ffffff;
+  transition: color 0.3s ease;
+}
+
+.turn-timer-container[data-state="opponent-turn"] .turn-timer-countdown {
+  color: #8a8f98;
 }
 
 .turn-timer-countdown.is-danger {
-  color: #ff5252;
+  color: #ff4444;
+}
+
+/* --- Progress Bar --- */
+.turn-timer-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: currentColor;
+  opacity: 0.6;
+  transition: width 1s linear, background-color 0.3s ease;
+  z-index: 1;
+}
+
+.turn-timer-container[data-state="danger"] .turn-timer-progress {
+  background: #ff4444;
+  opacity: 0.9;
+}
+
+.turn-timer-container[data-state="my-turn"] .turn-timer-progress {
+  background: #4caf50;
+}
+
+/* --- Animations --- */
+@keyframes pulse-danger {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(255, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(255, 68, 68, 0.5);
+  }
 }

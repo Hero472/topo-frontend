@@ -40,10 +40,6 @@ export default function CenterBoard({
 
   return (
     <section className="center-board-container">
-      <h3 className="center-board-title">
-        Center
-      </h3>
-
       <div className="center-board-content">
         <div className="center-board-scales-grid">
           {visible.map((_, index) => (
