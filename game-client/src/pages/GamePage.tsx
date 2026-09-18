@@ -9,6 +9,7 @@ import DragOverlay from "../components/overlay/DragOverlay";
 import ConnectionStatusOverlay from "../components/overlay/ConnectionStatusOverlay";
 import { t, useLanguage } from "../i18n";
 import "./GamePage.css";
+import { Button } from "../components/common/Button";
 
 export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
   useLanguage();
@@ -31,6 +32,13 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
     navigate("/", { replace: true });
   };
 
+  const handleCreateNew = () => {
+    useRoomStore.getState().reset();
+    useGameStore.getState().reset();
+    socket.leaveGame();
+    navigate("/join", { replace: true });
+  };
+
   if (!fullState) {
     const isConnecting = socket.status === "connecting" || socket.status === "reconnecting";
     return (
@@ -44,10 +52,18 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
     );
   }
 
-  const isGameOver = phase === "over" && winnerId !== null;
+  const isGameOver = phase === "game_over" && winnerId !== null;
   const isWinner = winnerId === fullState.player_id;
   const opponentRequestedPlayAgain = playAgainRequestedBy.size > 0 && !playAgainRequestedBy.has(fullState.player_id);
   const iRequestedPlayAgain = playAgainRequestedBy.has(fullState.player_id);
+
+  // ✅ Updated to catch "player_leave" and other variations of the opponent leaving
+  const isOpponentGone = 
+    reason === "player_leave" ||
+    reason === "Opponent left the game" || 
+    reason === "Opponent disconnected" ||
+    reason === "Player left the game" ||
+    (reason?.toLowerCase().includes("left") ?? false);
 
   const isCurrentPlayerReconnecting = 
     socket.status === "reconnecting" || 
@@ -88,22 +104,34 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
         <div className="game-over-backdrop">
           <div className="game-over-dialog" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
             <h2 id="game-over-title">{isWinner ? t("game.over.youWon") : t("game.over.youLost")}</h2>
+            
             {reason && <p className="game-over-message">{reason}</p>}
             {turnTimeoutMessage && <p className="game-over-message">{turnTimeoutMessage}</p>}
 
-            {opponentRequestedPlayAgain && <p className="game-over-message">{t("game.over.opponentWantsRematch")}</p>}
-
-            {iRequestedPlayAgain ? (
-              <p className="game-over-message">{t("game.over.waitingForOpponent")}</p>
-            ) : (
-              <button type="button" className="game-play-again-button" onClick={() => socket.sendAction({ type: "play_again" })}>
-                {t("game.over.playAgain")}
-              </button>
+            {/* Only show rematch options if the opponent is still around */}
+            {!isOpponentGone && opponentRequestedPlayAgain && (
+              <p className="game-over-message">{t("game.over.opponentWantsRematch")}</p>
             )}
 
-            <button type="button" className="game-leave-button" onClick={handleLeave}>
-              {t("game.leave.button")}
-            </button>
+            <div className="game-over-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+              {!isOpponentGone && (
+                iRequestedPlayAgain ? (
+                  <p className="game-over-message">{t("game.over.waitingForOpponent")}</p>
+                ) : (
+                  <Button type="button" className="game-play-again-button" onClick={() => socket.sendAction({ type: "play_again" })}>
+                    {t("game.over.playAgain")}
+                  </Button>
+                )
+              )}
+
+              <Button type="button" className="game-create-new-button" onClick={handleCreateNew}>
+                {t("game.over.createNewGame") || "Create New Game"}
+              </Button>
+
+              <Button type="button" className="game-leave-button" onClick={handleLeave}>
+                {t("game.leave.button")}
+              </Button>
+            </div>
           </div>
         </div>
       )}

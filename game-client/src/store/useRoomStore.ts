@@ -15,7 +15,7 @@ export interface DisconnectInfo {
   disconnectedAt: number;
 }
 
-export type RoomPhase = "lobby" | "playing" | "over";
+export type RoomPhase = "lobby" | "playing" | "game_over";
 
 export interface RoomStore {
   phase: RoomPhase;
@@ -92,7 +92,7 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
           });
         } else if (evt.phase === "game_over") {
           set({
-            phase: "over",
+            phase: "game_over",
             myPlayerId: evt.player_id,
             winnerId: evt.winner_id,
             reason: evt.reason,
@@ -190,7 +190,7 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
 
       case "game_over": {
         set({
-          phase: "over",
+          phase: "game_over",
           winnerId: evt.winner_id,
           reason: evt.reason,
           startingIn: null,

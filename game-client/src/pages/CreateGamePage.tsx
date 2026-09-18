@@ -39,11 +39,11 @@ export default function CreateGamePage() {
 
       sessionStorage.setItem("game-username", trimmedUser);
 
-      const { game_id } = await gameApi.createGame({
+      const { invite_code } = await gameApi.createGame({
         duration_seconds: duration,
       });
 
-      navigate(`/game/${encodeURIComponent(game_id)}/waiting`, {
+      navigate(`/game/${encodeURIComponent(invite_code)}/waiting`, {
         replace: true,
       });
     } catch (error) {

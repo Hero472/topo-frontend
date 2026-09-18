@@ -11,7 +11,7 @@ export default function GameSession() {
   const socket: GameSocket = useGameSocket(gameId ?? "", username);
   const phase = useRoomStore((state) => state.phase);
 
-  if (phase === "playing" || phase === "over") {
+  if (phase === "playing" || phase === "game_over") {
     return <GamePage socket={socket} />;
   }
 

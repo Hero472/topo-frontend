@@ -24,6 +24,14 @@ export class GameApi {
 
     return response.json();
   }
+
+  async checkGameExists(inviteCode: string): Promise<boolean> {
+    const response = await fetch(`${this.baseUrl}/api/games/${inviteCode}`, {
+      method: "GET",
+    });
+    // Returns true for 200 OK, false for 404 or 410
+    return response.ok; 
+  }
 }
 
-export const gameApi = new GameApi(""); // done by the proxy
+export const gameApi = new GameApi("");

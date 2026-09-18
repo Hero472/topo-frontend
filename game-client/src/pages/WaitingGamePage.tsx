@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
 import { useRoomStore } from "../store/useRoomStore";
 import { type GameSocket } from "../hooks/useGameSocket";
+import { gameApi } from "../api/GameApi";
 import { Card } from "../components/common/Card";
 import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
@@ -14,20 +15,73 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   useLanguage();
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
+
+  // ✅ 1. ALL HOOKS MUST BE AT THE VERY TOP, BEFORE ANY EARLY RETURNS
+  const [isValidating, setIsValidating] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
 
   const username = sessionStorage.getItem("game-username") ?? "";
-
   const myPlayerId = useRoomStore((state) => state.myPlayerId) ?? socket.playerId;
-
+  
   const players = useRoomStore((state) => state.players);
   const startingIn = useRoomStore((state) => state.startingIn);
   const notice = useRoomStore((state) => state.notice);
   const clearNotice = useRoomStore((state) => state.clearNotice);
 
-  const inviteUrl = `${globalThis.location.origin}/game/${encodeURIComponent(gameId ?? "")}/join`;
+  const inviteUrl = `${globalThis.location.origin}/game/${gameId ?? ""}/join`;
+  const tutorialStorageKey = gameId ? `game-tutorial-seen-${gameId}` : "game-tutorial-seen";
 
+  // ✅ 2. Pre-flight check (useEffect is also a hook, so it stays at the top)
+  useEffect(() => {
+    const validateGame = async () => {
+      if (!gameId) {
+        navigate("/join", { replace: true });
+        return;
+      }
+
+      const exists = await gameApi.checkGameExists(gameId);
+
+      if (!exists) {
+        navigate("/join", { 
+          replace: true,
+          state: { error: t("waiting.errors.notFound") } 
+        });
+      } else {
+        setIsValidating(false);
+      }
+    };
+
+    validateGame();
+  }, [gameId, navigate]);
+
+  // ✅ 3. EARLY RETURNS MUST COME *AFTER* ALL HOOKS
+  if (!username) return null;
+
+  if (isValidating) {
+    return (
+      <div className="waiting-game-page">
+        <Card variant="elevated" className="waiting-game-card">
+          <h1 className="waiting-game-title">{t("waiting.validating") || "Validating game..."}</h1>
+        </Card>
+      </div>
+    );
+  }
+
+  if (socket.status === "error") {
+    return (
+      <div className="waiting-game-page">
+        <Card variant="elevated" className="waiting-game-card">
+          <h1 className="waiting-game-title">{t("waiting.errors.notFound")}</h1>
+          <Button variant="secondary" onClick={() => navigate("/join", { replace: true })}>
+            {t("waiting.errors.backToCreate") || "Create a new game"}
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  // ✅ 4. Event handlers
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(inviteUrl);
@@ -37,9 +91,6 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
       console.error("Failed to copy invite link:", error);
     }
   };
-
-  // Scope the storage key to the current gameId so new games get a fresh tutorial
-  const tutorialStorageKey = gameId ? `game-tutorial-seen-${gameId}` : "game-tutorial-seen";
 
   const handleReadyClick = () => {
     const alreadySeen = sessionStorage.getItem(tutorialStorageKey) === "1";
@@ -60,24 +111,9 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     setShowTutorial(false);
   };
 
-  if (!username) return null;
-
-  if (socket.status === "error") {
-    return (
-      <div className="waiting-game-page">
-        <Card variant="elevated" className="waiting-game-card">
-          <h1 className="waiting-game-title">{t("waiting.errors.notFound")}</h1>
-          <Button variant="secondary" onClick={() => navigate("/", { replace: true })}>
-            {t("waiting.errors.backHome")}
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
+  // ✅ 5. Render logic
   const isConnecting = socket.status === "connecting";
   const playerList = Object.values(players);
-
   const me = playerList.find((player) => player.playerId === myPlayerId);
 
   const isReady = me?.ready ?? false;
@@ -110,12 +146,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
         )}
 
         {notice && (
-          <Card
-            variant="outlined"
-            clickable
-            onClick={clearNotice}
-            className="waiting-game-notice"
-          >
+          <Card variant="outlined" clickable onClick={clearNotice} className="waiting-game-notice">
             {notice}
           </Card>
         )}
@@ -169,7 +200,6 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
       >
         <p className="waiting-tutorial-text">{t("waiting.tutorial.description")}</p>
         <div className="waiting-tutorial-media">
-          {/* 2. Use the imported variable directly in the src attribute */}
           <video
             src={tutorialVideo}
             autoPlay
