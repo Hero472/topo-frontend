@@ -37,6 +37,7 @@
     "copy": "Copiar link",
     "copied": "Copiado!",
     "connecting": "Conectando à partida...",
+    "validating": "Validando...",
     "waitingForPlayer": "Esperando por outro jogador...",
     "gameId": "ID da partida:",
     "starting": "A partida está começando...",
@@ -47,6 +48,7 @@
     "readyButton": "Pronto",
     "startingIn": "Começando em",
     "pleaseReadTutorial": "Por favor, revise o tutorial antes de ficar pronto.",
+    "leaveGame": "Sair da partida",
     "tutorial": {
       "title": "Como jogar",
       "description": "Arraste cartas da sua mão e solte-as no tabuleiro para jogá-las.",
@@ -56,7 +58,9 @@
     },
     "errors": {
       "notFound": "Partida não encontrada",
-      "backHome": "Voltar ao início"
+      "backHome": "Voltar ao início",
+      "backToCreate": "Voltar a criar",
+      "backToJoin": "Voltar a entrar"
     }
   },
   "join": {
@@ -97,7 +101,8 @@
       "youLost": "Você perdeu!",
       "opponentWantsRematch": "Seu oponente quer jogar novamente!",
       "waitingForOpponent": "Esperando pelo seu oponente...",
-      "playAgain": "Jogar novamente"
+      "playAgain": "Jogar novamente",
+      "createNewGame": "Criar nova partida"
     },
     "result": {
       "winner": "Você venceu!",

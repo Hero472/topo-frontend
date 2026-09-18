@@ -48,6 +48,7 @@
     "readyButton": "Listo",
     "startingIn": "Comenzando en",
     "pleaseReadTutorial": "Por favor, revisa el tutorial antes de estar listo.",
+    "leaveGame": "Salir de la partida",
     "tutorial": {
       "title": "Cómo jugar",
       "description": "Arrastra cartas desde tu mano y suéltalas en el tablero para jugarlas.",
@@ -58,7 +59,8 @@
     "errors": {
       "notFound": "Partida no encontrada",
       "backHome": "Volver al inicio",
-      "backToCreate": "Volver a crear partida"
+      "backToCreate": "Volver a crear partida",
+      "backToJoin": "Volver a unirse"
     }
   },
   "join": {
@@ -99,7 +101,8 @@
       "youLost": "¡Perdiste!",
       "opponentWantsRematch": "¡Tu oponente quiere jugar de nuevo!",
       "waitingForOpponent": "Esperando a tu oponente...",
-      "playAgain": "Jugar de nuevo"
+      "playAgain": "Jugar de nuevo",
+      "createNewGame": "Crear nueva partida"
     },
     "result": {
       "winner": "¡Ganaste!",

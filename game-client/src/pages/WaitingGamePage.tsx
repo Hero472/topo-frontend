@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
 import { useRoomStore } from "../store/useRoomStore";
+import { useGameStore } from "../store/useGameStore"; // <-- Added for complete cleanup
 import { type GameSocket } from "../hooks/useGameSocket";
 import { gameApi } from "../api/GameApi";
 import { Card } from "../components/common/Card";
@@ -32,7 +33,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const inviteUrl = `${globalThis.location.origin}/game/${gameId ?? ""}/join`;
   const tutorialStorageKey = gameId ? `game-tutorial-seen-${gameId}` : "game-tutorial-seen";
 
-  // ✅ 2. Pre-flight check (useEffect is also a hook, so it stays at the top)
+  // ✅ 2. Pre-flight check
   useEffect(() => {
     const validateGame = async () => {
       if (!gameId) {
@@ -74,7 +75,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
         <Card variant="elevated" className="waiting-game-card">
           <h1 className="waiting-game-title">{t("waiting.errors.notFound")}</h1>
           <Button variant="secondary" onClick={() => navigate("/join", { replace: true })}>
-            {t("waiting.errors.backToCreate") || "Create a new game"}
+            {t("waiting.errors.backToJoin") || "Back to Join"}
           </Button>
         </Card>
       </div>
@@ -90,6 +91,19 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     } catch (error) {
       console.error("Failed to copy invite link:", error);
     }
+  };
+
+  // ✅ 5. NEW: Handle leaving the game cleanly
+  const handleLeave = () => {
+    // Reset stores to clear any lingering game state
+    useRoomStore.getState().reset();
+    if (useGameStore) useGameStore.getState().reset();
+    
+    // Tell the backend we are leaving the room
+    socket.leaveGame();
+    
+    // Navigate back to the main menu (change "/" to "/join" if that's your main menu route)
+    navigate("/", { replace: true });
   };
 
   const handleReadyClick = () => {
@@ -111,7 +125,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     setShowTutorial(false);
   };
 
-  // ✅ 5. Render logic
+  // ✅ 6. Render logic
   const isConnecting = socket.status === "connecting";
   const playerList = Object.values(players);
   const me = playerList.find((player) => player.playerId === myPlayerId);
@@ -185,7 +199,17 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
           </p>
         )}
 
-        <p className="waiting-game-code">{t("waiting.gameId")} {gameId}</p>
+        {/* ✅ 7. NEW: Leave Button placed cleanly at the bottom */}
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+          <p className="waiting-game-code">{t("waiting.gameId")} {gameId}</p>
+          <Button 
+            variant="secondary" 
+            onClick={handleLeave}
+            style={{ marginTop: '0.5rem', color: '#ef4444', borderColor: '#ef4444' }} // Optional: style as a "danger/leave" action
+          >
+            {t("waiting.leaveGame") || "Leave Game"}
+          </Button>
+        </div>
       </Card>
 
       <Modal
