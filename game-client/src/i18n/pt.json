@@ -17,7 +17,7 @@
     "button": "Criar partida",
     "creating": "Criando...",
     "duration": {
-      "label": "Duração da partida",
+      "label": "Duração por turno",
       "seconds30": "30 segundos",
       "minute1": "1 minuto",
       "minutes2": "2 minutos",
