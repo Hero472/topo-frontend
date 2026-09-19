@@ -1,6 +1,7 @@
 import { useGameStore } from "../../store/useGameStore";
 import { t, useLanguage } from "../../i18n";
 import "./GameResultOverlay.css";
+import { useRoomStore } from "../../store/useRoomStore";
 
 interface GameResultOverlayProps {
   onBackToMenu: () => void;
@@ -12,7 +13,7 @@ export default function GameResultOverlay({
   useLanguage();
 
   const fullState = useGameStore((s) => s.fullState);
-  const winnerId = useGameStore((s) => s.winnerId);
+  const winnerId = useRoomStore((s) => s.winnerId);
 
   if (!fullState || !winnerId) {
     return null;
