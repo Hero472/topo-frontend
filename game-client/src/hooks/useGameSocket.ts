@@ -36,17 +36,11 @@ export function useGameSocket(gameId: string, username: string): GameSocket {
 
   // 🚀 PRODUCTION READY: Dynamically resolve the WebSocket base URL
   const wsBaseUrl = useMemo(() => {
-    // 1. Check for a dedicated WS URL, fallback to API URL, fallback to empty string
     const envUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL || "";
     
     if (envUrl) {
-      // 2. Convert http:// to ws:// and https:// to wss://
       return envUrl.replace(/^http/, "ws");
     }
-    
-    // 3. Return empty string for relative paths (e.g., "/ws/...")
-    // This allows the Vite dev server proxy to catch it locally, 
-    // and works natively if frontend/backend share the same domain in prod.
     return "";
   }, []);
 

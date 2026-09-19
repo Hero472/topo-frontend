@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
 import { useRoomStore } from "../store/useRoomStore";
-import { useGameStore } from "../store/useGameStore"; // <-- Added for complete cleanup
+import { useGameStore } from "../store/useGameStore";
 import { type GameSocket } from "../hooks/useGameSocket";
 import { gameApi } from "../api/GameApi";
 import { Card } from "../components/common/Card";
@@ -17,7 +17,6 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
 
-  // ✅ 1. ALL HOOKS MUST BE AT THE VERY TOP, BEFORE ANY EARLY RETURNS
   const [isValidating, setIsValidating] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -33,15 +32,37 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const inviteUrl = `${globalThis.location.origin}/game/${gameId ?? ""}/join`;
   const tutorialStorageKey = gameId ? `game-tutorial-seen-${gameId}` : "game-tutorial-seen";
 
-  // ✅ 2. Pre-flight check
+  // ✅ FIX 1: Added retry logic for eventual consistency / network lag
   useEffect(() => {
+    let isMounted = true; // Prevents state updates if component unmounts during delay
+
     const validateGame = async () => {
       if (!gameId) {
-        navigate("/join", { replace: true });
+        if (isMounted) navigate("/join", { replace: true });
         return;
       }
 
-      const exists = await gameApi.checkGameExists(gameId);
+      let attempts = 0;
+      const maxAttempts = 3; // Try up to 3 times
+      let exists = false;
+
+      while (attempts < maxAttempts) {
+        try {
+          exists = await gameApi.checkGameExists(gameId);
+          if (exists) break; // Success! Game found, exit loop
+        } catch (error) {
+          console.warn(`Validation attempt ${attempts + 1} failed:`, error);
+        }
+        
+        attempts++;
+        
+        // If not found and we have more attempts, wait 500ms before trying again
+        if (!exists && attempts < maxAttempts && isMounted) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      if (!isMounted) return;
 
       if (!exists) {
         navigate("/join", { 
@@ -54,12 +75,23 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     };
 
     validateGame();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
   }, [gameId, navigate]);
 
-  // ✅ 3. EARLY RETURNS MUST COME *AFTER* ALL HOOKS
-  if (!username) return null;
+  // ✅ FIX 2: Prevent "render-phase navigation" anti-pattern. 
+  // If no username, redirect in useEffect instead of returning null.
+  useEffect(() => {
+    if (!username && !isValidating) {
+      navigate("/join", { replace: true });
+    }
+  }, [username, isValidating, navigate]);
 
-  if (isValidating) {
+  // Show loading state while validating OR if username is missing (prevents blank screen)
+  if (isValidating || !username) {
     return (
       <div className="waiting-game-page">
         <Card variant="elevated" className="waiting-game-card">
@@ -82,7 +114,6 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     );
   }
 
-  // ✅ 4. Event handlers
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(inviteUrl);
@@ -93,16 +124,10 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     }
   };
 
-  // ✅ 5. NEW: Handle leaving the game cleanly
   const handleLeave = () => {
-    // Reset stores to clear any lingering game state
     useRoomStore.getState().reset();
     if (useGameStore) useGameStore.getState().reset();
-    
-    // Tell the backend we are leaving the room
     socket.leaveGame();
-    
-    // Navigate back to the main menu (change "/" to "/join" if that's your main menu route)
     navigate("/", { replace: true });
   };
 
@@ -125,7 +150,6 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
     setShowTutorial(false);
   };
 
-  // ✅ 6. Render logic
   const isConnecting = socket.status === "connecting";
   const playerList = Object.values(players);
   const me = playerList.find((player) => player.playerId === myPlayerId);
@@ -199,13 +223,12 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
           </p>
         )}
 
-        {/* ✅ 7. NEW: Leave Button placed cleanly at the bottom */}
         <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
           <p className="waiting-game-code">{t("waiting.gameId")} {gameId}</p>
           <Button 
             variant="secondary" 
             onClick={handleLeave}
-            style={{ marginTop: '0.5rem', color: '#ef4444', borderColor: '#ef4444' }} // Optional: style as a "danger/leave" action
+            style={{ marginTop: '0.5rem', color: '#ef4444', borderColor: '#ef4444' }}
           >
             {t("waiting.leaveGame") || "Leave Game"}
           </Button>
