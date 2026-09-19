@@ -34,4 +34,6 @@ export class GameApi {
   }
 }
 
-export const gameApi = new GameApi("");
+const PROD_API_URL = import.meta.env.VITE_API_URL || "";
+
+export const gameApi = new GameApi(PROD_API_URL);

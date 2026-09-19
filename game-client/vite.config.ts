@@ -14,6 +14,7 @@ export default defineConfig({
     },
     allowedHosts: [
       'lushly-salaried-ashes.ngrok-free.dev',
+      "playtopo.cl"
     ],
   },
 })
