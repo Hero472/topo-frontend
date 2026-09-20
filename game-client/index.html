@@ -3,26 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>topo</title>
-    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Eruda DevTools: Only loads if ?debug=true is in the URL -->
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('debug') === 'true') {
+        const script = document.createElement('script');
+        script.src = '//cdn.jsdelivr.net/npm/eruda';
+        script.onload = function() { 
+          eruda.init(); 
+          console.log("Eruda DevTools Loaded!");
+        };
+        document.head.appendChild(script);
+      }
+    </script>
   </body>
-  <script>
-    // Check if the URL has ?debug=true
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('debug') === 'true') {
-      const script = document.createElement('script');
-      script.src = '//cdn.jsdelivr.net/npm/eruda';
-      script.onload = function() { 
-        eruda.init(); 
-        console.log("Eruda DevTools Loaded!");
-      };
-      document.head.appendChild(script);
-    }
-</script>
 </html>
