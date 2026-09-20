@@ -18,38 +18,76 @@ export default function CreateGamePage() {
   useLanguage();
 
   const handleCreateGame = async (e: FormEvent) => {
+    console.log("🟢 [CREATE GAME] Function triggered");
     e.preventDefault();
-    if (isCreating) return;
+    
+    if (isCreating) {
+      console.log("🟡 [CREATE GAME] Ignored: isCreating is already true (preventing double-click)");
+      return;
+    }
 
     const trimmedUser = username.trim();
+    console.log("🔵 [CREATE GAME] Username processed:", { 
+      original: username, 
+      trimmed: trimmedUser, 
+      length: trimmedUser.length 
+    });
 
     if (!trimmedUser) {
+      console.log("🔴 [CREATE GAME] Validation FAILED: Username is empty");
       setError(t("join.errors.usernameRequired"));
       return;
     }
 
     if (trimmedUser.length > 20) {
+      console.log("🔴 [CREATE GAME] Validation FAILED: Username too long");
       setError(t("join.errors.usernameTooLong"));
       return;
     }
 
     try {
+      console.log("🟢 [CREATE GAME] Validation passed. Clearing errors, setting isCreating=true");
       setError("");
       setIsCreating(true);
 
       sessionStorage.setItem("game-username", trimmedUser);
+      console.log("💾 [CREATE GAME] Saved to sessionStorage. Key: 'game-username', Value:", trimmedUser);
 
-      const { invite_code } = await gameApi.createGame({
-        duration_seconds: duration,
-      });
+      const payload = { duration_seconds: duration };
+      console.log("📤 [CREATE GAME] PREPARING API CALL");
+      console.log("📤 [CREATE GAME] Payload to send:", JSON.stringify(payload));
+      console.log("📤 [CREATE GAME] 'duration' variable type & value:", typeof duration, duration);
 
-      navigate(`/game/${encodeURIComponent(invite_code)}/waiting`, {
-        replace: true,
-      });
+      // The actual API call
+      console.log("⏳ [CREATE GAME] Calling gameApi.createGame...");
+      const response = await gameApi.createGame(payload);
+      
+      console.log("✅ [CREATE GAME] API CALL SUCCESSFUL! Raw response:", response);
+
+      const { invite_code } = response;
+      console.log("🔑 [CREATE GAME] Extracted invite_code:", invite_code);
+
+      const targetUrl = `/game/${encodeURIComponent(invite_code)}/waiting`;
+      console.log("🚀 [CREATE GAME] Attempting navigation to:", targetUrl);
+
+      navigate(targetUrl, { replace: true });
+      console.log("🏁 [CREATE GAME] Navigation triggered successfully");
+
     } catch (error) {
-      console.error("Failed to create game:", error);
+      console.error("🔴🔴🔴 [CREATE GAME] CATCH BLOCK TRIGGERED! SOMETHING FAILED 🔴🔴🔴");
+      console.error("🔴 [CREATE GAME] Full Error Object:", error);
+      
+      // Safely extract error details depending on the error type
+      if (error instanceof Error) {
+        console.error("🔴 [CREATE GAME] Error Message:", error.message);
+        console.error("🔴 [CREATE GAME] Error Stack:", error.stack);
+      } else {
+        console.error("🔴 [CREATE GAME] Non-Error object thrown:", String(error));
+      }
+
       setError(t("create.errors.createFailed"));
       setIsCreating(false);
+      console.log("🟡 [CREATE GAME] Reset isCreating to false, error state updated");
     }
   };
 
