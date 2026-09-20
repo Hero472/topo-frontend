@@ -12,4 +12,17 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
+  <script>
+    // Check if the URL has ?debug=true
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('debug') === 'true') {
+      const script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/eruda';
+      script.onload = function() { 
+        eruda.init(); 
+        console.log("Eruda DevTools Loaded!");
+      };
+      document.head.appendChild(script);
+    }
+</script>
 </html>
