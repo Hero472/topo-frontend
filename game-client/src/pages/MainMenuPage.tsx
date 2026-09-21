@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
-import { Button } from "../components/common/Button";
+import { Button } from "../components/ui/Button/Button";
 import LanguageSelector from "../components/language/LanguageSelector";
 import "./MainMenuPage.css";
 

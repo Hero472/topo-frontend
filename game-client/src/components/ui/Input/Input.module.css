@@ -1,0 +1,172 @@
+/* =========================================
+   INPUT COMPONENT
+   ========================================= */
+
+.wrapper { 
+  display: flex; 
+  flex-direction: column; 
+  gap: var(--space-xs); 
+  width: 100%; 
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  width: 100%;
+}
+
+.inputContainer:hover:not(.hasError):not(.disabled) { 
+  border-color: var(--color-border-secondary); 
+  background: var(--color-bg-tertiary);
+}
+
+.inputContainer:focus-within:not(.hasError):not(.disabled) {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  background: var(--color-bg-secondary);
+}
+
+.inputContainer.hasError {
+  border-color: var(--color-state-error);
+}
+.inputContainer.hasError:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-state-error) 20%, transparent);
+}
+
+.inputContainer.disabled {
+  opacity: 0.6;
+  background: var(--color-bg-tertiary);
+  cursor: not-allowed;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-secondary);
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  
+  /* Default padding */
+  padding: var(--space-sm) var(--space-md);
+}
+
+/* NORMAL PLACEHOLDER: Always visible by default */
+.input::placeholder { 
+  color: var(--color-text-quaternary); 
+  transition: opacity var(--transition-fast);
+}
+
+/* Sizes */
+.sm { font-size: 0.875rem; }
+.sm .input { padding: var(--space-xs) var(--space-sm); min-height: 36px; }
+
+.md { font-size: 1rem; }
+.md .input { padding: var(--space-sm) var(--space-md); min-height: 44px; }
+
+.lg { font-size: 1.125rem; }
+.lg .input { padding: var(--space-md) var(--space-lg); min-height: 52px; }
+
+@media (max-width: 640px) {
+  .sm .input { min-height: 40px; }
+  .md .input { min-height: 48px; }
+  .lg .input { min-height: 56px; }
+}
+
+/* =========================================
+   FLOATING LABEL MAGIC
+   ========================================= */
+.floatingLabel {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+  transition: all var(--transition-fast);
+  background: transparent;
+  padding: 0 4px;
+}
+
+.hasLeftIcon .floatingLabel {
+  left: calc(var(--space-md) + 1.5rem); 
+}
+
+/* FLOAT UP: When focused OR when text is entered */
+.input:focus ~ .floatingLabel,
+.input:not(:placeholder-shown) ~ .floatingLabel {
+  top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-brand-primary);
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+/* Hide the placeholder text ONLY when the floating label is active */
+.input:focus::placeholder,
+.input:not(:placeholder-shown)::placeholder {
+  opacity: 0;
+}
+
+.inputContainer.hasError .input:focus ~ .floatingLabel,
+.inputContainer.hasError .input:not(:placeholder-shown) ~ .floatingLabel {
+  color: var(--color-state-error);
+}
+
+/* =========================================
+   ICONS & TEXT
+   ========================================= */
+.iconLeft, .iconRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.iconLeft { margin-left: var(--space-sm); margin-right: var(--space-xs); }
+.iconRight { margin-right: var(--space-sm); margin-left: var(--space-xs); }
+
+.iconRight button, .iconRight a {
+  pointer-events: auto;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+.iconLeft svg, .iconRight svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.errorText { 
+  font-size: 0.8rem; 
+  color: var(--color-state-error); 
+  font-weight: 500;
+}
+
+.helperText {
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .inputContainer, .floatingLabel { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .inputContainer { border: 2px solid CanvasText; }
+  .inputContainer:focus-within { border-color: Highlight; }
+  .inputContainer.hasError { border-color: Mark; }
+}

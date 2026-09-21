@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { gameApi } from "../api/GameApi";
 import { t, useLanguage } from "../i18n";
 import { Card } from "../components/common/Card";
-import { Button } from "../components/common/Button";
+import { Button } from "../components/ui/Button/Button";
 import { Input } from "../components/common/Input";
 import { Select } from "../components/common/Select";
 import "./CreateGamePage.css";

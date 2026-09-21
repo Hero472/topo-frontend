@@ -9,7 +9,7 @@ import DragOverlay from "../components/overlay/DragOverlay";
 import ConnectionStatusOverlay from "../components/overlay/ConnectionStatusOverlay";
 import { t, useLanguage } from "../i18n";
 import "./GamePage.css";
-import { Button } from "../components/common/Button";
+import { Button } from "../components/ui/Button/Button";
 
 export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
   useLanguage();

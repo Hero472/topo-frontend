@@ -1,0 +1,15 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.default { background: var(--surface-2); color: var(--text-muted); }
+.success { background: var(--success-bg); color: var(--success); }
+.error { background: var(--error-bg); color: var(--error); }
+/* TODO: Add warning variant using a yellow/orange token */

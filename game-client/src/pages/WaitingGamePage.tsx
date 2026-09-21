@@ -6,7 +6,7 @@ import { useGameStore } from "../store/useGameStore";
 import { type GameSocket } from "../hooks/useGameSocket";
 import { gameApi } from "../api/GameApi";
 import { Card } from "../components/common/Card";
-import { Button } from "../components/common/Button";
+import { Button } from "../components/ui/Button/Button";
 import { Input } from "../components/common/Input";
 import { Modal } from "../components/common/Modal";
 import tutorialVideo from "../assets/drag_drop_tutorial.mp4";

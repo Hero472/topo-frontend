@@ -1,0 +1,90 @@
+/* =========================================
+   SWITCH COMPONENT
+   ========================================= */
+
+.wrapper { 
+  display: flex; 
+  align-items: center; 
+  gap: var(--space-sm); 
+}
+
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  flex-shrink: 0; /* Prevents the switch from squishing in flex containers */
+  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  padding: 2px;
+}
+
+.switch.checked {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+}
+
+.thumb {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: #ffffff; /* Pure white ensures maximum contrast against the brand color */
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Slide the thumb to the right when checked */
+.switch.checked .thumb { 
+  transform: translateX(20px); 
+}
+
+/* Keyboard Accessibility: Visible focus ring */
+.switch:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+/* Disabled State */
+.switch:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
+
+/* Label Styling */
+.label { 
+  font-size: 0.875rem; 
+  color: var(--color-text-secondary); 
+  cursor: pointer; 
+  user-select: none; 
+  transition: color var(--transition-fast);
+}
+
+/* Dim the label when the switch is disabled */
+.switch:disabled + .label {
+  color: var(--color-text-quaternary);
+  cursor: not-allowed;
+}
+
+/* Accessibility: Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .switch, .thumb {
+    transition: none;
+  }
+}
+
+/* High Contrast Mode support */
+@media (forced-colors: active) {
+  .switch {
+    border: 2px solid CanvasText;
+  }
+  .switch.checked {
+    background: Highlight;
+    border-color: Highlight;
+  }
+  .thumb {
+    background: Canvas;
+  }
+}
