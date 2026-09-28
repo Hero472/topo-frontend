@@ -19,7 +19,7 @@ interface CardPileProps {
   showOnlyTopFace?: boolean;
   small?: boolean;
   resolution?: "x1" | "x2";
-  overlap?: number; // Now properly controls horizontal spacing for hands!
+  overlap?: number; 
   offset?: number; 
   scatter?: boolean;
   scatterMaxRotation?: number;
@@ -130,19 +130,33 @@ export default function CardPile({
   const isScrollableHand = layout === "hand";
   const isStack = layout === "stack";
 
-  const maxStackHeightEm = 24; 
-  const cardHeightEm = 8; 
+  // ✅ TIGHTER MATH: 5em is exactly ~80px, which perfectly matches the 5:7 ratio of a 56px wide card
+  const maxStackHeightEm = 15; 
+  const cardHeightEm = 5; 
   
-  const dynamicOverlap = cards.length > 1 && isStack
+  const dynamicOverlap = cards.length > 1 && isStack && overlap > 0
     ? Math.min(overlap, (maxStackHeightEm - cardHeightEm) / (cards.length - 1))
     : overlap;
 
   const totalStackHeightEm = cardHeightEm + (cards.length - 1) * dynamicOverlap;
 
-  // ✅ FIX: Now uses the `overlap` prop directly for hand width calculation!
   const handWidth = isScrollableHand 
     ? `calc(${cards.length} * ${overlap}px + 4rem)` 
     : 'auto';
+
+  // ✅ EXACT 5:7 ASPECT RATIO HEIGHTS
+  // These perfectly hug the cards at every breakpoint, eliminating empty space
+  const minWidthClass = small 
+    ? "min-w-14 sm:min-w-16 md:min-w-20" 
+    : "min-w-16 sm:min-w-20 md:min-w-24 lg:min-w-28";
+
+  const minHeightClass = small 
+    ? "min-h-[78px] sm:min-h-[90px] md:min-h-[112px]" 
+    : "min-h-[90px] sm:min-h-[112px] md:min-h-[134px] lg:min-h-[157px]";
+
+  const emptyWidthClass = small
+    ? "w-14 sm:w-16 md:w-20"
+    : "w-16 sm:w-20 md:w-24 lg:w-28";
 
   return (
     <div className="relative">
@@ -151,8 +165,8 @@ export default function CardPile({
         className={cn(
           "relative transition-all duration-200 rounded-xl",
           isScrollableHand
-            ? "w-full flex items-end overflow-x-auto pt-4 sm:pt-6 pb-3 px-2 touch-pan-x"
-            : "w-fit min-w-20 sm:min-w-24 md:min-w-28 min-h-32 sm:min-h-40 flex items-center justify-center border-2 border-dashed",
+            ? "w-full flex items-end overflow-x-auto pt-3 sm:pt-5 pb-2 px-1 sm:px-2 touch-pan-x"
+            : `w-fit ${minWidthClass} ${minHeightClass} flex items-center justify-center border-2 border-dashed`,
           !isScrollableHand && (
             dragOver
               ? "border-brand-primary bg-brand-primary/10 scale-[1.02]"
@@ -167,17 +181,25 @@ export default function CardPile({
           className="relative"
           style={{ 
             width: handWidth,
-            minHeight: isStack ? `${totalStackHeightEm}em` : (isScrollableHand ? '7rem' : 'auto')
+            minHeight: isStack ? `${totalStackHeightEm}em` : (isScrollableHand ? (small ? '78px' : '90px') : 'auto')
           }}
         >
+          {/* Empty State for Stacks (Uses aspect-[5/7] to perfectly match card size) */}
           {cards.length === 0 && isStack && (
-            <div className="w-20 sm:w-24 md:w-28 aspect-[5/7] rounded-xl flex items-center justify-center text-foreground-quaternary text-xs font-medium select-none pointer-events-none">
+            <div className={cn(
+              emptyWidthClass,
+              "aspect-[5/7] rounded-xl flex items-center justify-center text-foreground-quaternary text-xs font-medium select-none pointer-events-none"
+            )}>
               {displayEmptyLabel}
             </div>
           )}
 
+          {/* Empty State for Hands */}
           {cards.length === 0 && isScrollableHand && (
-            <div className="absolute inset-0 flex items-center justify-center text-foreground-quaternary text-sm font-medium select-none pointer-events-none border-2 border-dashed border-border-primary/30 rounded-xl">
+            <div className={cn(
+              small ? "h-[78px] sm:h-[90px]" : "h-[90px] sm:h-[112px]",
+              "w-full flex items-center justify-center text-foreground-quaternary text-sm font-medium select-none pointer-events-none border-2 border-dashed border-border-primary/30 rounded-xl"
+            )}>
               {displayEmptyLabel || "No cards"}
             </div>
           )}
@@ -191,14 +213,15 @@ export default function CardPile({
               ? getScatter(index, card, scatterMaxRotation, scatterMaxTranslate)
               : { rotation: 0, x: 0, y: 0 };
 
-            // ✅ FIX: Now uses the `overlap` prop directly for horizontal spacing in hands!
             const translateX = isScrollableHand 
               ? `${index * overlap}px`
               : `${index * offset}px`;
             
-            const transform = isScrollableHand
-              ? `translateX(${translateX}) rotate(${rotation + scatterValues.rotation}deg) translateY(${scatterValues.y}px)`
-              : `translate(calc(${scatterValues.x}px + ${index * offset}px), calc(${index * dynamicOverlap}em + ${scatterValues.y}px)) rotate(${rotation + scatterValues.rotation}deg)`;
+            const translateY = isScrollableHand
+              ? `${scatterValues.y}px`
+              : `calc(${index * dynamicOverlap}em + ${scatterValues.y}px)`;
+
+            const transform = `translate(calc(${scatterValues.x}px + ${translateX}), ${translateY}) rotate(${rotation + scatterValues.rotation}deg)`;
 
             const itemStyles: React.CSSProperties = {
               zIndex: index,

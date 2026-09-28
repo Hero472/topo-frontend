@@ -114,15 +114,14 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
     );
   }
 
+  // ... inside the return statement of GameBoard
   return (
-    <main className="w-full flex-1 flex flex-col items-center gap-2 sm:gap-4 p-2 sm:p-4 min-h-0 overflow-hidden">
+    <main className="w-full flex-1 flex flex-col items-center gap-1 sm:gap-3 p-1 sm:p-4 min-h-0 overflow-hidden">
       
-      {/* Opponent Area: Fixed height, never shrinks */}
       <div className="w-full flex justify-center shrink-0">
         <OpponentBoard board={fullState.opponent} isMyTurn={!fullState.your_turn} />
       </div>
 
-      {/* Timer Area: Fixed height, z-10 ensures it stays above cards if things get tight */}
       <div className="w-full flex justify-center shrink-0 z-10">
         <TurnTimer
           key={`${fullState.your_turn}-${fullState.turn_seconds_remaining}`}
@@ -131,8 +130,7 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
         />
       </div>
 
-      {/* Center Board Area: Takes up all remaining vertical space */}
-      <div className="w-full flex-1 flex items-center justify-center min-h-0 overflow-hidden">
+      <div className="w-full flex-1 flex items-center justify-center min-h-0 overflow-hidden py-1">
         <CenterBoard
           scales={fullState.scales}
           dealerCount={fullState.dealer_count}
@@ -141,7 +139,6 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
         />
       </div>
 
-      {/* Player Area: Fixed height, never shrinks */}
       <div className="w-full flex justify-center shrink-0">
         <PlayerBoard
           board={fullState.your_board}

@@ -47,7 +47,7 @@ export default function CardView({
   const suit = suitInfo[card.suit];
   const bgClass = deckBackgrounds[card.deck] ?? "bg-gray-50 dark:bg-gray-900";
   
-  // ✅ REDUCED SIZING: More compact and elegant on desktop, still great on mobile
+  // ✅ COMPACT SIZING: Perfect for fitting 4-5 cards horizontally on mobile
   const sizeClasses = small 
     ? "w-14 sm:w-16 md:w-20"       // 56px -> 64px -> 80px
     : "w-16 sm:w-20 md:w-24 lg:w-28"; // 64px -> 80px -> 96px -> 112px
@@ -83,13 +83,13 @@ export default function CardView({
         </span>
       ) : (
         <>
-          <span className={`absolute top-1 left-1.5 text-[10px] sm:text-xs font-bold leading-none ${suit.colorClass}`}>
+          <span className={`absolute top-1 left-1 text-[9px] sm:text-[10px] font-bold leading-none ${suit.colorClass}`}>
             {getDisplayValue(card.value)}<br />{suit.symbol}
           </span>
-          <span className={`absolute bottom-1 right-1.5 text-[10px] sm:text-xs font-bold leading-none rotate-180 ${suit.colorClass}`}>
+          <span className={`absolute bottom-1 right-1 text-[9px] sm:text-[10px] font-bold leading-none rotate-180 ${suit.colorClass}`}>
             {getDisplayValue(card.value)}<br />{suit.symbol}
           </span>
-          <span className={`absolute inset-0 flex items-center justify-center text-2xl sm:text-4xl ${suit.colorClass}`}>
+          <span className={`absolute inset-0 flex items-center justify-center text-xl sm:text-3xl ${suit.colorClass}`}>
             {suit.symbol}
           </span>
         </>
