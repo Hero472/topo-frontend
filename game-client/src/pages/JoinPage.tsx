@@ -4,7 +4,6 @@ import { t, useLanguage } from "../i18n";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import LanguageSelector from "../components/language/LanguageSelector";
 
 export function JoinPage() {
   const [username, setUsername] = useState("");
