@@ -5,12 +5,11 @@ import type { Action } from "../../types/types";
 import { canDropOnTarget } from "../../utils/canDrop";
 import { cardKey } from "../../utils/cardKey";
 import { useHapticFeedback } from "../../hooks/useHapticFeedback"; 
-import { useWakeLock } from "../../hooks/useWakeLock"; // <-- Import new hook
+import { useWakeLock } from "../../hooks/useWakeLock";
 import CenterBoard from "./CenterBoard";
 import OpponentBoard from "./OpponentBoard";
 import PlayerBoard from "./PlayerBoard";
 import TurnTimer from "./TurnTimer";
-import "./GameBoard.css";
 
 interface Props {
   sendAction: (action: Action) => void;
@@ -108,16 +107,23 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
   }
 
   if (!fullState) {
-    return <div className="game-board-loading">Loading game...</div>;
+    return (
+      <div className="flex-1 w-full flex items-center justify-center">
+        <span className="text-foreground-tertiary animate-pulse font-medium">Loading game...</span>
+      </div>
+    );
   }
 
   return (
-    <main className="game-board-layout">
-      <div className="game-panel opponent-area">
+    <main className="w-full flex-1 flex flex-col items-center gap-2 sm:gap-4 p-2 sm:p-4 min-h-0 overflow-hidden">
+      
+      {/* Opponent Area: Fixed height, never shrinks */}
+      <div className="w-full flex justify-center shrink-0">
         <OpponentBoard board={fullState.opponent} isMyTurn={!fullState.your_turn} />
       </div>
 
-      <div className="timer-area">
+      {/* Timer Area: Fixed height, z-10 ensures it stays above cards if things get tight */}
+      <div className="w-full flex justify-center shrink-0 z-10">
         <TurnTimer
           key={`${fullState.your_turn}-${fullState.turn_seconds_remaining}`}
           initialSeconds={fullState.turn_seconds_remaining}
@@ -125,7 +131,8 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
         />
       </div>
 
-      <div className="game-panel center-area">
+      {/* Center Board Area: Takes up all remaining vertical space */}
+      <div className="w-full flex-1 flex items-center justify-center min-h-0 overflow-hidden">
         <CenterBoard
           scales={fullState.scales}
           dealerCount={fullState.dealer_count}
@@ -134,13 +141,15 @@ export default function GameBoard({ sendAction }: Readonly<Props>) {
         />
       </div>
 
-      <div className="game-panel player-area">
+      {/* Player Area: Fixed height, never shrinks */}
+      <div className="w-full flex justify-center shrink-0">
         <PlayerBoard
           board={fullState.your_board}
           onDrop={handleDrop}
           isMyTurn={fullState.your_turn}
         />
       </div>
+
     </main>
   );
 }

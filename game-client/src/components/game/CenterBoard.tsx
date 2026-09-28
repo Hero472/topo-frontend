@@ -1,7 +1,6 @@
 import CardPile from "./CardPile";
 import type { Scale, DeckColor, Card } from "../../types/types";
 import type { CardDropEvent } from "../../hooks/useDropTarget";
-import "./CenterBoard.css";
 import { ScaleManager } from "../../game/ScaleManager";
 
 interface Props {
@@ -20,15 +19,16 @@ const CENTER_ALLOWED_SOURCES = [
   "side-4",
 ];
 
-
 export default function CenterBoard({
   scales,
   dealerCount,
   dealerPreview,
   onDrop,
 }: Readonly<Props>) {
-  const stacks = scales.map(s => s?.cards ?? []);
-  const visible = ScaleManager.visibleScaleIndices(stacks);
+  const stacks = scales.map((s) => s?.cards ?? []);
+  
+  // Get the indices of the scales that should be visible
+  const visibleIndices = ScaleManager.visibleScaleIndices(stacks);
 
   const dealerCards: Card[] = [...dealerPreview]
     .reverse()
@@ -39,14 +39,18 @@ export default function CenterBoard({
     }));
 
   return (
-    <section className="center-board-container">
-      <div className="center-board-content">
-        <div className="center-board-scales-grid">
-          {visible.map((_, index) => (
+    <section className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 gap-2 sm:gap-4 min-h-0">
+      
+      {/* Main Content Area: Stacks vertically on mobile, side-by-side on desktop */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 flex-1 min-h-0">
+        
+        {/* Scales Grid: 2 columns on mobile, 4 columns on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1 sm:gap-1 md:gap-3 w-full flex-1 min-h-0">
+          {visibleIndices.map((scaleIndex) => (
             <CardPile
-              key={index}
-              cards={stacks[index]}
-              stackId={`center-${index + 1}`}
+              key={scaleIndex}
+              cards={stacks[scaleIndex]}
+              stackId={`center-${scaleIndex + 1}`}
               layout="stack"
               scatter
               onCardDrop={onDrop}
@@ -55,7 +59,8 @@ export default function CenterBoard({
           ))}
         </div>
 
-        <div className="center-board-dealer-wrapper">
+        {/* Dealer Deck Wrapper: Stays compact and doesn't get squished */}
+        <div className="flex-shrink-0 flex items-center justify-center">
           <CardPile
             cards={dealerCards}
             stackId="draw"
@@ -63,10 +68,12 @@ export default function CenterBoard({
             faceDown
             count={dealerCount}
             draggable
+            scatter
             onCardDrop={onDrop}
             allowedSourceIds={[]}
           />
         </div>
+        
       </div>
     </section>
   );

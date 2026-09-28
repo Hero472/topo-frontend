@@ -7,9 +7,9 @@ import { type GameSocket } from "../hooks/useGameSocket";
 import GameBoard from "../components/game/GameBoard";
 import DragOverlay from "../components/overlay/DragOverlay";
 import ConnectionStatusOverlay from "../components/overlay/ConnectionStatusOverlay";
+import { Modal } from "../components/ui/Modal";
+import { Button } from "../components/ui/Button";
 import { t, useLanguage } from "../i18n";
-import "./GamePage.css";
-import { Button } from "../components/common/Button";
 
 export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
   useLanguage();
@@ -39,25 +39,30 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
     navigate("/join", { replace: true });
   };
 
+  // --- Loading State ---
   if (!fullState) {
     const isConnecting = socket.status === "connecting" || socket.status === "reconnecting";
     return (
-      <div className="game-page">
-        <div className="game-loading">
-          <div className="game-loading-icon" aria-hidden="true">{isConnecting ? "🃏" : "♠"}</div>
-          <div className="game-loading-text">{isConnecting ? t("game.loading.connecting") : t("game.loading.waiting")}</div>
-          <p className="game-loading-subtext">{isConnecting ? t("game.loading.joiningRoom") : t("game.loading.waitingForPlayers")}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="text-center space-y-4 animate-pulse">
+          <div className="text-6xl" aria-hidden="true">{isConnecting ? "🃏" : "♠"}</div>
+          <h1 className="text-2xl font-bold text-foreground-primary">
+            {isConnecting ? t("game.loading.connecting") : t("game.loading.waiting")}
+          </h1>
+          <p className="text-foreground-tertiary">
+            {isConnecting ? t("game.loading.joiningRoom") : t("game.loading.waitingForPlayers")}
+          </p>
         </div>
       </div>
     );
   }
 
+  // --- Game State Logic ---
   const isGameOver = phase === "game_over" && winnerId !== null;
   const isWinner = winnerId === fullState.player_id;
   const opponentRequestedPlayAgain = playAgainRequestedBy.size > 0 && !playAgainRequestedBy.has(fullState.player_id);
   const iRequestedPlayAgain = playAgainRequestedBy.has(fullState.player_id);
 
-  // ✅ Updated to catch "player_leave" and other variations of the opponent leaving
   const isOpponentGone = 
     reason === "player_leave" ||
     reason === "Opponent left the game" || 
@@ -73,84 +78,105 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
     disconnected !== null && disconnected.playerId !== fullState.player_id;
 
   return (
-    <div className="game-page game-board-container">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative">
       <GameBoard sendAction={socket.sendAction} />
       {!isGameOver && <DragOverlay />}
 
+      {/* Opponent Reconnect Banner (Floating Pill) */}
       {isOpponentReconnecting && (
-        <div className="opponent-reconnect-banner">
-          <span className="banner-spinner" aria-hidden="true">🔄</span>
-          <span>{t("game.reconnecting.opponent")}</span>
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-full bg-state-warning-bg text-state-warning border border-state-warning/30 shadow-md animate-pulse">
+          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" opacity="0.25" />
+            <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+          </svg>
+          <span className="text-sm font-medium">{t("game.reconnecting.opponent")}</span>
         </div>
       )}
 
-      {isCurrentPlayerReconnecting && (
-        <div className="reconnect-backdrop">
-          <div className="reconnect-dialog" role="alert" aria-live="assertive">
-            <div className="reconnect-spinner" aria-hidden="true">🔄</div>
-            <h2>{t("game.reconnecting.title")}</h2>
-            <p>{t("game.reconnecting.message")}</p>
-          </div>
-        </div>
-      )}
-
-      <button type="button" className="game-leave-button" onClick={() => setShowLeaveConfirm(true)}>
+      {/* Leave Button (Floating Top Right) */}
+      <Button 
+        variant="ghost" 
+        size="sm"
+        className="fixed top-20 right-4 z-30"
+        onClick={() => setShowLeaveConfirm(true)}
+      >
         {t("game.leave.button")}
-      </button>
+      </Button>
 
       <ConnectionStatusOverlay status={socket.status} />
 
+      {/* GAME OVER MODAL */}
       {isGameOver && (
-        <div className="game-over-backdrop">
-          <div className="game-over-dialog" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
-            <h2 id="game-over-title">{isWinner ? t("game.over.youWon") : t("game.over.youLost")}</h2>
-            
-            {reason && <p className="game-over-message">{reason}</p>}
-            {turnTimeoutMessage && <p className="game-over-message">{turnTimeoutMessage}</p>}
-
-            {/* Only show rematch options if the opponent is still around */}
-            {!isOpponentGone && opponentRequestedPlayAgain && (
-              <p className="game-over-message">{t("game.over.opponentWantsRematch")}</p>
-            )}
-
-            <div className="game-over-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+        <Modal
+          open={isGameOver}
+          title={isWinner ? t("game.over.youWon") : t("game.over.youLost")}
+          onClose={handleLeave} // Clicking X leaves the game
+          footer={
+            <div className="flex flex-col w-full gap-2">
               {!isOpponentGone && (
                 iRequestedPlayAgain ? (
-                  <p className="game-over-message">{t("game.over.waitingForOpponent")}</p>
+                  <p className="text-center text-sm text-foreground-tertiary py-2">{t("game.over.waitingForOpponent")}</p>
                 ) : (
-                  <Button type="button" className="game-play-again-button" onClick={() => socket.sendAction({ type: "play_again" })}>
+                  <Button variant="primary" fullWidth onClick={() => socket.sendAction({ type: "play_again" })}>
                     {t("game.over.playAgain")}
                   </Button>
                 )
               )}
-
-              <Button type="button" className="game-create-new-button" onClick={handleCreateNew}>
+              <Button variant="secondary" fullWidth onClick={handleCreateNew}>
                 {t("game.over.createNewGame") || "Create New Game"}
               </Button>
-
-              <Button type="button" className="game-leave-button" onClick={handleLeave}>
+              <Button variant="ghost" fullWidth onClick={handleLeave} className="text-state-error hover:bg-state-error/10">
                 {t("game.leave.button")}
               </Button>
             </div>
+          }
+        >
+          <div className="space-y-2 text-center">
+            {reason && <p className="text-foreground-secondary">{reason}</p>}
+            {turnTimeoutMessage && <p className="text-foreground-secondary">{turnTimeoutMessage}</p>}
+            {!isOpponentGone && opponentRequestedPlayAgain && (
+              <p className="text-brand-primary font-medium">{t("game.over.opponentWantsRematch")}</p>
+            )}
           </div>
-        </div>
+        </Modal>
       )}
 
-      {showLeaveConfirm && (
-        <div className="leave-dialog-backdrop">
-          <div className="leave-dialog" role="dialog" aria-modal="true" aria-labelledby="leave-dialog-title">
-            <h2 id="leave-dialog-title">{t("game.leave.title")}</h2>
-            <p>{t("game.leave.message")}</p>
-            <div className="leave-dialog-actions">
-              <button type="button" className="leave-cancel-button" onClick={() => setShowLeaveConfirm(false)}>
-                {t("game.leave.cancel")}
-              </button>
-              <button type="button" className="leave-confirm-button" onClick={handleLeave}>
-                {t("game.leave.confirm")}
-              </button>
-            </div>
+      {/* LEAVE CONFIRMATION MODAL */}
+      <Modal
+        open={showLeaveConfirm}
+        title={t("game.leave.title")}
+        onClose={() => setShowLeaveConfirm(false)}
+        footer={
+          <div className="flex gap-3 w-full">
+            <Button variant="secondary" fullWidth onClick={() => setShowLeaveConfirm(false)}>
+              {t("game.leave.cancel")}
+            </Button>
+            <Button variant="danger" fullWidth onClick={handleLeave}>
+              {t("game.leave.confirm")}
+            </Button>
           </div>
-        </div>
+        }
+      >
+        <p className="text-foreground-secondary text-center">
+          {t("game.leave.message")}
+        </p>
+      </Modal>
+
+      {/* CURRENT PLAYER RECONNECTING MODAL */}
+      {isCurrentPlayerReconnecting && (
+        <Modal
+          open={isCurrentPlayerReconnecting}
+          title={t("game.reconnecting.title")}
+          // Omitting onClose hides the X button, preventing them from closing it manually
+        >
+          <div className="flex flex-col items-center gap-4 py-4">
+            <svg className="w-12 h-12 text-brand-primary animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" opacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+            </svg>
+            <p className="text-foreground-secondary text-center">{t("game.reconnecting.message")}</p>
+          </div>
+        </Modal>
       )}
     </div>
   );

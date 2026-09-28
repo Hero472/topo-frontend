@@ -2,11 +2,10 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { gameApi } from "../api/GameApi";
 import { t, useLanguage } from "../i18n";
-import { Card } from "../components/common/Card";
-import { Button } from "../components/common/Button";
-import { Input } from "../components/common/Input";
-import { Select } from "../components/common/Select";
-import "./CreateGamePage.css";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Select, SelectItem } from "../components/ui/Select";
 
 export default function CreateGamePage() {
   const [username, setUsername] = useState("");
@@ -58,10 +57,7 @@ export default function CreateGamePage() {
       console.log("[CREATE GAME] Payload to send:", JSON.stringify(payload));
       console.log("[CREATE GAME] 'duration' variable type & value:", typeof duration, duration);
 
-      // The actual API call
-      console.log("[CREATE GAME] Calling gameApi.createGame...");
       const response = await gameApi.createGame(payload);
-      
       console.log("[CREATE GAME] API CALL SUCCESSFUL! Raw response:", response);
 
       const { invite_code } = response;
@@ -77,7 +73,6 @@ export default function CreateGamePage() {
       console.error("[CREATE GAME] CATCH BLOCK TRIGGERED! SOMETHING FAILED 🔴🔴🔴");
       console.error("[CREATE GAME] Full Error Object:", error);
       
-      // Safely extract error details depending on the error type
       if (error instanceof Error) {
         console.error("[CREATE GAME] Error Message:", error.message);
         console.error("[CREATE GAME] Error Stack:", error.stack);
@@ -92,26 +87,48 @@ export default function CreateGamePage() {
   };
 
   return (
-    <div className="create-page">
-      <Card variant="elevated" className="create-card">
+    <div className="min-h-screen w-full max-w-md mx-auto py-12 px-4 flex flex-col items-center justify-center">
+      
+      {/* Back Button */}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => navigate("/")}
+        className="self-start mb-4 -ml-2"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className="mr-1"
+        >
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        {t("common.back")}
+      </Button>
+
+      {/* Main Card */}
+      <Card variant="elevated" padding="lg" className="w-full">
         
-        <div className="create-header">
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={() => navigate("/")}
-          >
-            ← {t("common.back")}
-          </Button>
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <span className="text-5xl text-brand-primary mb-3 block" aria-hidden="true">♠</span>
+          <h1 className="text-2xl font-bold text-foreground-primary tracking-tight">
+            {t("create.title")}
+          </h1>
+          <p className="text-sm text-foreground-tertiary mt-2">
+            {t("create.subtitle")}
+          </p>
         </div>
 
-        <div className="create-title-section">
-          <span className="create-logo" aria-hidden="true">♠</span>
-          <h1 className="create-title">{t("create.title")}</h1>
-          <p className="create-subtitle">{t("create.subtitle")}</p>
-        </div>
-
-        <form onSubmit={handleCreateGame} className="create-form">
+        {/* Form Section */}
+        <form onSubmit={handleCreateGame} className="space-y-5">
           <Input
             label={t("join.username.label")}
             placeholder={t("join.username.placeholder")}
@@ -125,31 +142,38 @@ export default function CreateGamePage() {
             autoFocus
           />
 
+          {/* Radix Select with SelectItem for perfect dark/light mode dropdowns */}
           <Select
             label={t("create.duration.label")}
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
+            value={String(duration)} // Radix requires string values
+            onValueChange={(val) => setDuration(Number(val))}
             disabled={isCreating}
           >
-            <option value={30}>30 seconds</option>
-            <option value={60}>1 minute</option>
-            <option value={120}>2 minutes</option>
-            <option value={180}>3 minutes</option>
-            <option value={240}>4 minutes</option>
-            <option value={300}>5 minutes</option>
+            <SelectItem value="30">30 seconds</SelectItem>
+            <SelectItem value="60">1 minute</SelectItem>
+            <SelectItem value="120">2 minutes</SelectItem>
+            <SelectItem value="180">3 minutes</SelectItem>
+            <SelectItem value="240">4 minutes</SelectItem>
+            <SelectItem value="300">5 minutes</SelectItem>
           </Select>
 
           <Button 
             type="submit" 
             variant="primary" 
             fullWidth 
+            size="lg"
             loading={isCreating}
+            className="mt-2"
           >
             {isCreating ? t("create.creating") : t("create.button")}
           </Button>
         </form>
 
-        <p className="create-note">{t("create.note")}</p>
+        {/* Footer Note */}
+        <div className="mt-6 text-center text-sm text-foreground-tertiary leading-relaxed">
+          {t("create.note")}
+        </div>
+
       </Card>
     </div>
   );

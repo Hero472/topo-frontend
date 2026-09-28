@@ -1,11 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { t, useLanguage } from "../i18n";
-import { Card } from "../components/common/Card";
-import { Button } from "../components/common/Button";
-import { Input } from "../components/common/Input";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 import LanguageSelector from "../components/language/LanguageSelector";
-import "./JoinPage.css";
 
 export function JoinPage() {
   const [username, setUsername] = useState("");
@@ -40,19 +39,24 @@ export function JoinPage() {
   };
 
   return (
-    <div className="join-page">
-      <Card variant="elevated" className="join-card">
-        <div className="join-top-actions">
-          <LanguageSelector />
+    <div className="min-h-screen w-full max-w-md mx-auto py-12 px-4 flex flex-col items-center justify-center">
+      
+      {/* Main Card */}
+      <Card variant="elevated" padding="lg" className="w-full relative">
+
+        {/* Header Section */}
+        <div className="text-center mb-8 pt-2">
+          <span className="text-5xl text-brand-primary mb-3 block" aria-hidden="true">♠</span>
+          <h1 className="text-2xl font-bold text-foreground-primary tracking-tight">
+            {t("join.title")}
+          </h1>
+          <p className="text-sm text-foreground-tertiary mt-2">
+            {t("join.subtitle")}
+          </p>
         </div>
 
-        <div className="join-header">
-          <span className="join-logo" aria-hidden="true">♠</span>
-          <h1 className="join-title">{t("join.title")}</h1>
-          <p className="join-subtitle">{t("join.subtitle")}</p>
-        </div>
-
-        <form onSubmit={handleJoin} className="join-form">
+        {/* Form Section */}
+        <form onSubmit={handleJoin} className="space-y-5">
           <Input
             label={t("join.username.label")}
             placeholder={t("join.username.placeholder")}
@@ -66,10 +70,17 @@ export function JoinPage() {
             size="lg"
           />
 
-          <Button type="submit" variant="primary" fullWidth size="lg">
+          <Button 
+            type="submit" 
+            variant="primary" 
+            fullWidth 
+            size="lg"
+            className="mt-2"
+          >
             {t("join.button")}
           </Button>
         </form>
+
       </Card>
     </div>
   );
