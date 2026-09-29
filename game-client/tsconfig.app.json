@@ -30,5 +30,5 @@
     "strictBindCallApply": true,
     "strict": true
   },
-  "include": ["src", "functions"]
+  "include": ["src", "functions", "worker.ts"]
 }
