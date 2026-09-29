@@ -1,6 +1,6 @@
 name = "topo-frontend"
 compatibility_date = "2026-09-26"
-main = "worker.js"
+main = "worker.ts"
 
 [assets]
 directory = "./dist"

@@ -1,3 +1,4 @@
+
 interface CloudflareFetcher {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
