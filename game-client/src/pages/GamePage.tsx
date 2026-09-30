@@ -43,7 +43,8 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
   if (!fullState) {
     const isConnecting = socket.status === "connecting" || socket.status === "reconnecting";
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      // ✅ Also updated loading state to use h-dvh for consistency
+      <div className="w-full h-dvh flex flex-col items-center justify-center p-4 bg-background-primary">
         <div className="text-center space-y-4 animate-pulse">
           <div className="text-6xl" aria-hidden="true">{isConnecting ? "🃏" : "♠"}</div>
           <h1 className="text-2xl font-bold text-foreground-primary">
@@ -78,13 +79,18 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
     disconnected !== null && disconnected.playerId !== fullState.player_id;
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative">
+    // ✅ FIX: Changed to h-dvh and removed justify-center/items-center.
+    // This forces the container to perfectly fill the mobile screen top-to-bottom.
+    <div className="w-full h-dvh flex flex-col relative overflow-hidden bg-background-primary">
+      
+      {/* GameBoard has flex-1, so it will naturally expand to fill this entire space */}
       <GameBoard sendAction={socket.sendAction} />
+      
       {!isGameOver && <DragOverlay />}
 
       {/* Opponent Reconnect Banner (Floating Pill) */}
       {isOpponentReconnecting && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-full bg-state-warning-bg text-state-warning border border-state-warning/30 shadow-md animate-pulse">
+        <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-full bg-state-warning-bg text-state-warning border border-state-warning/30 shadow-md animate-pulse">
           <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" opacity="0.25" />
             <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
@@ -97,7 +103,7 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
       <Button 
         variant="ghost" 
         size="sm"
-        className="fixed top-20 right-4 z-30"
+        className="fixed top-4 sm:top-20 right-4 z-30"
         onClick={() => setShowLeaveConfirm(true)}
       >
         {t("game.leave.button")}
@@ -110,7 +116,7 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
         <Modal
           open={isGameOver}
           title={isWinner ? t("game.over.youWon") : t("game.over.youLost")}
-          onClose={handleLeave} // Clicking X leaves the game
+          onClose={handleLeave}
           footer={
             <div className="flex flex-col w-full gap-2">
               {!isOpponentGone && (
@@ -167,7 +173,6 @@ export default function GamePage({ socket }: Readonly<{ socket: GameSocket }>) {
         <Modal
           open={isCurrentPlayerReconnecting}
           title={t("game.reconnecting.title")}
-          // Omitting onClose hides the X button, preventing them from closing it manually
         >
           <div className="flex flex-col items-center gap-4 py-4">
             <svg className="w-12 h-12 text-brand-primary animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
