@@ -5,12 +5,11 @@ import { useRoomStore } from "../store/useRoomStore";
 import { useGameStore } from "../store/useGameStore";
 import { type GameSocket } from "../hooks/useGameSocket";
 import { gameApi } from "../api/GameApi";
-import { Card } from "../components/common/Card";
-import { Button } from "../components/ui/Button/Button";
-import { Input } from "../components/common/Input";
-import { Modal } from "../components/common/Modal";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Modal } from "../components/ui/Modal";
 import tutorialVideo from "../assets/drag_drop_tutorial.mp4";
-import "./WaitingGamePage.css";
 
 export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocket }>) {
   useLanguage();
@@ -34,7 +33,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
   // ✅ FIX 1: Added retry logic for eventual consistency / network lag
   useEffect(() => {
-    let isMounted = true; // Prevents state updates if component unmounts during delay
+    let isMounted = true;
 
     const validateGame = async () => {
       if (!gameId) {
@@ -43,20 +42,19 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
       }
 
       let attempts = 0;
-      const maxAttempts = 3; // Try up to 3 times
+      const maxAttempts = 3;
       let exists = false;
 
       while (attempts < maxAttempts) {
         try {
           exists = await gameApi.checkGameExists(gameId);
-          if (exists) break; // Success! Game found, exit loop
+          if (exists) break;
         } catch (error) {
           console.warn(`Validation attempt ${attempts + 1} failed:`, error);
         }
         
         attempts++;
         
-        // If not found and we have more attempts, wait 500ms before trying again
         if (!exists && attempts < maxAttempts && isMounted) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
@@ -76,26 +74,26 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
     validateGame();
 
-    // Cleanup function
     return () => {
       isMounted = false;
     };
   }, [gameId, navigate]);
 
-  // ✅ FIX 2: Prevent "render-phase navigation" anti-pattern. 
-  // If no username, redirect in useEffect instead of returning null.
+  // ✅ FIX 2: Prevent "render-phase navigation" anti-pattern.
   useEffect(() => {
     if (!username && !isValidating) {
       navigate("/join", { replace: true });
     }
   }, [username, isValidating, navigate]);
 
-  // Show loading state while validating OR if username is missing (prevents blank screen)
+  // Show loading state while validating OR if username is missing
   if (isValidating || !username) {
     return (
-      <div className="waiting-game-page">
-        <Card variant="elevated" className="waiting-game-card">
-          <h1 className="waiting-game-title">{t("waiting.validating") || "Validating game..."}</h1>
+      <div className="min-h-screen w-full max-w-md mx-auto py-12 px-4 flex flex-col items-center justify-center">
+        <Card variant="elevated" padding="lg" className="w-full text-center">
+          <div className="animate-pulse text-foreground-tertiary font-medium">
+            {t("waiting.validating") || "Validating game..."}
+          </div>
         </Card>
       </div>
     );
@@ -103,9 +101,9 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
   if (socket.status === "error") {
     return (
-      <div className="waiting-game-page">
-        <Card variant="elevated" className="waiting-game-card">
-          <h1 className="waiting-game-title">{t("waiting.errors.notFound")}</h1>
+      <div className="min-h-screen w-full max-w-md mx-auto py-12 px-4 flex flex-col items-center justify-center">
+        <Card variant="elevated" padding="lg" className="w-full text-center space-y-4">
+          <h1 className="text-xl font-bold text-state-error">{t("waiting.errors.notFound")}</h1>
           <Button variant="secondary" onClick={() => navigate("/join", { replace: true })}>
             {t("waiting.errors.backToJoin") || "Back to Join"}
           </Button>
@@ -159,42 +157,60 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const isStarting = startingIn !== null;
 
   return (
-    <div className="waiting-game-page">
-      <Card variant="elevated" className="waiting-game-card">
-        <div className="waiting-game-icon" aria-hidden="true">♠</div>
-        <h1 className="waiting-game-title">{isStarting ? t("waiting.starting") : t("waiting.title")}</h1>
-        <p className="waiting-game-subtitle">
-          {isStarting ? t("waiting.getReady") : t("waiting.subtitle")}
-          <br />
-          {!isStarting && t("waiting.invite")}
-        </p>
+    <div className="min-h-screen w-full max-w-lg mx-auto py-8 px-4 flex flex-col items-center justify-center">
+      <Card variant="elevated" padding="lg" className="w-full">
+        
+        {/* Header */}
+        <div className="text-center mb-6">
+          <span className="text-5xl text-brand-primary mb-3 block" aria-hidden="true">♠</span>
+          <h1 className="text-2xl font-bold text-foreground-primary tracking-tight">
+            {isStarting ? t("waiting.starting") : t("waiting.title")}
+          </h1>
+          <p className="text-sm text-foreground-tertiary mt-2 leading-relaxed">
+            {isStarting ? t("waiting.getReady") : t("waiting.subtitle")}
+            {!isStarting && <><br />{t("waiting.invite")}</>}
+          </p>
+        </div>
 
+        {/* Invite Link */}
         {!isStarting && (
-          <div className="waiting-game-link-container">
+          <div className="flex gap-2 mt-4">
             <Input
               value={inviteUrl}
               readOnly
               aria-label="Game invite link"
-              className="waiting-game-input"
+              className="flex-1 font-mono text-sm"
             />
-            <Button variant="primary" onClick={handleCopy}>
+            <Button variant="primary" onClick={handleCopy} className="shrink-0">
               {copied ? t("waiting.copied") : t("waiting.copy")}
             </Button>
           </div>
         )}
 
+        {/* Notice */}
         {notice && (
-          <Card variant="outlined" clickable onClick={clearNotice} className="waiting-game-notice">
+          <Card 
+            variant="outlined" 
+            clickable 
+            onClick={clearNotice} 
+            className="mt-4 cursor-pointer hover:bg-background-tertiary transition-colors text-center text-sm text-foreground-secondary"
+          >
             {notice}
           </Card>
         )}
 
+        {/* Player Roster */}
         {playerList.length > 0 && !isStarting && (
-          <ul className="waiting-game-roster">
+          <ul className="mt-6 space-y-2">
             {playerList.map((player) => (
-              <li key={player.playerId} className="waiting-game-roster-item">
-                <span className="waiting-game-roster-name">{player.username}</span>
-                <span className={`waiting-game-roster-status ${player.ready ? "waiting-game-roster-status--ready" : ""}`}>
+              <li 
+                key={player.playerId} 
+                className="flex items-center justify-between p-3 rounded-md bg-background-tertiary border border-border-primary"
+              >
+                <span className="font-medium text-foreground-primary truncate pr-2">
+                  {player.username}
+                </span>
+                <span className={`text-sm font-medium shrink-0 ${player.ready ? "text-state-success" : "text-foreground-tertiary"}`}>
                   {player.ready ? t("waiting.ready") : t("waiting.notReady")}
                 </span>
               </li>
@@ -202,39 +218,50 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
           </ul>
         )}
 
+        {/* Action Area: Countdown, Ready Button, or Waiting Status */}
         {isStarting ? (
-          <div className="waiting-game-countdown">
-            <span className="waiting-game-countdown-number">{startingIn}</span>
-            <span className="waiting-game-countdown-label">{t("waiting.startingIn")}</span>
+          <div className="mt-8 text-center">
+            <span className="text-5xl font-bold text-brand-primary block animate-pulse">
+              {startingIn}
+            </span>
+            <span className="text-sm font-medium text-foreground-tertiary uppercase tracking-wider mt-2 block">
+              {t("waiting.startingIn")}
+            </span>
           </div>
         ) : bothJoined ? (
           <Button
             variant={isReady ? "secondary" : "primary"}
             fullWidth
+            size="lg"
             onClick={handleReadyClick}
             disabled={isReady}
-            className={isReady ? "waiting-game-ready-button--ready" : ""}
+            className="mt-6"
           >
             {isReady ? t("waiting.youAreReady") : t("waiting.readyButton")}
           </Button>
         ) : (
-          <p className="waiting-game-status">
+          <p className="mt-6 text-center text-foreground-tertiary italic">
             {isConnecting ? t("waiting.connecting") : t("waiting.waitingForPlayer")}
           </p>
         )}
 
-        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-          <p className="waiting-game-code">{t("waiting.gameId")} {gameId}</p>
+        {/* Footer: Game ID & Leave Button */}
+        <div className="mt-8 pt-6 border-t border-border-primary flex flex-col items-center gap-3">
+          <p className="text-xs font-mono text-foreground-quaternary">
+            {t("waiting.gameId")}: <span className="text-foreground-tertiary">{gameId}</span>
+          </p>
           <Button 
-            variant="secondary" 
+            variant="ghost" 
             onClick={handleLeave}
-            style={{ marginTop: '0.5rem', color: '#ef4444', borderColor: '#ef4444' }}
+            className="text-state-error hover:bg-state-error/10 hover:text-state-error"
           >
             {t("waiting.leaveGame") || "Leave Game"}
           </Button>
         </div>
+
       </Card>
 
+      {/* Tutorial Modal */}
       <Modal
         open={showTutorial}
         title={t("waiting.tutorial.title")}
@@ -245,15 +272,17 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
           </Button>
         }
       >
-        <p className="waiting-tutorial-text">{t("waiting.tutorial.description")}</p>
-        <div className="waiting-tutorial-media">
+        <p className="text-foreground-secondary leading-relaxed mb-4">
+          {t("waiting.tutorial.description")}
+        </p>
+        <div className="rounded-lg overflow-hidden border border-border-primary bg-background-tertiary">
           <video
             src={tutorialVideo}
             autoPlay
             loop
             muted
             playsInline
-            className="waiting-tutorial-video"
+            className="w-full aspect-video object-cover"
           />
         </div>
       </Modal>
