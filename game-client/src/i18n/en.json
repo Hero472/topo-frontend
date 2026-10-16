@@ -43,6 +43,7 @@
     "starting": "Game is starting...",
     "getReady": "Get ready!",
     "ready": "Ready",
+    "scanToJoin": "Scan QR code to join",
     "notReady": "Not ready",
     "youAreReady": "You are ready",
     "readyButton": "Ready",

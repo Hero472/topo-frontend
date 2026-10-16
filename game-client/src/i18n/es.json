@@ -43,6 +43,7 @@
     "starting": "La partida está comenzando...",
     "getReady": "¡Prepárate!",
     "ready": "Listo",
+    "scanToJoin": "Escanea el QR para unirse",
     "notReady": "No listo",
     "youAreReady": "Estás listo",
     "readyButton": "Listo",

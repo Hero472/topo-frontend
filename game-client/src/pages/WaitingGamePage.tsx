@@ -9,6 +9,7 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
+import QRCode from "qrcode"; 
 import tutorialVideo from "../assets/drag_drop_tutorial.mp4";
 
 export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocket }>) {
@@ -19,6 +20,7 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
   const [isValidating, setIsValidating] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   const username = sessionStorage.getItem("game-username") ?? "";
   const myPlayerId = useRoomStore((state) => state.myPlayerId) ?? socket.playerId;
@@ -30,6 +32,19 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
 
   const inviteUrl = `${globalThis.location.origin}/game/${gameId ?? ""}/join`;
   const tutorialStorageKey = gameId ? `game-tutorial-seen-${gameId}` : "game-tutorial-seen";
+
+  useEffect(() => {
+    QRCode.toDataURL(inviteUrl, {
+      width: 180,
+      margin: 1,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF" // Ensures high contrast for reliable scanning
+      }
+    })
+      .then(setQrDataUrl)
+      .catch((err) => console.error("QR Code generation failed:", err));
+  }, [inviteUrl]);
 
   // ✅ FIX 1: Added retry logic for eventual consistency / network lag
   useEffect(() => {
@@ -172,18 +187,41 @@ export default function WaitingGamePage({ socket }: Readonly<{ socket: GameSocke
           </p>
         </div>
 
-        {/* Invite Link */}
+        {/* Invite Link & QR Code */}
         {!isStarting && (
-          <div className="flex gap-2 mt-4">
-            <Input
-              value={inviteUrl}
-              readOnly
-              aria-label="Game invite link"
-              className="flex-1 font-mono text-sm"
-            />
-            <Button variant="primary" onClick={handleCopy} className="shrink-0">
-              {copied ? t("waiting.copied") : t("waiting.copy")}
-            </Button>
+          <div className="mt-4 space-y-4">
+            <div className="flex gap-2">
+              <Input
+                value={inviteUrl}
+                readOnly
+                aria-label="Game invite link"
+                className="flex-1 font-mono text-sm"
+              />
+              <Button variant="primary" onClick={handleCopy} className="shrink-0">
+                {copied ? t("waiting.copied") : t("waiting.copy")}
+              </Button>
+            </div>
+            
+            {/* ✅ NEW: QR Code Display */}
+            <div className="flex flex-col items-center justify-center p-4 bg-background-tertiary rounded-lg border border-border-primary">
+              <div className="bg-white p-3 rounded-md shadow-sm">
+                {qrDataUrl ? (
+                  <img 
+                    src={qrDataUrl} 
+                    alt="Game Invite QR Code" 
+                    width={180} 
+                    height={180} 
+                    className="block"
+                  />
+                ) : (
+                  // Loading skeleton while QR generates (takes ~2ms)
+                  <div className="w-[180px] h-[180px] bg-gray-100 animate-pulse rounded-md" />
+                )}
+              </div>
+              <p className="text-xs text-foreground-tertiary mt-3 font-medium">
+                {t("waiting.scanToJoin") || "Scan QR code to join"}
+              </p>
+            </div>
           </div>
         )}
 
